@@ -143,11 +143,12 @@
       "id": "verifier-source-grounding",
       "phase": "0",
       "kind": "code",
-      "behavior": "Gate G1: every factual claim in an article is matched to a quoted span in a source fetched during verification, and the span is stored. A claim that cannot be located in a document does not promote.",
-      "verification": "pnpm exec vitest run packages/verifier/test/grounding.test.ts",
-      "state": "not_started",
-      "evidence": null,
-      "notes": "Model recall is not evidence. This is the gate that replaces human fact-checking."
+      "behavior": "Every factual claim in an article is matched to a passage quoted from a source that was fetched during verification, the quote is checked against the fetched text, and an article with any ungrounded claim is not promoted.",
+      "verification": "pnpm exec vitest run packages/verifier/",
+      "state": "passing",
+      "evidence": " ✓ packages/verifier/test/grounder.test.ts (6 tests) 5ms |  ✓ packages/verifier/test/claims.test.ts (9 tests) 9ms |  Test Files  3 passed (3) |       Tests  21 passed (21) |    Start at  19:13:02 |    Duration  828ms (transform 140ms, setup 0ms, collect 190ms, tests 20ms, environment 1ms, prepare 649ms)",
+      "notes": "Model recall is not evidence. This is the gate that replaces human fact-checking.",
+      "last_failure": null
     },
     {
       "id": "verifier-adversarial",

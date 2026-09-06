@@ -1,7 +1,7 @@
 # Single command surface for humans, CI and the harness.
 # Every verification command referenced by feature_list.json is a target here.
 
-.PHONY: setup test lint validate check drill ingest extension cold-start harness-status harness-activate harness-verify harness-check clean help
+.PHONY: setup test lint validate check drill ingest extension verify-content cold-start harness-status harness-activate harness-verify harness-check clean help
 
 help:
 	@echo "setup             install dependencies and enable the pre-commit hook"
@@ -12,6 +12,7 @@ help:
 	@echo "drill             run a practice session; ARGS=\"--help\" for options"
 	@echo "ingest            rebuild the topic frequency map from live job postings"
 	@echo "extension         build the unpacked Chrome extension into apps/extension/dist"
+	@echo "verify-content    run the grounding gate over wiki articles and promote what passes"
 	@echo "cold-start        clone HEAD into an empty dir and verify it runs from the repo alone"
 	@echo ""
 	@echo "harness-status    show the queue, WIP and review backlog"
@@ -45,6 +46,9 @@ ingest:
 extension:
 	@pnpm exec tsx scripts/build-extension.ts
 	@pnpm exec tsx scripts/bundle-extension.ts $(ARGS)
+
+verify-content:
+	@pnpm exec tsx scripts/verify-content.ts $(ARGS)
 
 cold-start:
 	./.harness/2-tools/cold-start.sh

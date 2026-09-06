@@ -369,3 +369,32 @@ newcomer had to reconstruct the design from artifacts. Now the folder structure 
 Cold start re-run after the move and passes, which is the check that matters here: if the
 reorganisation had broken a path, a fresh clone would stop working.
 
+---
+
+## 2026-09-06 — The grounding gate asks a model to quote, not to judge
+
+`packages/verifier` implements G1. Claims are extracted deterministically, sources are
+fetched and cached, and a model is asked to locate a supporting passage and copy it. The
+quote is then checked against the fetched text.
+
+**Why quote rather than judge:** "is this claim correct" invites the model to answer from
+memory, which is the exact failure the gate exists to prevent. "Find me the sentence that
+says this" cannot be satisfied from memory, and the answer is checkable.
+
+**Why the quote is re-checked:** without that step the gate accepts a fabricated span,
+which is the same failure one level up. A grounder that invents a quote now fails.
+
+**Why claim extraction is deterministic:** letting a model decide which sentences are
+claims puts model judgement upstream of the check meant to constrain it, and the failure
+would be silent — a claim dropped from the list passes by never being examined.
+
+**Why every claim must ground, with no percentage threshold:** the claims that fail to
+ground are the ones most likely to be wrong, so a threshold ships exactly the wrong ones.
+
+**Sources are cached** because a verdict has to be re-checkable against the text that was
+actually read. A source that changes between the check and the audit would make an honest
+verdict look wrong and a dishonest one look fine.
+
+**Fails closed everywhere:** unparseable reply, missing source index, dead link. A gate
+that errors open is not a gate.
+
