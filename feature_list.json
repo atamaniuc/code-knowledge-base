@@ -187,6 +187,17 @@
       "state": "not_started",
       "evidence": null,
       "notes": "This is the self-improvement loop itself. Needs the gates and the judge first."
+    },
+    {
+      "id": "extension-drill-panel",
+      "phase": "1",
+      "kind": "code",
+      "behavior": "An unpacked Manifest V3 extension opens a side panel that drills the bundled bank: it shows the question and what it probes, reveals the expected answer only after you commit, grades on the SM-2 scale and persists progress to IndexedDB. No host permissions, no remote code, no outbound request.",
+      "verification": "pnpm exec vitest run apps/extension/",
+      "state": "passing",
+      "evidence": "RUN  v3.2.7 /Users/datamaniuc/work/pet/code-knowledge-base |  ✓ apps/extension/test/manifest.test.ts (6 tests) 6ms |  Test Files  1 passed (1) |       Tests  6 passed (6) |    Start at  18:54:13 |    Duration  739ms (transform 77ms, setup 0ms, collect 34ms, tests 6ms, environment 0ms, prepare 174ms)",
+      "notes": "Scheduling is shared with the CLI through packages/scheduling so the two surfaces cannot drift.",
+      "last_failure": null
     }
   ],
   "review_queue_limit_note": "Cap on items awaiting the gates. A backlog of ungated drafts is not progress."

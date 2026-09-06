@@ -10,3 +10,4 @@ dist/
 !.env.example
 .drill/
 .pipeline/
+apps/extension/dist/

@@ -11,7 +11,8 @@ times across 173 stack-scoped postings, and structured preparation for it barely
 - `agentic` covers evaluation, injection, judging, cost and latency, loop design,
   long context versus retrieval, and structured output.
 - `make check`: passing (84 tests, content valid). CI green.
-- `make drill ARGS="--include-drafts"` works today.
+- `make drill ARGS="--include-drafts"` and the Chrome extension both work today.
+- Extension: `make extension ARGS="--include-drafts"`, then load `apps/extension/dist` unpacked.
 - Blockers: none. Nothing is waiting on a human.
 
 
@@ -29,12 +30,11 @@ times across 173 stack-scoped postings, and structured preparation for it barely
 
 ## Next
 
-1. The Chrome extension — there is now enough content to justify a surface, and it is
-   the prep surface the user actually wants.
-2. `verifier-source-grounding` — the gate that replaces human fact-checking and removes
+1. `verifier-source-grounding` — the gate that replaces human fact-checking and removes
    `--include-drafts` from the daily loop.
-3. More `agentic`: fine-tuning versus RAG versus prompting, agent memory across sessions,
+2. More `agentic`: fine-tuning versus RAG versus prompting, agent memory across sessions,
    hallucination and grounding.
+3. Extension follow-ups: search over the wiki, the LeetCode overlay, vacancy capture.
 
 
 

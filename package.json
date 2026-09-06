@@ -8,12 +8,13 @@
   },
   "scripts": {
     "validate": "tsx packages/schema/src/cli.ts",
-    "test": "vitest run",
-    "lint": "tsc --noEmit -p tsconfig.json",
+    "test": "pnpm exec tsx scripts/build-extension.ts >/dev/null && pnpm exec tsx scripts/bundle-extension.ts --include-drafts >/dev/null && vitest run",
+    "lint": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p apps/extension/tsconfig.json",
     "check": "pnpm run lint && pnpm run test && pnpm run validate"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "esbuild": "^0.28.2",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"

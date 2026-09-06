@@ -17,10 +17,16 @@ Full plan: `docs/plan.md` — phases, gates, and the reasoning behind each decis
 ## How to run
 
 ```
-make setup      # install dependencies (pnpm, Node >= 24)
-make check      # lint + test + validate — the gate for every unit of work
-make validate   # content only, fastest feedback while authoring
+make setup                  # install dependencies (pnpm, Node >= 24) and the pre-commit hook
+make check                  # lint + test + validate — the gate for every unit of work
+make validate               # content only, fastest feedback while authoring
+make drill ARGS="--help"    # practice session in the terminal
+make extension ARGS="--include-drafts"   # build the unpacked extension into apps/extension/dist
+make ingest                 # rebuild the topic frequency map from live job postings
 ```
+
+**Loading the extension:** Chrome → `chrome://extensions` → Developer mode → Load unpacked →
+`apps/extension/dist`. The toolbar icon opens the side panel.
 
 There is no server and no database to provision. Everything runs locally.
 

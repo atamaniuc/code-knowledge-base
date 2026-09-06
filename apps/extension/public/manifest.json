@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Interview Prep",
+  "version": "0.1.0",
+  "description": "Spaced-repetition interview practice. Everything runs locally; nothing is sent anywhere.",
+  "permissions": [
+    "storage",
+    "sidePanel"
+  ],
+  "side_panel": {
+    "default_path": "panel.html"
+  },
+  "action": {
+    "default_title": "Open Interview Prep"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  }
+}

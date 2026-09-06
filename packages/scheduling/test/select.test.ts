@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Question } from "@schema/question.js";
-import { ReviewStore } from "../src/store.js";
+import { ReviewStore } from "@drill/store.js";
 import { eligible, nextUp } from "../src/select.js";
 
 const q = (over: Partial<Question> & { id: string }): Question =>

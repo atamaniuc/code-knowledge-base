@@ -1,5 +1,5 @@
 import type { Question } from "@schema/question.js";
-import type { ReviewStore } from "./store.js";
+import type { ReviewLog } from "./log.js";
 
 export interface Filter {
   domains?: string[];
@@ -30,7 +30,7 @@ export function eligible(questions: Question[], filter: Filter): Question[] {
  * things you already got wrong keep growing, which is the failure mode spaced
  * repetition exists to prevent.
  */
-export function nextUp(questions: Question[], store: ReviewStore, filter: Filter = {}, now = new Date()): Question[] {
+export function nextUp(questions: Question[], store: ReviewLog, filter: Filter = {}, now = new Date()): Question[] {
   const pool = eligible(questions, filter);
   const byId = new Map(pool.map((q) => [q.id, q]));
 

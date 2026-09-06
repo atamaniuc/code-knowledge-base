@@ -7,11 +7,10 @@
  */
 import { createInterface } from "node:readline/promises";
 import { join } from "node:path";
-import type { Grade } from "./sm2.js";
-import { PASSING_GRADE } from "./sm2.js";
+import { type Grade, PASSING_GRADE } from "@scheduling/index.js";
 import { ReviewStore } from "./store.js";
 import { REPO_ROOT, loadQuestions } from "./content.js";
-import { nextUp } from "./select.js";
+import { nextUp } from "@scheduling/index.js";
 
 const args = process.argv.slice(2);
 const flag = (name: string): string | undefined => {

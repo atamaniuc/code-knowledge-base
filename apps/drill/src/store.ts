@@ -1,7 +1,7 @@
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import { INITIAL, type Grade, type Schedule, nextDue, review } from "./sm2.js";
+import { INITIAL, type Grade, type ReviewLog, type ReviewRecord, nextDue, review } from "@scheduling/index.js";
 
 /**
  * Review history and schedules.
@@ -10,14 +10,6 @@ import { INITIAL, type Grade, type Schedule, nextDue, review } from "./sm2.js";
  * is still experimental, so everything touching it lives behind this interface: if it
  * changes, the replacement is confined to this file.
  */
-export interface ReviewRecord {
-  questionId: string;
-  answeredAt: string;
-  grade: Grade;
-  schedule: Schedule;
-  nextDueAt: string;
-}
-
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS reviews (
   id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,7 +44,7 @@ const toRecord = (r: Row): ReviewRecord => ({
   nextDueAt: r.next_due_at,
 });
 
-export class ReviewStore {
+export class ReviewStore implements ReviewLog {
   private readonly db: DatabaseSync;
 
   constructor(path: string) {
