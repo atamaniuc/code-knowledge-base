@@ -123,3 +123,35 @@ caught in review. Four of the fifteen are review-only and say so.
 **Why:** claiming enforcement that does not exist is worse than claiming none — it stops
 anyone from looking for the missing check.
 
+---
+
+## 2026-09-06 — Default branch renamed master to main
+
+**Why:** the CI workflow triggered on `main` while the branch was `master`, so CI never ran
+once. "Enforced by CI" was false for a second time, from a different cause — which is the
+argument for verifying that a mechanism fired, not that it was configured.
+
+Renamed rather than pointing the workflow at `master`: `main` is the conventional default
+and the repository was four commits old, private, with no other branches or open pull
+requests.
+
+---
+
+## 2026-09-06 — Harness components deliberately not built yet
+
+Recorded so their absence reads as a decision rather than an oversight.
+
+- **Throughput log (generated vs reviewed) and per-item traces.** They measure the review
+  bottleneck, and there is nothing to measure until authoring starts. Build with the first
+  domain.
+- **Loop runner and the authoring graph** (research, author, fact-check with veto,
+  generate-questions, validate). The graph exists on paper; wiring it before there is a
+  single reviewed article would be building a conveyor with nothing on it.
+- **Module quality grades and a scripted cleanup.** One package does not need a grading
+  table. Revisit at three or four.
+- **Docker or a devcontainer.** `.nvmrc` plus a committed lockfile already reproduces the
+  environment, and cold start proves it from a clean clone. A container would add a build
+  step and hide a class of drift rather than fix it.
+- **A secret scanner.** `.gitignore` covers the obvious case; the rule stays review-only
+  and `CONSTRAINTS.md` says so instead of implying a check exists.
+

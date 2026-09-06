@@ -1,5 +1,9 @@
 # План: система подготовки к IT-собеседованиям
 
+> **Reference, not instructions.** Read on demand — when you need the reasoning behind a
+> decision, the phase gates, or what was cut and why. The rules you must follow every
+> session are in `AGENTS.md` and `CONSTRAINTS.md`, which are kept short on purpose.
+
 ## Context
 
 Исходный `prompt.md` описывает продукт «всё и сразу»: 10 направлений × 5 уровней × 3 языка × 6+ режимов, плюс маркетинг, биллинг и SEO. Репозиторий пустой — greenfield.
