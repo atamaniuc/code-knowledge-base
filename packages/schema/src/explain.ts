@@ -15,6 +15,16 @@ interface Remedy {
 
 const REMEDIES: Remedy[] = [
   {
+    match: /^probes$/,
+    why: "what the interviewer assesses is often not the facts in the answer — an opening question may be probing deliberateness, a design question whether trade-offs get named at all",
+    fix: "state in one sentence what is actually being tested; if you cannot, you have not understood the question well enough to ask it",
+  },
+  {
+    match: /^answer_strategy$/,
+    why: "an open or behavioural question is nearly useless without guidance on how to deliver the answer out loud",
+    fix: "describe the order to say things in — what to open with, what to keep short — or omit the field for a narrow factual question",
+  },
+  {
     match: /^expected_answer$/,
     why: "the evaluator scores coverage per bullet and derives a level from which bullets were hit; one bullet or none cannot distinguish middle from senior",
     fix: "split the answer into 3-5 independent bullets, each with its own `min_level` and `weight`",

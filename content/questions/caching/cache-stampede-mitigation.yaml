@@ -17,6 +17,20 @@ question: >-
   It expires and the origin briefly takes 200x its usual load. Explain what
   happened and how you would prevent it.
 
+probes: >-
+  Whether the candidate reasons about concurrency rather than reciting cache
+  patterns. The stampede is obvious in hindsight; what is being tested is whether
+  they connect the burst size to concurrency at expiry, and whether they name the
+  trade-off of whichever mitigation they pick instead of presenting it as free.
+
+answer_strategy: >-
+  Start by naming the mechanism in one sentence before proposing any fix — jumping
+  straight to "add a lock" reads as pattern matching. Then give one mitigation you
+  would actually ship, with its failure mode stated out loud (lease TTL sizing, or
+  the staleness window). Mention the cheap one, TTL jitter, last: it costs a line
+  and is usually what is missing. Do not list all four as equals; picking one and
+  defending it is what separates a senior answer from a catalogue.
+
 expected_answer:
   - text: >-
       Names the failure: concurrent readers all miss the same key and every one of

@@ -35,7 +35,25 @@ export const Question = z.strictObject({
   tech: Tech,
 
   question: z.string().min(10),
+
+  /**
+   * What the interviewer is actually assessing.
+   *
+   * Often not the same as the facts in the answer: an opening question may be
+   * probing whether the choice of profession was deliberate, and a design question
+   * may be probing whether trade-offs get named at all. Required, because an author
+   * who cannot say what is being tested has not understood the question.
+   */
+  probes: z.string().min(15),
+
   expected_answer: z.array(ExpectedAnswerBullet).min(2),
+
+  /**
+   * How to structure the answer out loud. Coaching, not content — the order to say
+   * things in, what to open with, what to keep short. Optional: a narrow factual
+   * question does not need it, an open or behavioural one is nearly useless without it.
+   */
+  answer_strategy: z.string().min(30).optional(),
 
   follow_ups: z.array(z.string().min(10)).default([]),
   common_mistakes: z.array(z.string().min(10)).default([]),

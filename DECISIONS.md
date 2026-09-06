@@ -155,3 +155,41 @@ Recorded so their absence reads as a decision rather than an oversight.
 - **A secret scanner.** `.gitignore` covers the obvious case; the rule stays review-only
   and `CONSTRAINTS.md` says so instead of implying a check exists.
 
+---
+
+## 2026-09-06 — The static site is a landing page and a checkout, nothing else
+
+The whole product lives in the extension. The site exists because Chrome Web Store has no
+built-in payments, so the checkout has to live somewhere, and because a store listing on
+its own converts poorly.
+
+**Accepted consequence:** with no content pages, SEO stops being a channel. Distribution
+rests on Chrome Web Store organics and on the LeetCode overlay being shareable enough to
+drive installs and reviews, which are the only ranking inputs the store has.
+
+**Reversible:** content is already structured and decoupled from delivery, so publishing
+the wiki statically later is a day of work rather than a rewrite. Kept as the fallback if
+organics fall short.
+
+---
+
+## 2026-09-06 — Questions carry  and , not just scoring bullets
+
+Prompted by Hexlet/ru-interview-questions being offered as a realistic model for what the
+content should look like. Its answers are shaped as "what they are assessing" plus "how to
+answer", which the schema could not express at all.
+
+- **** (required) — what the interviewer is actually testing. Often not the facts
+  in the answer. An author who cannot state it has not understood the question well enough
+  to ask it, so requiring the field is a quality gate, not bookkeeping.
+- **** (optional) — how to deliver the answer out loud. Optional because a
+  narrow factual question does not need it and an open or behavioural one is nearly
+  useless without it.
+
+**Why it matters commercially:**  bullets serve the evaluator; these two
+serve the candidate. They are the difference between a reference work and interview
+preparation, and they are what a chatbot does not hand you in structured, reviewable form.
+
+**Note on the source:** the repository is AGPL-3.0, so no text from it enters .
+It is a model for shape and depth only.
+

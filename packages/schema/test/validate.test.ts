@@ -61,6 +61,7 @@ tech:
   name: Redis
   version_range: ">=6"
 question: Explain what a cache stampede is and how to prevent it.
+probes: Whether the candidate reasons about concurrency rather than reciting patterns.
 expected_answer:
   - text: Names concurrent misses reaching the origin.
     weight: 5

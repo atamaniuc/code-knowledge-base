@@ -23,10 +23,20 @@ at it, so an article update propagates to everything built on it.
 
 `content/questions/{domain}/{slug}.yaml`.
 
+- `probes` states what the interviewer is actually assessing, and it is required. This is
+  frequently not the facts in the answer: an opening question may be probing whether the
+  choice of career was deliberate, a design question whether trade-offs get named at all.
+  An author who cannot say what is being tested has not understood the question well
+  enough to ask it.
 - `expected_answer` is an array of bullets, each with `weight` and `min_level`, minimum
   two. This is the single most important shape in the schema: the evaluator scores
   coverage per bullet and derives a level from which bullets were hit. A prose answer
   cannot be scored reproducibly, and one bullet cannot separate middle from senior.
+- `answer_strategy` is coaching on delivery — the order to say things in, what to open
+  with, what to keep short. Optional, because a narrow factual question does not need it;
+  an open or behavioural one is nearly useless without it. This is the field that makes
+  the difference between a reference work and interview preparation, and it is what a
+  chatbot does not hand you in structured, reviewable form.
 - `wiki_refs` points at an article and a heading anchor. When a bullet is missed, the
   evaluator cites that section — feedback becomes "read this", not "you were wrong".
 - `related_questions` carries the cross-domain links that `system-design` scenarios walk.

@@ -11,6 +11,7 @@ const valid = {
   levels: ["senior"],
   tech: { name: "Redis", version_range: ">=6" },
   question: "Explain what a cache stampede is and how you would prevent it.",
+  probes: "Whether the candidate reasons about concurrency rather than reciting cache patterns.",
   expected_answer: [
     { text: "Names concurrent misses reaching the origin.", weight: 5, min_level: "middle" },
     { text: "Explains that the burst scales with concurrency at expiry.", weight: 4, min_level: "senior" },
@@ -47,6 +48,22 @@ describe("Question", () => {
   it("rejects unknown fields so frontmatter typos surface", () => {
     const result = Question.safeParse({ ...valid, dificulty: 3 });
     expect(result.success).toBe(false);
+  });
+
+  it("rejects a question that does not say what is being probed", () => {
+    // An author who cannot state what is tested has not understood the question.
+    const { probes, ...withoutProbes } = valid;
+    void probes;
+    const result = Question.safeParse(withoutProbes);
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts an optional answer strategy for open questions", () => {
+    const result = Question.safeParse({
+      ...valid,
+      answer_strategy: "Name the mechanism first, then pick one mitigation and defend its trade-off.",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("defaults optional collections to empty arrays", () => {
