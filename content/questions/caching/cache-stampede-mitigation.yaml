@@ -1,0 +1,97 @@
+id: 27f93fee-de07-4926-b34d-df073c21f2ec
+slug: cache-stampede-mitigation
+lang: en
+
+domain: caching
+topic: invalidation
+subtopic: stampede
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: Redis
+  version_range: ">=6"
+
+question: >-
+  A single hot key backed by a 200 ms query is read 1000 times per second.
+  It expires and the origin briefly takes 200x its usual load. Explain what
+  happened and how you would prevent it.
+
+expected_answer:
+  - text: >-
+      Names the failure: concurrent readers all miss the same key and every one of
+      them recomputes against the origin until the first write-back lands.
+    weight: 5
+    min_level: middle
+  - text: >-
+      Identifies that the burst scales with concurrency at the moment of expiry
+      rather than with average traffic, which is why it only appears under load.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Proposes single-flight via an atomic lock (SET NX EX) so exactly one caller
+      recomputes, and specifies what the other callers do meanwhile.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Sizes the lease TTL deliberately — above p99 recompute time so it does not
+      expire mid-recompute, and bounded so a crashed holder cannot block the key.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Offers stale-while-revalidate as an alternative and states the trade-off:
+      readers may observe a value one refresh interval out of date.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Mentions TTL jitter to stop a family of keys populated together from expiring
+      in the same second.
+    weight: 2
+    min_level: senior
+  - text: >-
+      Knows probabilistic early recomputation and that its probability is scaled by
+      the measured recompute time, so the write path must time itself.
+    weight: 2
+    min_level: staff
+
+follow_ups:
+  - >-
+    Your lease TTL is 5 seconds but recompute occasionally takes 8. What breaks,
+    and how do you detect it in production?
+  - >-
+    The waiting callers block on the lock with no timeout. Describe the failure
+    mode this creates under sustained load.
+  - >-
+    Which of these mitigations would you refuse to apply to a permission check,
+    and why?
+
+common_mistakes:
+  - >-
+    Answering only "add a lock" without saying what waiting callers do — blocking
+    without a timeout converts a cache problem into thread pool exhaustion.
+  - >-
+    Releasing the lock with an unconditional DEL, which lets a late holder delete
+    a lock another caller now owns.
+  - >-
+    Treating stale-while-revalidate as free, without naming the staleness window
+    or checking that the data owner accepts it.
+
+related_questions: []
+
+wiki_refs:
+  - slug: cache-stampede
+    anchor: single-flight-with-a-lease
+    wiki_reviewed_at: "2026-09-06"
+
+sources:
+  - title: "Optimal Probabilistic Cache Stampede Prevention (VLDB 2015)"
+    url: https://cseweb.ucsd.edu/~avattani/papers/cache_stampede.pdf
+    kind: paper
+  - title: "Redis SET command — NX and EX options"
+    url: https://redis.io/docs/latest/commands/set/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 8
+
+review_status: draft

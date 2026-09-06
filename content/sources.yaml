@@ -1,0 +1,8 @@
+# External content sources and their licenses.
+#
+# The license gate is legal, not stylistic. CI refuses any content whose
+# provenance points at a source that is not cleared for commercial use, and
+# an unlicensed repository counts as all-rights-reserved, not as permissive.
+#
+# Only a human edits this file (CONSTRAINTS.md #2).
+sources: []

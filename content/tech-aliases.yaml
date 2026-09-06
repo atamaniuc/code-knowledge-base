@@ -1,0 +1,96 @@
+# Gazetteer for vacancy parsing: canonical technology -> aliases.
+#
+# A closed vocabulary beats a small language model on this task: it is
+# deterministic, instant, weighs nothing, and never invents a technology that
+# is not in the posting. Grows as domains are covered.
+technologies:
+  - canonical: React
+    domain: frontend
+    aliases: [reactjs, react.js, реакт]
+  - canonical: Next.js
+    domain: frontend
+    aliases: [nextjs, next js, некст]
+  - canonical: Node.js
+    domain: backend-node
+    aliases: [nodejs, node js, нода]
+  - canonical: NestJS
+    domain: backend-node
+    aliases: [nest.js, nest js, нест]
+  - canonical: PHP
+    domain: backend-php
+    aliases: [php8, php 8, пхп]
+  - canonical: Laravel
+    domain: backend-php
+    aliases: [ларавель]
+  - canonical: Symfony
+    domain: backend-php
+    aliases: [симфони]
+  - canonical: RoadRunner
+    domain: backend-php
+    aliases: [road runner]
+  - canonical: FrankenPHP
+    domain: backend-php
+    aliases: [franken php]
+  - canonical: Swoole
+    domain: backend-php
+    aliases: [openswoole, swoole/openswoole]
+  - canonical: PostgreSQL
+    domain: data
+    aliases: [postgres, pg, psql, постгрес]
+  - canonical: MySQL
+    domain: data
+    aliases: [mariadb, майскуль]
+  - canonical: MongoDB
+    domain: data
+    aliases: [mongo, монго]
+  - canonical: Elasticsearch
+    domain: data
+    aliases: [elastic, es, эластик]
+  - canonical: ClickHouse
+    domain: data
+    aliases: [click house, кликхаус]
+  - canonical: Redis
+    domain: caching
+    aliases: [редис]
+  - canonical: Apache Kafka
+    domain: messaging
+    aliases: [kafka, кафка]
+  - canonical: NATS
+    domain: messaging
+    aliases: [nats.io, jetstream]
+  - canonical: RabbitMQ
+    domain: messaging
+    aliases: [rabbit, rmq, кролик]
+  - canonical: Docker
+    domain: infra
+    aliases: [докер]
+  - canonical: Kubernetes
+    domain: infra
+    aliases: [k8s, k8, кубер, кубернетес]
+  - canonical: AWS
+    domain: infra
+    aliases: [amazon web services, ec2, амазон]
+  - canonical: Google Cloud
+    domain: infra
+    aliases: [gcp, google cloud platform]
+  - canonical: Azure
+    domain: infra
+    aliases: [microsoft azure, ажур]
+  - canonical: Terraform
+    domain: iac
+    aliases: [tf, opentofu, терраформ]
+  - canonical: Pulumi
+    domain: iac
+    aliases: [пулуми]
+  - canonical: gRPC
+    domain: network
+    aliases: [grpc-web, гргпс]
+  - canonical: WebSocket
+    domain: network
+    aliases: [websockets, ws, вебсокет]
+  - canonical: OpenTelemetry
+    domain: observability
+    aliases: [otel, open telemetry]
+  - canonical: Nx
+    domain: monorepo
+    aliases: [nx workspace, nrwl]

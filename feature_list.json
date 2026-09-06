@@ -1,0 +1,108 @@
+{
+  "$schema_note": "Each item is sized to close in one session. `verification` is the only path to `passing`; the harness runs it, the agent does not judge. Content items stop at `human_review` — a human closes them. Only a human adds items to this file.",
+  "states": ["not_started", "active", "blocked", "passing", "human_review", "done"],
+  "wip_limit": 1,
+  "review_queue_limit": 15,
+  "items": [
+    {
+      "id": "init-workspace",
+      "phase": "0.0",
+      "behavior": "pnpm workspace installs on Node >= 24 and `make check` runs lint, tests and content validation as one command.",
+      "verification": "make check",
+      "state": "passing",
+      "evidence": "make check: tsc clean, 24 tests passed, content valid [wiki=1 questions=1 dsa_concepts=1 dsa_patterns=1 dsa_tasks=1]"
+    },
+    {
+      "id": "init-schema",
+      "phase": "0.0",
+      "behavior": "Zod schemas exist for wiki frontmatter, questions, and the three DSA entities; unknown fields are rejected so frontmatter typos surface.",
+      "verification": "pnpm exec vitest run packages/schema/test/question.test.ts packages/schema/test/dsa.test.ts",
+      "state": "passing",
+      "evidence": "12 tests passed, including rejection of single-bullet answers and of tasks whose optimal approach teaches no transition"
+    },
+    {
+      "id": "init-validator",
+      "phase": "0.0",
+      "behavior": "The content validator enforces cross-file rules and fails on: dangling wiki refs, unknown domains, unattributed reviews, non-commercial provenance, dangling prerequisites, placeholder markers.",
+      "verification": "pnpm exec vitest run packages/schema/test/validate.test.ts",
+      "state": "passing",
+      "evidence": "7 tests passed; each negative rule proven to fire on a fixture tree"
+    },
+    {
+      "id": "init-agent-errors",
+      "phase": "0.0",
+      "behavior": "Validation failures are reported as what / why / fix rather than a bare schema error.",
+      "verification": "pnpm exec vitest run packages/schema/test/explain.test.ts",
+      "state": "passing",
+      "evidence": "3 tests passed; remedies resolve for wiki_refs, sources, expected_answer and DSA cost paths"
+    },
+    {
+      "id": "init-harness-contract",
+      "phase": "0.0",
+      "behavior": "A cold session can answer 'how do I run this' and 'how do I verify this' from the repository alone, with no verbal explanation.",
+      "verification": "make check && test -f AGENTS.md && test -f CONSTRAINTS.md && test -f PROGRESS.md && test -f DECISIONS.md",
+      "state": "active",
+      "evidence": null
+    },
+    {
+      "id": "vacancy-frequency-map",
+      "phase": "0",
+      "behavior": "Ingest job postings from a ToS-cleared source and produce market_weight per domain in content/domains.yaml, backed by a count of postings per technology.",
+      "verification": "make check && pnpm exec vitest run packages/pipeline/test/frequency-map.test.ts",
+      "state": "not_started",
+      "evidence": null,
+      "notes": "Must run before bulk authoring — it decides depth per domain. Check the ToS of each source first; prefer official APIs, RSS or manual export."
+    },
+    {
+      "id": "rag-fts-backend",
+      "phase": "0",
+      "behavior": "Wiki articles are chunked by heading and searchable via SQLite FTS5 with domain and topic filters; every chunk carries doc_slug and heading_path so it can be cited.",
+      "verification": "pnpm exec vitest run packages/rag/test/",
+      "state": "not_started",
+      "evidence": null
+    },
+    {
+      "id": "rag-eval-set",
+      "phase": "0",
+      "behavior": "A 50-pair evaluation set measures recall@k and MRR over the wiki, and runs on every retriever or chunking change.",
+      "verification": "pnpm exec vitest run packages/rag/test/eval.test.ts",
+      "state": "not_started",
+      "evidence": null,
+      "notes": "This is what justifies adding embeddings later — or proves they are not needed."
+    },
+    {
+      "id": "drill-sm2",
+      "phase": "0",
+      "behavior": "The CLI trainer selects due questions by SM-2 scheduling and persists reviews to SQLite; a known grade sequence produces the expected intervals.",
+      "verification": "pnpm exec vitest run apps/drill/test/sm2.test.ts",
+      "state": "not_started",
+      "evidence": null
+    },
+    {
+      "id": "evaluator-golden-set",
+      "phase": "0",
+      "behavior": "The answer evaluator scores each expected_answer bullet as covered/partial/missing, derives a level, and matches a 20-pair hand-labelled golden set.",
+      "verification": "pnpm exec vitest run packages/pipeline/test/evaluator.test.ts",
+      "state": "not_started",
+      "evidence": null,
+      "notes": "Rubric per bullet, never a 1-10 score — otherwise calibration is unprovable."
+    },
+    {
+      "id": "importer-license-gate",
+      "phase": "0",
+      "behavior": "The importer refuses any source without commercial_ok, deduplicates against existing content, and lands items at review_status: imported with full provenance.",
+      "verification": "pnpm exec vitest run packages/importer/test/",
+      "state": "not_started",
+      "evidence": null
+    },
+    {
+      "id": "wiki-caching-domain",
+      "phase": "0",
+      "behavior": "The caching domain has its wiki articles written, fact-checked against official sources, and its questions derived from them.",
+      "verification": "make validate",
+      "state": "not_started",
+      "evidence": null,
+      "notes": "Template item: one of these per domain, ordered by market_weight once the frequency map exists."
+    }
+  ]
+}

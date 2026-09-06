@@ -1,0 +1,36 @@
+slug: longest-substring-without-repeating-characters
+title: Longest substring without repeating characters
+lang: en
+pattern: sliding-window
+url: https://leetcode.com/problems/longest-substring-without-repeating-characters/
+
+naive_approach:
+  idea: >-
+    Enumerate every start index, extend to the right while characters stay unique
+    using a fresh set per start, and keep the longest length seen.
+  cost:
+    time: O(n^2)
+    space: O(n)
+  breaks_at: >-
+    Around n > 10^4 it exceeds the time limit. Every restart rescans a prefix the
+    previous start already validated, so the same character comparisons are
+    repeated O(n) times across the run.
+
+optimal_approach:
+  idea: >-
+    Keep one window and a map from character to its last index. On a repeat,
+    jump the left edge to one past that index instead of restarting, and take the
+    running maximum of the window width.
+  cost:
+    time: O(n)
+    space: O(n)
+  key_insight: >-
+    The left edge never needs to move backwards, so both pointers advance at most
+    n times in total and the whole scan is a single pass.
+
+delta: >-
+  The naive version throws away validated work on every restart; storing the last
+  index of each character lets the left edge move forward monotonically instead.
+  Two pointers that only advance is the signature of the sliding-window pattern.
+
+review_status: draft

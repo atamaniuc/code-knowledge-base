@@ -1,0 +1,78 @@
+# Domain tree with provisional weights.
+# target_questions is a starting guess; the vacancy frequency map recomputes
+# market_weight before bulk generation and depth follows the data, not this file.
+domains:
+  - id: dsa
+    title: Data structures & algorithms
+    description: Complexity foundation plus the canonical pattern set. Modelled as concepts, patterns and tasks rather than Q&A.
+    target_questions: 0
+
+  - id: frontend
+    title: Frontend
+    description: React 19, Next.js 15 (RSC, caching, routing), shadcn/ui, performance, state management.
+    target_questions: 60
+
+  - id: monorepo
+    title: Monorepo
+    description: Nx project boundaries, computation cache, affected graph, CI strategy.
+    target_questions: 20
+
+  - id: architecture
+    title: Architecture
+    description: DDD, Clean, Hexagonal, Vertical Slice — boundaries, trade-offs, when each applies.
+    target_questions: 50
+
+  - id: backend-node
+    title: Backend (Node.js)
+    description: NestJS, microservices, serverless, V8 isolates and Cloudflare Workers, Supabase, Vercel.
+    target_questions: 70
+
+  - id: backend-php
+    title: Backend (PHP)
+    description: PHP 8.x, Laravel, Symfony, and execution models — php-fpm versus long-lived workers (RoadRunner, FrankenPHP, Swoole).
+    target_questions: 60
+
+  - id: messaging
+    title: Messaging
+    description: Kafka, NATS, RabbitMQ — delivery guarantees, ordering, partitioning, dead-letter handling, and which to pick.
+    target_questions: 50
+
+  - id: data
+    title: Databases
+    description: Postgres, MySQL, MongoDB, Elasticsearch, Redis, ClickHouse — modelling, indexing, transactions, sharding.
+    target_questions: 90
+
+  - id: caching
+    title: Caching
+    description: Redis strategies — cache-aside, write-through and write-behind, invalidation, stampede, TTL design.
+    target_questions: 25
+
+  - id: network
+    title: Networking & protocols
+    description: HTTP/1.1, HTTP/2, HTTP/3, TCP/UDP, gRPC, WebSocket, SSE, streaming, L4 and L7 load balancing.
+    target_questions: 55
+
+  - id: infra
+    title: Infrastructure
+    description: Docker, Kubernetes, AWS, GCP, Azure.
+    target_questions: 60
+
+  - id: iac
+    title: Infrastructure as code
+    description: Terraform and Pulumi — state, drift, module design, migration between them.
+    target_questions: 25
+
+  - id: observability
+    title: Observability
+    description: Metrics, logs, traces, OpenTelemetry, SLO design, alerting that does not page for noise.
+    target_questions: 30
+
+  - id: system-design
+    title: System design
+    description: Integrator domain. Scenarios pull from messaging, data, caching and network; the cross-links are what separate senior from staff answers.
+    target_questions: 40
+
+  - id: agentic
+    title: Agentic & AI-assisted development
+    description: Working with LLMs in production, agent harnesses, evaluation. Asked in 2026 interviews and barely covered by free material.
+    target_questions: 25

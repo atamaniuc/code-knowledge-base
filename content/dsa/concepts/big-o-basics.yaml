@@ -1,0 +1,55 @@
+slug: big-o-basics
+title: Big O, time and space complexity
+lang: en
+summary: >-
+  Asymptotic notation describes how cost grows with input size, not how fast the
+  code runs. The interview skill is reading a complexity off the shape of the
+  code, and keeping time and space as separate answers.
+body: |
+  Big O is an upper bound on growth: f(n) = O(g(n)) means f grows no faster than
+  g beyond some input size, ignoring constants. Theta is a tight bound and Omega
+  is a lower bound; interviews mostly say "O" while meaning Theta, and being able
+  to say which you mean is a cheap way to sound precise.
+
+  Constants are dropped because they do not survive a change of machine, not
+  because they do not matter. An O(n) pass with a 50x constant loses to an
+  O(n log n) pass at realistic sizes, which is why the asymptotic answer is the
+  start of a performance discussion rather than the end of it.
+
+  Time and space are separate answers and candidates routinely give only the
+  first. Space includes what the algorithm allocates *and* the recursion stack:
+  a depth-n recursion is O(n) space even when it allocates nothing, and slicing
+  an array inside a loop allocates a copy per iteration in most languages.
+
+  Amortized complexity is the reliable gap in a mid-level answer. Appending to a
+  dynamic array is O(1) amortized because the occasional O(n) resize is spread
+  over the cheap appends before it; a hash table insert is O(1) amortized for the
+  same reason, with a rehash instead of a resize. "Amortized O(1)" is not a
+  claim that every single call is cheap.
+recognition_rules:
+  - code_shape: Two nested loops, each over the whole input
+    implies: O(n^2)
+    why: The inner loop runs n times for each of the n outer iterations.
+  - code_shape: A loop that halves the search range each step
+    implies: O(log n)
+    why: The range can be halved only log2(n) times before it is empty.
+  - code_shape: A single pass with two pointers that only move forward
+    implies: O(n)
+    why: Each pointer advances at most n times in total, regardless of nesting depth.
+  - code_shape: A comparison sort anywhere in the solution
+    implies: O(n log n)
+    why: Comparison sorting has an O(n log n) lower bound, so nothing after it can be cheaper.
+  - code_shape: A linear scan such as includes(), indexOf() or "in list" inside a loop
+    implies: O(n^2)
+    why: The scan is O(n) and it runs once per iteration, which is the most commonly missed quadratic.
+  - code_shape: Recursion that branches twice per call to depth n
+    implies: O(2^n)
+    why: The recursion tree doubles at every level, so the node count is exponential in the depth.
+sources:
+  - title: "Introduction to Algorithms, 4th edition — asymptotic notation"
+    url: https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/
+    kind: paper
+  - title: "Python Time Complexity — CPython wiki"
+    url: https://wiki.python.org/moin/TimeComplexity
+    kind: official-docs
+review_status: draft

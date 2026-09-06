@@ -1,0 +1,37 @@
+slug: sliding-window
+title: Sliding window
+lang: en
+recognition_cues:
+  - Asks for the longest or shortest contiguous subarray or substring meeting a condition
+  - The brute-force answer is "check every subarray", which is O(n^2) or worse
+  - The condition can be updated incrementally when one element enters or leaves the range
+  - A fixed window size k is given in the statement
+template: |
+  left = 0
+  state = empty            # counts, sum, frequency map — whatever the condition needs
+  best = identity
+
+  for right in range(len(arr)):
+      add arr[right] to state
+
+      while condition_violated(state):
+          remove arr[left] from state
+          left += 1
+
+      best = better(best, right - left + 1)
+
+  return best
+target_cost:
+  time: O(n)
+  space: O(n)
+common_mistakes:
+  - Shrinking with an if instead of a while, which leaves the window invalid when one removal is not enough
+  - Recomputing the condition over the whole window each step, which silently restores the O(n^2) it was meant to remove
+  - Recording the answer before the window has been made valid again
+  - Using it on a problem about subsequences rather than contiguous ranges, where the window has no meaning
+related_concepts: [big-o-basics]
+sources:
+  - title: "LeetCode — Sliding Window tag"
+    url: https://leetcode.com/tag/sliding-window/
+    kind: article
+review_status: draft
