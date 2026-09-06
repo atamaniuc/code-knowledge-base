@@ -51,7 +51,7 @@
       "id": "init-harness-contract",
       "phase": "0.0",
       "behavior": "A fresh clone installs and verifies itself from the repository alone, with no verbal explanation and no environment carried over.",
-      "verification": "./scripts/cold-start.sh",
+      "verification": "make cold-start",
       "state": "passing",
       "evidence": "cold start: cloning HEAD into /var/folders/2g/q3flmkfs6x9dtg1yjp7wsflc0000gn/T/tmp.1FPTlkY0AF | cold start: make setup | cold start: make check | cold start PASSED: fresh clone installs and verifies from the repository alone",
       "kind": "code",
