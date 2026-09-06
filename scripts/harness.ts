@@ -55,12 +55,37 @@ function fail(what: string, fix: string): never {
 /** Terminal state after a passing verification: code closes itself, content waits for a human. */
 const terminalState = (item: Item): State => (item.kind === "content" ? "human_review" : "passing");
 
+/** A verification command may not run longer than this before it is treated as failed. */
+const VERIFICATION_TIMEOUT_MS = 10 * 60 * 1000;
+
 function runVerification(item: Item): { ok: boolean; output: string } {
   try {
-    const output = execSync(item.verification, { cwd: ROOT, encoding: "utf8", stdio: "pipe" });
+    const output = execSync(item.verification, {
+      cwd: ROOT,
+      encoding: "utf8",
+      // stdin is closed: a command that stops to ask a question must fail, not hang the loop.
+      stdio: ["ignore", "pipe", "pipe"],
+      timeout: VERIFICATION_TIMEOUT_MS,
+      env: {
+        ...process.env,
+        // Nested harness calls degrade to a plain check. Without this, an item whose
+        // verification invokes make would inherit ARGS=--reverify (GNU make exports
+        // command-line variables to sub-makes) and recurse forever.
+        HARNESS_REVERIFY: "1",
+      },
+    });
     return { ok: true, output };
   } catch (err) {
-    const e = err as { stdout?: string; stderr?: string; message?: string };
+    const e = err as { stdout?: string; stderr?: string; message?: string; signal?: string };
+    if (e.signal === "SIGTERM") {
+      return {
+        ok: false,
+        output:
+          `verification exceeded ${VERIFICATION_TIMEOUT_MS / 60000} minutes and was killed\n` +
+          "  why:  a verification that never returns blocks the loop indefinitely\n" +
+          "  fix:  make the command terminate, or split the item into smaller ones",
+      };
+    }
     return { ok: false, output: [e.stdout, e.stderr, e.message].filter(Boolean).join("\n") };
   }
 }
@@ -148,6 +173,11 @@ function verify(id: string): void {
 function check(reverify: boolean): void {
   const list = read();
   const problems: string[] = [];
+
+  if (reverify && process.env.HARNESS_REVERIFY === "1") {
+    console.log("harness: already inside a re-verification run, checking invariants only");
+    reverify = false;
+  }
 
   const active = list.items.filter((i) => i.state === "active");
   if (active.length > list.wip_limit) {

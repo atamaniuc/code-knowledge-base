@@ -52,10 +52,11 @@
       "phase": "0.0",
       "behavior": "A fresh clone installs and verifies itself from the repository alone, with no verbal explanation and no environment carried over.",
       "verification": "./scripts/cold-start.sh",
-      "state": "not_started",
-      "evidence": null,
+      "state": "passing",
+      "evidence": "cold start: cloning HEAD into /var/folders/2g/q3flmkfs6x9dtg1yjp7wsflc0000gn/T/tmp.1FPTlkY0AF | cold start: make setup | cold start: make check | cold start PASSED: fresh clone installs and verifies from the repository alone",
       "kind": "code",
-      "notes": "Gate of phase 0.0. Was verified by hand once; the check is now scripted so it is repeatable and runs in CI."
+      "notes": "Gate of phase 0.0. Was verified by hand once; the check is now scripted so it is repeatable and runs in CI.",
+      "last_failure": null
     },
     {
       "id": "vacancy-frequency-map",
@@ -130,9 +131,10 @@
       "kind": "code",
       "behavior": "The harness owns state transitions: `make harness-activate` enforces WIP=1 and the review queue limit, `make harness-verify` runs the item's command and records the outcome, and `make harness-check --reverify` re-runs every passing claim so a hand-edited state fails CI.",
       "verification": "make check && make harness-check",
-      "state": "not_started",
-      "evidence": null,
-      "notes": "Added on explicit human instruction (CONSTRAINTS #10 forbids the agent adding scope on its own)."
+      "state": "passing",
+      "evidence": "      Tests  24 passed (24) |    Start at  12:20:40 |    Duration  1.16s (transform 267ms, setup 0ms, collect 1.17s, tests 160ms, environment 1ms, prepare 1.35s) | pnpm run validate | content valid   [wiki=1  questions=1  dsa_concepts=1  dsa_patterns=1  dsa_tasks=1] | harness invariants hold",
+      "notes": "Added on explicit human instruction (CONSTRAINTS #10 forbids the agent adding scope on its own).",
+      "last_failure": null
     }
   ]
 }

@@ -4,10 +4,12 @@ State carried between sessions. Read this first; update it before you stop.
 
 ## Now
 
-**Phase 0.0 is complete.** Its gate — cold start — was verified by cloning the repository
-into an empty directory and running `make setup && make check` with no verbal explanation.
+**Phase 0.0 is complete and now enforced, not just documented.**
 
 - `make check`: passing (tsc clean, 24 tests, content valid)
+- `make harness-check ARGS=--reverify`: invariants hold, all 6 passing items re-verified (~30s)
+- `make cold-start`: passing, scripted and repeatable
+- Pre-commit hook active via `make setup`; CI runs check, re-verification and cold start
 - Blockers: `vacancy-frequency-map` is blocked on a human decision, see below
 
 ## Done
@@ -16,7 +18,8 @@ into an empty directory and running `make setup && make check` with no verbal ex
 - `init-schema` — Zod schemas for wiki, questions, DSA concepts/patterns/tasks
 - `init-validator` — cross-file rules with proven negative tests
 - `init-agent-errors` — validation failures reported as what / why / fix
-- `init-harness-contract` — AGENTS.md, CONSTRAINTS.md, feature_list.json, cold start verified
+- `init-harness-contract` — cold start scripted and passing from a fresh clone
+- `harness-enforcement` — harness owns state transitions; CI re-verifies every passing claim
 
 ## Next
 
