@@ -7,7 +7,8 @@ State carried between sessions. Read this first; update it before you stop.
 **Phase 0, writing the wedge domain.** `agentic` is the differentiator: LLM appears 41
 times across 173 stack-scoped postings, and structured preparation for it barely exists.
 
-- Content: 5 articles, 6 questions, 3 DSA entities. Target 691 questions.
+- Content: 7 articles, 8 questions, 3 DSA entities. Target 691 questions.
+- `agentic` covers evaluation, injection, judging, cost/latency and loop design.
 - `make check`: passing (84 tests, content valid). CI green.
 - `make drill ARGS="--include-drafts"` works today.
 - Blockers: none. Nothing is waiting on a human.

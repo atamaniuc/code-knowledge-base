@@ -1,0 +1,103 @@
+id: dc2666b9-b26b-4b75-9b2b-822d74954adc
+slug: agent-loop-stop-conditions
+lang: en
+
+domain: agentic
+topic: architecture
+subtopic: control
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+tech:
+  name: LLM agents
+  version_range: ">=2024"
+
+question: >-
+  An agent you shipped ran for four hours on one request and spent a large amount
+  of money before anyone noticed. Walk me through what you would change.
+
+probes: >-
+  Whether the candidate reaches for control mechanisms or for prompt wording. The
+  incident is a stop-condition failure, and the separation is whether they know a
+  loop needs several stop conditions and that a limit stated in the prompt is not
+  a limit at all.
+
+answer_strategy: >-
+  Do not open with the fix. Open by naming what class of failure this is — the
+  loop had no way to know it was not making progress — because that framing is
+  what makes the rest sound like engineering rather than a checklist. Then give
+  the stop conditions as a set, and be explicit that budget is enforced in the
+  runtime rather than requested in the prompt; that single distinction is what the
+  interviewer is listening for. Finish on detection: the incident was noticed by a
+  person, and that is the part that should not happen twice.
+
+expected_answer:
+  - text: >-
+      Identifies it as a stop-condition failure rather than a reasoning failure, and does
+      not propose to fix it by rewording the prompt.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Adds hard budgets — iterations, wall clock, tokens, money — and states they are
+      enforced by the runtime, not requested in the prompt the loop can talk around.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Adds a no-progress detector: an iteration that leaves state materially unchanged
+      ends the loop rather than continuing politely forever.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Distinguishes self-reported success from verified success and prefers an external
+      check where one exists, since models are poorly calibrated about completion.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Adds an escalation path to a human or a stronger model instead of leaving the loop
+      with no exit but exhaustion.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Fixes the detection gap: the distribution over stop reasons is a monitored metric,
+      so a rising share of budget stops is visible before a person notices.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Asks whether the loop should be a loop at all, given the steps may have been known
+      in advance and a fixed pipeline would be cheaper and debuggable.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The agent is interrupted halfway through a sequence of side effects. What happens on restart?
+  - How do you set the iteration limit to a number rather than a guess?
+  - What is the worst a runaway loop could have done here besides spend money?
+
+common_mistakes:
+  - >-
+    Proposing to instruct the model to stop when it is stuck, which relies on the
+    calibration the incident just disproved.
+  - >-
+    Adding only an iteration cap. It bounds the spend and does nothing about a loop that
+    finishes early with a wrong answer.
+  - >-
+    Treating a budget written into the prompt as a control.
+  - >-
+    Not addressing detection, which leaves the next incident to be found by a person again.
+
+related_questions: []
+
+wiki_refs:
+  - slug: agent-loop-design
+    anchor: stop-conditions
+    wiki_reviewed_at: "2026-09-06"
+
+sources:
+  - title: "Building effective agents"
+    url: https://www.anthropic.com/engineering/building-effective-agents
+    kind: article
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

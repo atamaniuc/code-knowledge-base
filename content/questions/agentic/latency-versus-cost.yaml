@@ -1,0 +1,104 @@
+id: a245e65e-4276-4761-b935-9791e08d8318
+slug: latency-versus-cost
+lang: en
+
+domain: agentic
+topic: production
+subtopic: performance
+
+tracks: [backend, fullstack, any]
+levels: [middle, senior, staff]
+tech:
+  name: LLM inference
+  version_range: ">=2024"
+
+question: >-
+  Users say your LLM feature is slow, and finance says it is expensive. Your first
+  instinct is to shorten the system prompt. Is that right?
+
+probes: >-
+  Whether the candidate knows that input and output tokens behave differently —
+  input is processed in parallel, output is generated serially — and therefore
+  that the same change does not move both problems. It also probes whether they
+  measure before optimising.
+
+answer_strategy: >-
+  Answer the question directly first: no, or at least not for the slowness. Then
+  give the mechanism in one sentence, because the asymmetry between parallel
+  prefill and serial generation is the whole reason. Separate the two complaints —
+  they are different problems with different fixes — and give one concrete action
+  for each. Mention prompt caching specifically, since a stable system prompt is
+  the case it was built for. Do not quote vendor pricing or cache lifetimes from
+  memory.
+
+expected_answer:
+  - text: >-
+      Says the instinct is wrong for latency, and does not treat cost and latency as one
+      problem with one fix.
+    weight: 5
+    min_level: middle
+  - text: >-
+      Gives the mechanism: input tokens are processed in parallel during prefill while
+      output tokens are generated one at a time, so a long answer dominates wall clock.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Separates time to first token from total time, and notes streaming addresses the
+      perceived latency without making anything faster.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Names prompt caching for a stable system prompt, with the prefix constraint: stable
+      content first, variable content last.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Proposes measuring input and output tokens per request path before optimising, so
+      the team does not optimise whatever is easiest to see.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Offers model routing or cascading for cost, with the escalation path named rather
+      than assumed.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Bounds output length to what the task needs, since unbounded generation pays for
+      tokens nobody reads.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - Where in the prompt would you put a per-request user id, and why does it matter?
+  - The feature must cost under a fixed amount per user per month. How does that change the design?
+  - Batching would cut the cost. When would you refuse it?
+
+common_mistakes:
+  - >-
+    Treating cost and latency as one problem, which leads to shortening a prompt that was
+    not causing the slowness.
+  - >-
+    Claiming streaming makes the request faster rather than making the wait feel shorter.
+  - >-
+    Quoting vendor pricing or cache lifetimes from memory; they are version-dependent and
+    being confidently wrong about them is worse than saying they must be checked.
+  - >-
+    Putting variable content early in the prompt, which invalidates the cached prefix for
+    everything after it.
+
+related_questions: []
+
+wiki_refs:
+  - slug: llm-cost-and-latency
+    anchor: prompt-caching
+    wiki_reviewed_at: "2026-09-06"
+
+sources:
+  - title: "Efficient Memory Management for Large Language Model Serving with PagedAttention (vLLM)"
+    url: https://arxiv.org/abs/2309.06180
+    kind: paper
+
+difficulty: 3
+estimated_minutes: 8
+
+review_status: draft
