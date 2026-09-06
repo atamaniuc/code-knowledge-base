@@ -1,11 +1,11 @@
 {
-  "$schema_note": "Each item is sized to close in one session. `verification` is the only path out of `active`, and the harness runs it — never the agent. Content items stop at `human_review`; a human closes them. CI re-runs every passing claim, so editing `state` by hand is detected rather than trusted. Only a human adds items.",
+  "$schema_note": "Each item is sized to close in one session. `verification` is the only path out of `active`, and the harness runs it — never the agent. Content items stop at `awaiting_gates`; the verification gates in docs/autonomy.md decide promotion. CI re-runs every passing claim, so editing `state` by hand is detected rather than trusted.",
   "states": [
     "not_started",
     "active",
     "blocked",
     "passing",
-    "human_review",
+    "awaiting_gates",
     "done"
   ],
   "wip_limit": 1,
@@ -61,11 +61,11 @@
     {
       "id": "vacancy-frequency-map",
       "phase": "0",
-      "behavior": "Ingest job postings from a ToS-cleared source and produce market_weight per domain in content/domains.yaml, backed by a count of postings per technology.",
+      "behavior": "Ingest postings from the hh.ru public API, extract required technologies and level via the gazetteer, and write market_weight per domain into content/domains.yaml.",
       "verification": "make check && pnpm exec vitest run packages/pipeline/test/frequency-map.test.ts",
       "state": "not_started",
       "evidence": null,
-      "notes": "Must run before bulk authoring — it decides depth per domain. Check the ToS of each source first; prefer official APIs, RSS or manual export.",
+      "notes": "Source decided: the hh.ru public API (api.hh.ru) — documented, free, no scraping, so the ToS question that blocked this is closed. Adzuna's public API is the fallback for wider geography.",
       "kind": "code"
     },
     {
@@ -100,12 +100,13 @@
     {
       "id": "evaluator-golden-set",
       "phase": "0",
-      "behavior": "The answer evaluator scores each expected_answer bullet as covered/partial/missing, derives a level, and matches a 20-pair hand-labelled golden set.",
-      "verification": "pnpm exec vitest run packages/pipeline/test/evaluator.test.ts",
-      "state": "not_started",
-      "evidence": null,
-      "notes": "Rubric per bullet, never a 1-10 score — otherwise calibration is unprovable.",
-      "kind": "code"
+      "behavior": "Per-bullet coverage is turned into a level by an arithmetic rule, checked against a golden set whose labels are true by construction rather than by human judgement.",
+      "verification": "pnpm exec vitest run packages/evaluator/",
+      "state": "passing",
+      "evidence": "RUN  v3.2.7 /Users/datamaniuc/work/pet/code-knowledge-base |  ✓ packages/evaluator/test/assess.test.ts (19 tests) 7ms |  Test Files  1 passed (1) |       Tests  19 passed (19) |    Start at  17:41:21 |    Duration  834ms (transform 69ms, setup 0ms, collect 125ms, tests 7ms, environment 0ms, prepare 191ms)",
+      "notes": "Covers the aggregation half. Whether a model correctly marks a bullet covered is a separate item: it needs a real model and cannot run in CI without a key.",
+      "kind": "code",
+      "last_failure": null
     },
     {
       "id": "importer-license-gate",
@@ -136,6 +137,56 @@
       "evidence": "      Tests  24 passed (24) |    Start at  12:20:40 |    Duration  1.16s (transform 267ms, setup 0ms, collect 1.17s, tests 160ms, environment 1ms, prepare 1.35s) | pnpm run validate | content valid   [wiki=1  questions=1  dsa_concepts=1  dsa_patterns=1  dsa_tasks=1] | harness invariants hold",
       "notes": "Added on explicit human instruction (CONSTRAINTS #10 forbids the agent adding scope on its own).",
       "last_failure": null
+    },
+    {
+      "id": "verifier-source-grounding",
+      "phase": "0",
+      "kind": "code",
+      "behavior": "Gate G1: every factual claim in an article is matched to a quoted span in a source fetched during verification, and the span is stored. A claim that cannot be located in a document does not promote.",
+      "verification": "pnpm exec vitest run packages/verifier/test/grounding.test.ts",
+      "state": "not_started",
+      "evidence": null,
+      "notes": "Model recall is not evidence. This is the gate that replaces human fact-checking."
+    },
+    {
+      "id": "verifier-adversarial",
+      "phase": "0",
+      "kind": "code",
+      "behavior": "Gate G2: an independent model, in a separate context, is asked to falsify each claim against the fetched sources. Any successful falsification quarantines the item.",
+      "verification": "pnpm exec vitest run packages/verifier/test/adversarial.test.ts",
+      "state": "not_started",
+      "evidence": null,
+      "notes": "Asking 'is this right' and 'show me this is wrong' have different failure rates; only the second surfaces confident errors."
+    },
+    {
+      "id": "verifier-consistency-and-currency",
+      "phase": "0",
+      "kind": "code",
+      "behavior": "Gates G3 and G4: a claim may not contradict any promoted claim in the corpus, and tech.version_range is checked against real release data. A contradiction quarantines both items.",
+      "verification": "pnpm exec vitest run packages/verifier/test/consistency.test.ts",
+      "state": "not_started",
+      "evidence": null
+    },
+    {
+      "id": "judge-llm-coverage",
+      "phase": "0",
+      "kind": "code",
+      "behavior": "The LLM judge marks each expected_answer bullet covered, partial or missing for a given answer, and agrees with a synthetic set whose coverage is known by construction. Skipped when no API key is present, so CI stays green without one.",
+      "verification": "pnpm exec vitest run packages/evaluator/test/judge.test.ts",
+      "state": "not_started",
+      "evidence": null,
+      "notes": "The other half of the evaluator: aggregation is proven, coverage judgement is not."
+    },
+    {
+      "id": "failure-mining-loop",
+      "phase": "0",
+      "kind": "code",
+      "behavior": "Quarantines and disputes are clustered by mechanism rather than error string, and proposals are accepted only on two-split evidence: no regression on held-in or held-out, strict improvement on at least one. Rejected candidates are archived with their evidence.",
+      "verification": "pnpm exec vitest run packages/loop/test/",
+      "state": "not_started",
+      "evidence": null,
+      "notes": "This is the self-improvement loop itself. Needs the gates and the judge first."
     }
-  ]
+  ],
+  "review_queue_limit_note": "Cap on items awaiting the gates. A backlog of ungated drafts is not progress."
 }

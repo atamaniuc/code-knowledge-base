@@ -53,7 +53,7 @@ export const DsaConcept = z.strictObject({
   sources: z.array(Source).min(1),
   review_status: ReviewStatus,
   reviewed_at: IsoDate.optional(),
-  reviewed_by: z.string().min(1).optional(),
+  verified_by: z.string().min(1).optional(),
 });
 
 /** One of the ~20 canonical patterns. */
@@ -70,7 +70,7 @@ export const DsaPattern = z.strictObject({
   sources: z.array(Source).min(1),
   review_status: ReviewStatus,
   reviewed_at: IsoDate.optional(),
-  reviewed_by: z.string().min(1).optional(),
+  verified_by: z.string().min(1).optional(),
 });
 
 const Approach = z.strictObject({
@@ -102,7 +102,7 @@ export const DsaTask = z
 
     review_status: ReviewStatus,
     reviewed_at: IsoDate.optional(),
-    reviewed_by: z.string().min(1).optional(),
+    verified_by: z.string().min(1).optional(),
   })
   .refine(
     (t) => {

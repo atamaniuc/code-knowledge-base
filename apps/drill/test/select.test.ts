@@ -24,14 +24,14 @@ const q = (over: Partial<Question> & { id: string }): Question =>
     sources: [{ title: "t", url: "https://example.com", kind: "official-docs" }],
     difficulty: 3,
     estimated_minutes: 5,
-    review_status: "reviewed",
+    review_status: "auto_verified",
     ...over,
   }) as Question;
 
 describe("eligible", () => {
-  it("excludes anything a human has not reviewed", () => {
+  it("excludes anything the gates have not promoted", () => {
     // Drilling against an unverified answer teaches the wrong thing.
-    const pool = [q({ id: "1", review_status: "draft" }), q({ id: "2", review_status: "reviewed" })];
+    const pool = [q({ id: "1", review_status: "draft" }), q({ id: "2", review_status: "auto_verified" })];
     expect(eligible(pool, {}).map((x) => x.id)).toEqual(["2"]);
   });
 

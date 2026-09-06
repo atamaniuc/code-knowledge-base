@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const LIST = resolve(ROOT, "feature_list.json");
 
-type State = "not_started" | "active" | "blocked" | "passing" | "human_review" | "done";
+type State = "not_started" | "active" | "blocked" | "passing" | "awaiting_gates" | "done";
 
 interface Item {
   id: string;
@@ -52,8 +52,8 @@ function fail(what: string, fix: string): never {
   process.exit(1);
 }
 
-/** Terminal state after a passing verification: code closes itself, content waits for a human. */
-const terminalState = (item: Item): State => (item.kind === "content" ? "human_review" : "passing");
+/** Terminal state after a passing verification: code closes itself, content waits for the gates. */
+const terminalState = (item: Item): State => (item.kind === "content" ? "awaiting_gates" : "passing");
 
 /** A verification command may not run longer than this before it is treated as failed. */
 const VERIFICATION_TIMEOUT_MS = 10 * 60 * 1000;
@@ -100,7 +100,7 @@ function status(): void {
   const byState = new Map<State, Item[]>();
   for (const i of list.items) byState.set(i.state, [...(byState.get(i.state) ?? []), i]);
 
-  for (const state of ["active", "blocked", "human_review", "not_started", "passing", "done"] as State[]) {
+  for (const state of ["active", "blocked", "awaiting_gates", "not_started", "passing", "done"] as State[]) {
     const items = byState.get(state) ?? [];
     if (items.length === 0) continue;
     console.log(`\n${state} (${items.length})`);
@@ -108,8 +108,8 @@ function status(): void {
   }
 
   const active = (byState.get("active") ?? []).length;
-  const queued = (byState.get("human_review") ?? []).length;
-  console.log(`\nWIP ${active}/${list.wip_limit}   review queue ${queued}/${list.review_queue_limit}`);
+  const queued = (byState.get("awaiting_gates") ?? []).length;
+  console.log(`\nWIP ${active}/${list.wip_limit}   awaiting gates ${queued}/${list.review_queue_limit}`);
 }
 
 function activate(id: string): void {
@@ -121,11 +121,11 @@ function activate(id: string): void {
       "finish or block that item first; split attention is what produces work started everywhere and finished nowhere",
     );
   }
-  const queued = list.items.filter((i) => i.state === "human_review").length;
+  const queued = list.items.filter((i) => i.state === "awaiting_gates").length;
   if (queued >= list.review_queue_limit) {
     fail(
-      `review queue is full (${queued}/${list.review_queue_limit})`,
-      "review the queued items before generating more; authoring is not the bottleneck, review is",
+      `verification queue is full (${queued}/${list.review_queue_limit})`,
+      "let the gates drain before generating more; a backlog of ungated drafts is not progress",
     );
   }
   const item = find(list, id);
@@ -161,7 +161,7 @@ function verify(id: string): void {
   write(list);
   console.log(output);
   console.log(`${id} -> ${item.state}`);
-  if (item.state === "human_review") {
+  if (item.state === "awaiting_gates") {
     console.log("  machine checks passed; a human closes this item (CONSTRAINTS.md #1)");
   }
 }
@@ -188,7 +188,7 @@ function check(reverify: boolean): void {
     );
   }
 
-  const queued = list.items.filter((i) => i.state === "human_review");
+  const queued = list.items.filter((i) => i.state === "awaiting_gates");
   if (queued.length > list.review_queue_limit) {
     problems.push(
       `review queue over limit: ${queued.length}/${list.review_queue_limit}\n` +
@@ -198,7 +198,7 @@ function check(reverify: boolean): void {
   }
 
   for (const item of list.items) {
-    if ((item.state === "passing" || item.state === "human_review" || item.state === "done") && !item.evidence) {
+    if ((item.state === "passing" || item.state === "awaiting_gates" || item.state === "done") && !item.evidence) {
       problems.push(
         `"${item.id}" is ${item.state} with no evidence\n` +
           `  why:  done means a command passed, not that the work looked right\n` +

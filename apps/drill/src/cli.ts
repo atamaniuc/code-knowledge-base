@@ -40,7 +40,7 @@ let questions = loadQuestions();
 
 if (includeDrafts) {
   console.warn("including drafts: these answers have not been fact-checked by a human\n");
-  questions = questions.map((q) => ({ ...q, review_status: "reviewed" as const }));
+  questions = questions.map((q) => ({ ...q, review_status: "auto_verified" as const }));
 }
 
 const session = nextUp(questions, store, {
@@ -50,10 +50,10 @@ const session = nextUp(questions, store, {
 });
 
 if (session.length === 0) {
-  const reviewed = questions.filter((q) => q.review_status === "reviewed" || q.review_status === "verified").length;
+  const reviewed = questions.filter((q) => q.review_status === "auto_verified" || q.review_status === "verified").length;
   console.log(
     reviewed === 0
-      ? "Nothing to drill: no question has been reviewed yet.\nUse --include-drafts to work against unreviewed content."
+      ? "Nothing to drill: no question has been promoted yet.\nUse --include-drafts to work against unreviewed content."
       : "Nothing due. Come back when a repetition falls due, or widen the filter.",
   );
   store.close();

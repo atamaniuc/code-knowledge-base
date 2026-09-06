@@ -73,7 +73,8 @@ export const Question = z.strictObject({
 
   review_status: ReviewStatus,
   reviewed_at: IsoDate.optional(),
-  reviewed_by: z.string().min(1).optional(),
+  /** Which gate run promoted this. Identifies a trace in the archive, not a person. */
+  verified_by: z.string().min(1).optional(),
   provenance: Provenance.optional(),
 });
 

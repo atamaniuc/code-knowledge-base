@@ -112,12 +112,12 @@ describe("validateContent cross-file rules", () => {
     expect(validateContent(root).errors.join("\n")).toContain("not cleared for commercial use");
   });
 
-  it("rejects a reviewed item with no reviewer attribution", () => {
-    // "reviewed" must mean a named human checked it, otherwise it is self-approval.
+  it("rejects a promoted item that cannot point at the gate run that promoted it", () => {
+    // Without the trace reference the status is an assertion, not evidence.
     const root = build({
-      "content/wiki/caching/cache-basics.md": article.replace("review_status: draft", "review_status: reviewed"),
+      "content/wiki/caching/cache-basics.md": article.replace("review_status: draft", "review_status: auto_verified"),
     });
-    expect(validateContent(root).errors.join("\n")).toContain("without reviewed_at/reviewed_by");
+    expect(validateContent(root).errors.join("\n")).toContain("without reviewed_at/verified_by");
   });
 
   it("requires a technology and version in a technical domain", () => {

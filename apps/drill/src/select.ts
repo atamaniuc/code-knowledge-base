@@ -9,10 +9,10 @@ export interface Filter {
 }
 
 /**
- * Only reviewed content reaches a session. Drafts are working state, and drilling
- * against an unverified answer teaches the wrong thing.
+ * Only promoted content reaches a session. Drafts are working state and quarantined
+ * items failed a gate; drilling against either teaches the wrong thing.
  */
-const SHIPPABLE = new Set(["reviewed", "verified"]);
+const SHIPPABLE = new Set(["auto_verified", "verified"]);
 
 export function eligible(questions: Question[], filter: Filter): Question[] {
   return questions.filter((q) => {

@@ -8,10 +8,10 @@ missed. `make setup` enables the hook; without it, only CI catches violations.
 
 ## Content integrity
 
-1. **Never set `review_status: reviewed` or `verified`.** _(enforced: `make validate`)_
-   Reviewed means a named human checked the fact against the sources. It is the only
-   thing separating this product from generated text, and an agent setting it is
-   self-approval. Author at `draft`; a human promotes.
+1. **Never set a promoted status by hand.** _(enforced: `make validate`)_
+   `auto_verified` and `verified` are granted by the verification gates, which store the
+   fetched source spans that justify them. Writing the status directly asserts evidence
+   that does not exist. Author at `draft` and let the gates promote. See `docs/autonomy.md`.
 
 2. **Never edit licenses in `content/sources.yaml`.** _(enforced for use: content whose provenance points at a source without `commercial_ok` fails `make validate`. The edit itself is caught in review.)_
    Whether a source may be used commercially is a legal decision made by a human. An
@@ -40,9 +40,10 @@ missed. `make setup` enables the hook; without it, only CI catches violations.
 8. **Never hold more than one item in `active`.** _(enforced: `make harness-activate` and `make harness-check`)_
    Split attention produces work that is started everywhere and finished nowhere.
 
-9. **Never generate content while the human review queue holds more than 15 items.** _(enforced: `make harness-activate` refuses)_
-   Authoring is not the bottleneck; review is. Outrunning it inflates a metric that
-   means nothing.
+9. **Never generate content faster than it can be verified.** _(enforced: `make harness-activate` refuses)_
+   The queue limit now applies to items awaiting the gates rather than a person. A backlog
+   of ungated drafts is not progress, and counting it as progress is the failure mode the
+   limit exists to prevent.
 
 10. **Never add items to `feature_list.json`.** _(review only — the harness cannot tell a human-requested item from a self-assigned one)_
     Scope belongs to the human. A loop that rewrites its own goal has no goal.
@@ -63,4 +64,12 @@ missed. `make setup` enables the hook; without it, only CI catches violations.
     LLM provider with the user's own key. This claim must stay literally true.
 
 15. **Never load or evaluate remote code in the extension.** _(review only until the extension exists)_
+
+## Locked surfaces
+
+16. **Never modify a locked surface.** _(enforced: `scripts/locked-surfaces.sh` in CI)_
+    `packages/evaluator/`, `docs/autonomy.md`, `content/sources.yaml`,
+    `.github/workflows/`, and the check itself. These define or enforce the acceptance
+    signal; a loop that can edit them can grant itself a passing score. Changing them is
+    a human act, in a commit without the agent trailer.
     Manifest V3 prohibits it, and it would break the offline guarantee anyway.

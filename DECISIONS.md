@@ -244,3 +244,65 @@ applied for the same reason.
 phase is to prepare with what there is. It is never the default and it warns, so drilling
 against an unverified answer is deliberate rather than accidental.
 
+---
+
+## 2026-09-06 — Human review is replaced by evidence-gated automatic promotion
+
+The system must self-improve without a human in the loop. `human_review` is gone; content
+promotes through five gates that run unsupervised: source grounding against fetched
+documents, adversarial falsification by an independent model, corpus consistency, version
+currency, and a held-out grounding check. Full design in `docs/autonomy.md`.
+
+The premise that made review valuable still has to hold — that this beats what a chatbot
+generates free. It now holds through grounding rather than through a person: a claim ships
+because a span was located in a fetched document, not because a model found it plausible.
+
+**What this costs:** a hard guarantee over what a human read becomes a statistical one
+over everything. Errors will ship. Mitigations are demotion on dispute, usage signal,
+sampling audit, and full traces — not a claim that it does not happen.
+
+**What stays human:** the gates themselves, the editable-surface list, licence clearance,
+and the decision to abandon a direction.
+
+---
+
+## 2026-09-06 — Locked surfaces are enforced in CI, with the limit stated
+
+`packages/evaluator/`, `docs/autonomy.md`, `content/sources.yaml`, `.github/workflows/`
+and the check itself may not be touched by a commit carrying the agent trailer.
+
+**Why:** a loop optimises whatever signal it is given. Every documented reward hack broke
+this invariant — agents removed the instrumentation their checker depended on. Constraints
+stated in prompt text get optimised away, so this one is not in prompt text.
+
+**Limit, not hidden:** this is drift detection, not a sandbox. It assumes commits pass
+through CI, and a loop with push access that strips its own trailer defeats it. Closing
+that gap means filesystem-level read-only paths in the run environment.
+
+`.locked-baseline` exempts commits at or before the point enforcement was introduced,
+because the commit that creates a locked path necessarily touches it. Moving that baseline
+forward is expanding the editable surface, which is a human decision.
+
+---
+
+## 2026-09-06 — Level derivation requires the bullets a level introduces
+
+A level is claimed only when both the cumulative set at or below it and the bullets it
+introduces clear the threshold.
+
+**Why:** with the cumulative rule alone, a light high-level bullet — two weight units out
+of twenty-five in the cache-stampede question — could be skipped entirely and the ratio
+would still pass. Depth would have been awarded for never demonstrating it.
+
+---
+
+## 2026-09-06 — Two decisions taken rather than escalated
+
+**Vacancy source: the hh.ru public API.** Documented, free, no scraping, so the ToS
+question that was blocking `vacancy-frequency-map` is closed. Adzuna's public API is the
+fallback for geography hh.ru does not cover.
+
+**Calibration: senior, with staff as the secondary target.** `min_level` on bullets is set
+against a senior bar, with staff bullets marking what distinguishes the level above. Head
+appears only where a question genuinely has a head-level answer, as in the soft-skills seed.
+

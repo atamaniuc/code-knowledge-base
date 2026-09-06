@@ -1,0 +1,4 @@
+# Locked-surface enforcement starts after this commit.
+# Set when autonomy was introduced; moving it forward expands the editable surface,
+# which docs/autonomy.md reserves as a human decision.
+PENDING

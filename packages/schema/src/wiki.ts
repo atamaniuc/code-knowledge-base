@@ -26,7 +26,7 @@ export const WikiFrontmatter = z.strictObject({
 
   review_status: ReviewStatus,
   reviewed_at: IsoDate.optional(),
-  reviewed_by: z.string().min(1).optional(),
+  verified_by: z.string().min(1).optional(),
 });
 
 export type WikiFrontmatter = z.infer<typeof WikiFrontmatter>;

@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
@@ -22,6 +24,9 @@ jobs:
       # rather than trusted (lecture 08: the harness owns state, not the agent).
       - name: Harness invariants and re-verification
         run: make harness-check ARGS=--reverify
+      # The acceptance signal must live outside what the loop can change.
+      - name: Locked surfaces
+        run: ./scripts/locked-surfaces.sh ${{ github.event.before || 'HEAD~1' }} HEAD
 
   cold-start:
     runs-on: ubuntu-latest

@@ -14,7 +14,7 @@ export interface ValidationResult {
   counts: Record<string, number>;
 }
 
-type Shippable = { review_status: string; reviewed_at?: string; reviewed_by?: string; slug?: string };
+type Shippable = { review_status: string; reviewed_at?: string; verified_by?: string; slug?: string };
 
 function parseAll<T>(schema: ZodType<T>, files: LoadedFile[], errors: string[]): { file: string; value: T }[] {
   const ok: { file: string; value: T }[] = [];
@@ -159,15 +159,15 @@ export function validateContent(root: string): ValidationResult {
     }
   }
 
-  // A reviewed item must carry evidence of who reviewed it and when.
+  // A promoted item must point at the gate run that promoted it.
   const shippable: { file: string; value: Shippable }[] = [...wiki, ...questions, ...concepts, ...patterns, ...tasks];
   for (const { file, value } of shippable) {
     if ((SHIPPABLE_STATUSES as readonly string[]).includes(value.review_status)) {
-      if (!value.reviewed_at || !value.reviewed_by) {
+      if (!value.reviewed_at || !value.verified_by) {
         errors.push(
-          `${file}: review_status\n  what: status "${value.review_status}" without reviewed_at/reviewed_by\n` +
-            "  why:  reviewed means a human checked the fact; an unattributed review is indistinguishable from self-approval\n" +
-            "  fix:  set reviewed_at and reviewed_by, or move the status back to draft",
+          `${file}: review_status\n  what: status "${value.review_status}" without reviewed_at/verified_by\n` +
+            "  why:  promotion must be traceable to the gate run that granted it, or the status is an assertion rather than evidence\n" +
+            "  fix:  let the verifier promote this; do not set the status directly",
         );
       }
     }

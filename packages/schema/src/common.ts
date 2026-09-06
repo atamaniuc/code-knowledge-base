@@ -1,12 +1,20 @@
 import { z } from "zod";
 
+/** Ordered from least to most senior. The order is load-bearing: level derivation walks it. */
 export const LEVELS = ["junior", "middle", "senior", "staff", "head"] as const;
 /** "any" marks a question that applies regardless of track — soft skills, leadership, process. */
 export const TRACKS = ["frontend", "backend", "fullstack", "any"] as const;
-export const REVIEW_STATUSES = ["imported", "draft", "reviewed", "verified"] as const;
+/**
+ * Promotion ladder. See docs/autonomy.md.
+ *
+ * `auto_verified` means every gate passed with stored evidence; `verified` means it has
+ * also survived use without dispute. `quarantined` means a gate failed or a dispute
+ * demoted it — kept, with its trace, because failures are the input to improvement.
+ */
+export const REVIEW_STATUSES = ["imported", "draft", "auto_verified", "verified", "quarantined"] as const;
 
 /** Statuses whose content may ship to a trainer session or a public surface. */
-export const SHIPPABLE_STATUSES = ["reviewed", "verified"] as const;
+export const SHIPPABLE_STATUSES = ["auto_verified", "verified"] as const;
 
 export const Level = z.enum(LEVELS);
 export const Track = z.enum(TRACKS);

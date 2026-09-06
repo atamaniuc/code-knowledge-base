@@ -71,8 +71,8 @@ const REMEDIES: Remedy[] = [
   },
   {
     match: /^review_status$/,
-    why: "only reviewed and verified content reaches a trainer session or a public surface",
-    fix: "use imported or draft while authoring; a human sets reviewed",
+    why: "only auto_verified and verified content reaches a trainer session or a public surface, and promotion has to be traceable to the gate run that granted it",
+    fix: "leave the item at draft; the verifier promotes it once every gate passes with stored evidence",
   },
 ];
 
