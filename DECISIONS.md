@@ -173,23 +173,22 @@ organics fall short.
 
 ---
 
-## 2026-09-06 — Questions carry  and , not just scoring bullets
+## 2026-09-06 — Questions carry `probes` and `answer_strategy`, not just scoring bullets
 
 Prompted by Hexlet/ru-interview-questions being offered as a realistic model for what the
 content should look like. Its answers are shaped as "what they are assessing" plus "how to
 answer", which the schema could not express at all.
 
-- **** (required) — what the interviewer is actually testing. Often not the facts
+- **`probes`** (required) — what the interviewer is actually testing. Often not the facts
   in the answer. An author who cannot state it has not understood the question well enough
   to ask it, so requiring the field is a quality gate, not bookkeeping.
-- **** (optional) — how to deliver the answer out loud. Optional because a
+- **`answer_strategy`** (optional) — how to deliver the answer out loud. Optional because a
   narrow factual question does not need it and an open or behavioural one is nearly
   useless without it.
 
-**Why it matters commercially:**  bullets serve the evaluator; these two
+**Why it matters commercially:** `expected_answer` bullets serve the evaluator; these two
 serve the candidate. They are the difference between a reference work and interview
 preparation, and they are what a chatbot does not hand you in structured, reviewable form.
 
-**Note on the source:** the repository is AGPL-3.0, so no text from it enters .
+**Note on the source:** the repository is AGPL-3.0, so no text from it enters `content/`.
 It is a model for shape and depth only.
-
