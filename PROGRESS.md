@@ -20,17 +20,20 @@ State carried between sessions. Read this first; update it before you stop.
 - `init-agent-errors` — validation failures reported as what / why / fix
 - `init-harness-contract` — cold start scripted and passing from a fresh clone
 - `harness-enforcement` — harness owns state transitions; CI re-verifies every passing claim
+- `drill-sm2` — SM-2 scheduling, review store on node:sqlite, selection, interactive session
 
 ## Next
 
-1. `vacancy-frequency-map` — must run before any bulk authoring; it sets depth per domain.
+1. `rag-fts-backend` — chunk the wiki by heading, SQLite FTS5 with domain and topic filters.
+2. `evaluator-golden-set` — score a free answer against the bullets, against a hand-labelled set.
+3. `vacancy-frequency-map` — must run before any bulk authoring; it sets depth per domain.
    Blocked until a ToS-clear source is chosen. Prefer official APIs, RSS or manual export
    over scraping: this is a commercial product, so the legal footing has to hold.
-2. `rag-fts-backend` — chunk the wiki by heading, SQLite FTS5 with domain and topic filters.
-3. `drill-sm2` — the trainer loop, so the content can be used while the rest is built.
 
-`rag-fts-backend` and `drill-sm2` are not blocked and can start immediately; the frequency
-map only gates *which domains get authored first*, not the machinery.
+The first two are not blocked. The frequency map only gates *which domains get authored
+first*, not the machinery.
+
+`make drill` already works — `--include-drafts` while nothing is reviewed.
 
 ## Open questions for the human
 

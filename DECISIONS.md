@@ -220,3 +220,27 @@ gate enforces nothing. Enforcement belongs where waiting is free.
 The queue is for items worth a session; small fixes go straight in. Ceremony that costs
 more than the error it prevents is not discipline, it is overhead.
 
+---
+
+## 2026-09-06 — Review storage uses node:sqlite, not better-sqlite3
+
+Node 24 ships SQLite, so there is no native module to build, nothing to approve in pnpm,
+and no prebuild to mismatch. The API is still experimental, so every call to it sits
+behind `ReviewStore` in one file; replacing it stays contained if it changes.
+
+---
+
+## 2026-09-06 — SM-2 ease is floored at 1.3
+
+Plain SM-2 lets ease decay without limit, which drives a chronically hard item into a
+daily loop that crowds out the rest of the queue. Anki's floor is the standard fix and is
+applied for the same reason.
+
+---
+
+## 2026-09-06 — The trainer refuses unreviewed content unless asked
+
+`--include-drafts` exists because nothing is reviewed yet in phase 0 and the point of that
+phase is to prepare with what there is. It is never the default and it warns, so drilling
+against an unverified answer is deliberate rather than accidental.
+

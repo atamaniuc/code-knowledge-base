@@ -1,7 +1,7 @@
 # Single command surface for humans, CI and the harness.
 # Every verification command referenced by feature_list.json is a target here.
 
-.PHONY: setup test lint validate check cold-start harness-status harness-activate harness-verify harness-check clean help
+.PHONY: setup test lint validate check drill cold-start harness-status harness-activate harness-verify harness-check clean help
 
 help:
 	@echo "setup             install dependencies and enable the pre-commit hook"
@@ -9,6 +9,7 @@ help:
 	@echo "test              run the test suite"
 	@echo "validate          validate content/ against schemas and cross-file rules"
 	@echo "check             lint + test + validate; the gate for every feature list item"
+	@echo "drill             run a practice session; ARGS=\"--help\" for options"
 	@echo "cold-start        clone HEAD into an empty dir and verify it runs from the repo alone"
 	@echo ""
 	@echo "harness-status    show the queue, WIP and review backlog"
@@ -31,6 +32,9 @@ validate:
 	pnpm run validate
 
 check: lint test validate
+
+drill:
+	@pnpm exec tsx apps/drill/src/cli.ts $(ARGS)
 
 cold-start:
 	./scripts/cold-start.sh

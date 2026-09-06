@@ -91,10 +91,11 @@
       "id": "drill-sm2",
       "phase": "0",
       "behavior": "The CLI trainer selects due questions by SM-2 scheduling and persists reviews to SQLite; a known grade sequence produces the expected intervals.",
-      "verification": "pnpm exec vitest run apps/drill/test/sm2.test.ts",
-      "state": "not_started",
-      "evidence": null,
-      "kind": "code"
+      "verification": "pnpm exec vitest run apps/drill/test/",
+      "state": "passing",
+      "evidence": " ✓ apps/drill/test/store.test.ts (7 tests) 11ms |  ✓ apps/drill/test/select.test.ts (6 tests) 10ms |  Test Files  3 passed (3) |       Tests  21 passed (21) |    Start at  17:30:59 |    Duration  816ms (transform 131ms, setup 0ms, collect 201ms, tests 27ms, environment 1ms, prepare 789ms)",
+      "kind": "code",
+      "last_failure": null
     },
     {
       "id": "evaluator-golden-set",
