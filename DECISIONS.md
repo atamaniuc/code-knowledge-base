@@ -192,3 +192,31 @@ preparation, and they are what a chatbot does not hand you in structured, review
 
 **Note on the source:** the repository is AGPL-3.0, so no text from it enters `content/`.
 It is a model for shape and depth only.
+
+---
+
+## 2026-09-06 — Soft skills added as a behavioural domain; tech becomes conditional
+
+Behavioural questions have no technology to version, no frontend/backend track, and their
+sources are books rather than RFCs. Rather than special-casing a domain name, the registry
+gained `requires_tech`: the cross-file rule requires `tech` where the domain declares it
+and rejects it where the domain does not, so a behavioural question that secretly depends
+on a version is caught as misfiled.
+
+Weighted toward staff and head interviews, where these rounds decide the outcome more
+often than the technical ones.
+
+---
+
+## 2026-09-06 — The harness is trimmed to the fast path locally
+
+The pre-commit hook now runs content validation and harness invariants only, about two
+seconds. Typecheck, tests, re-verification and cold start run in CI.
+
+**Why:** the hook was running the full suite on every commit, including documentation-only
+ones. A gate that makes every commit slow gets bypassed with `--no-verify`, and a bypassed
+gate enforces nothing. Enforcement belongs where waiting is free.
+
+The queue is for items worth a session; small fixes go straight in. Ceremony that costs
+more than the error it prevents is not discipline, it is overhead.
+

@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 export const LEVELS = ["junior", "middle", "senior", "staff", "head"] as const;
-export const TRACKS = ["frontend", "backend", "fullstack"] as const;
+/** "any" marks a question that applies regardless of track — soft skills, leadership, process. */
+export const TRACKS = ["frontend", "backend", "fullstack", "any"] as const;
 export const REVIEW_STATUSES = ["imported", "draft", "reviewed", "verified"] as const;
 
 /** Statuses whose content may ship to a trainer session or a public surface. */
@@ -35,7 +36,7 @@ export const Tech = z.strictObject({
 export const Source = z.strictObject({
   title: z.string().min(1),
   url: z.url(),
-  kind: z.enum(["official-docs", "rfc", "spec", "release-notes", "paper", "article"]),
+  kind: z.enum(["official-docs", "rfc", "spec", "release-notes", "paper", "book", "article"]),
 });
 
 /** Where an imported item came from, pinned to an exact commit. */

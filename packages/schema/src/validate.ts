@@ -41,6 +41,7 @@ export function validateContent(root: string): ValidationResult {
   parseAll(TechAliasesFile, [readYaml(root, join(contentDir, "tech-aliases.yaml"))], errors);
 
   const knownDomains = new Set(domainsFile[0]?.value.domains.map((d) => d.id) ?? []);
+  const domainRequiresTech = new Map((domainsFile[0]?.value.domains ?? []).map((d) => [d.id, d.requires_tech]));
   const sourceById = new Map((sourcesFile[0]?.value.sources ?? []).map((s) => [s.id, s]));
 
   const wiki = parseAll(
@@ -99,6 +100,24 @@ export function validateContent(root: string): ValidationResult {
 
   for (const { file, value } of questions) {
     domainRef(file, value.domain);
+
+    // Technical domains must pin a version; behavioural ones have nothing to pin.
+    const needsTech = domainRequiresTech.get(value.domain) ?? true;
+    if (needsTech && !value.tech) {
+      errors.push(
+        `${file}: tech\n  what: domain "${value.domain}" requires a technology and version range\n` +
+          "  why:  versions are the part of an answer that goes stale, so they are tracked as a field rather than buried in prose\n" +
+          '  fix:  add tech: { name, version_range }, or set requires_tech: false on the domain if it is behavioural',
+      );
+    }
+    if (!needsTech && value.tech) {
+      errors.push(
+        `${file}: tech\n  what: domain "${value.domain}" is behavioural but the question pins a technology\n` +
+          "  why:  a behavioural answer that depends on a version is really a technical question filed in the wrong domain\n" +
+          "  fix:  drop tech, or move the question to the technical domain it belongs to",
+      );
+    }
+
     for (const ref of value.wiki_refs) {
       if (!wikiSlugs.has(ref.slug)) {
         errors.push(

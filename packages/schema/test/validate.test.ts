@@ -120,6 +120,48 @@ describe("validateContent cross-file rules", () => {
     expect(validateContent(root).errors.join("\n")).toContain("without reviewed_at/reviewed_by");
   });
 
+  it("requires a technology and version in a technical domain", () => {
+    const root = build({
+      "content/wiki/caching/cache-basics.md": article,
+      "content/questions/caching/q-one.yaml": question(
+        'wiki_refs:\n  - slug: cache-basics\n    anchor: body\n    wiki_reviewed_at: "2026-09-06"\nreview_status: draft\n',
+      ).replace('tech:\n  name: Redis\n  version_range: ">=6"\n', ""),
+    });
+    expect(validateContent(root).errors.join("\n")).toContain("requires a technology and version range");
+  });
+
+  it("accepts a behavioural question with no technology", () => {
+    // Soft-skills questions have nothing to version; the domain declares requires_tech: false.
+    const root = build({
+      "content/domains.yaml":
+        "domains:\n  - id: softskills\n    title: Soft skills\n    description: Behavioural questions.\n    target_questions: 30\n    requires_tech: false\n",
+      "content/wiki/softskills/a.md": article
+        .replace("domain: caching", "domain: softskills")
+        .replace('tech:\n  name: Redis\n  version_range: ">=6"\n', ""),
+      "content/questions/softskills/q-one.yaml": question(
+        'wiki_refs:\n  - slug: cache-basics\n    anchor: body\n    wiki_reviewed_at: "2026-09-06"\nreview_status: draft\n',
+      )
+        .replace("domain: caching", "domain: softskills")
+        .replace('tech:\n  name: Redis\n  version_range: ">=6"\n', ""),
+    });
+    expect(validateContent(root).errors).toEqual([]);
+  });
+
+  it("rejects a behavioural question that pins a technology", () => {
+    // A behavioural answer that depends on a version is a technical question misfiled.
+    const root = build({
+      "content/domains.yaml":
+        "domains:\n  - id: softskills\n    title: Soft skills\n    description: Behavioural questions.\n    target_questions: 30\n    requires_tech: false\n",
+      "content/wiki/softskills/a.md": article
+        .replace("domain: caching", "domain: softskills")
+        .replace('tech:\n  name: Redis\n  version_range: ">=6"\n', ""),
+      "content/questions/softskills/q-one.yaml": question(
+        'wiki_refs:\n  - slug: cache-basics\n    anchor: body\n    wiki_reviewed_at: "2026-09-06"\nreview_status: draft\n',
+      ).replace("domain: caching", "domain: softskills"),
+    });
+    expect(validateContent(root).errors.join("\n")).toContain("behavioural but the question pins a technology");
+  });
+
   it("rejects an unknown domain", () => {
     const root = build({
       "content/wiki/caching/cache-basics.md": article.replace("domain: caching", "domain: quantum"),

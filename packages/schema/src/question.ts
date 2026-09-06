@@ -32,7 +32,13 @@ export const Question = z.strictObject({
 
   tracks: z.array(Track).min(1),
   levels: z.array(Level).min(1),
-  tech: Tech,
+
+  /**
+   * Optional at the schema level, required by cross-file rule for any domain whose
+   * registry entry sets `requires_tech`. A behavioural question has no technology and
+   * no version; a technical one must pin both, since versions are what goes stale.
+   */
+  tech: Tech.optional(),
 
   question: z.string().min(10),
 

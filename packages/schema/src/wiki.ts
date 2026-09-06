@@ -14,7 +14,8 @@ export const WikiFrontmatter = z.strictObject({
 
   domain: Domain,
   topic: z.string().min(1),
-  tech: Tech,
+  /** Absent for behavioural domains, which have no technology to version. */
+  tech: Tech.optional(),
   levels: z.array(Level).min(1),
 
   summary: z.string().min(20),

@@ -1,0 +1,94 @@
+id: b4e4088c-6c8f-4412-8783-811c608c94a6
+slug: decision-that-failed
+lang: en
+
+domain: softskills
+topic: ownership
+
+tracks: [any]
+levels: [senior, staff, head]
+
+question: >-
+  Tell me about a technical decision you made that turned out to be wrong.
+
+probes: >-
+  Whether the candidate can hold responsibility for a real decision without
+  deflecting or performing guilt, and whether the lesson they draw is a mechanism
+  rather than a platitude. At staff level and above it also probes scope: a purely
+  personal technical mistake is a weak answer from someone expected to set direction.
+
+answer_strategy: >-
+  Under two minutes, in four beats. Open with the decision and the context that made
+  it reasonable at the time — a choice that was obviously wrong when made is a story
+  about carelessness, not judgement. Then what went wrong and how you found out, since
+  the discovery path says what feedback loops you had. Then the cost in sizeable terms:
+  hours of downtime, a delayed launch, a quarter of engineering time. Close with the
+  mechanism you changed, not a resolution to be more careful. Keep the pronoun "I" all
+  the way through the mistake; drifting to "we" exactly at the failure is noticed.
+
+expected_answer:
+  - text: >-
+      Presents a decision that was genuinely theirs to make, not a bug they fixed or a
+      direction imposed on them.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Gives the context that made the decision reasonable at the time, rather than a
+      choice that was obviously wrong when it was made.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Sizes the cost concretely — downtime, delay, engineering time — instead of leaving
+      the impact vague.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Names a mechanism that changed as a result: a check that now runs, a step added to
+      review, a default flipped. Not "I learned to be more careful".
+    weight: 5
+    min_level: senior
+  - text: >-
+      At staff level and above, the decision affected other people — a direction set for
+      a team, a standard pushed, a hire — and the fix is systemic rather than personal.
+    weight: 4
+    min_level: staff
+  - text: >-
+      At head level, describes reversing a stated direction in front of the people who
+      had followed it.
+    weight: 3
+    min_level: head
+
+follow_ups:
+  - What did you tell the people who were affected, and when?
+  - Is the mechanism you added still in place? If it was removed, why?
+  - What would have had to be true for you to catch this before shipping?
+
+common_mistakes:
+  - >-
+    The humblebrag — "I cared too much about quality and shipped late". Interviewers have
+    heard it and it converts the question into a self-awareness test you have just failed.
+  - >-
+    Choosing a failure sized so small that nothing was at stake, which answers the letter
+    of the question and signals unwillingness to answer its substance.
+  - >-
+    Letting the pronouns drift from "I" to "we" as the story approaches the mistake.
+  - >-
+    Excessive self-flagellation, which reads as poor judgement about severity in the same
+    way deflection does.
+
+related_questions: []
+
+wiki_refs:
+  - slug: talking-about-a-decision-that-failed
+    anchor: structure-that-works
+    wiki_reviewed_at: "2026-09-06"
+
+sources:
+  - title: "Site Reliability Engineering — Postmortem Culture: Learning from Failure"
+    url: https://sre.google/sre-book/postmortem-culture/
+    kind: book
+
+difficulty: 3
+estimated_minutes: 4
+
+review_status: draft

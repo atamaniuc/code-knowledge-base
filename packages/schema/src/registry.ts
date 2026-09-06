@@ -16,6 +16,11 @@ export const DomainsFile = z.strictObject({
         target_questions: z.number().int().min(0),
         /** 0..1 share of market demand; recomputed from job postings. */
         market_weight: z.number().min(0).max(1).optional(),
+        /**
+         * Whether questions in this domain must pin a technology and version.
+         * False for behavioural domains, where there is no technology to pin.
+         */
+        requires_tech: z.boolean().default(true),
       }),
     )
     .min(1),

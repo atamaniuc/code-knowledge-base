@@ -1,11 +1,9 @@
 #!/usr/bin/env sh
-# Consistency half of the ACID property from lecture 03: a commit may not leave
-# the tree in a state that fails its own verification.
+# Fast gate only — content validation and harness invariants, about two seconds.
 #
-# Enabled by `make setup`. Bypass with --no-verify only when you intend to commit
-# a known-broken tree and have said so in PROGRESS.md.
+# The full suite (typecheck + tests + re-verification + cold start) runs in CI,
+# where it costs nothing you have to wait for. A hook that makes every commit
+# slow gets bypassed with --no-verify, and a bypassed hook enforces nothing.
 set -e
-echo "pre-commit: make check"
-make check >/dev/null
-echo "pre-commit: harness check"
+pnpm run validate >/dev/null
 pnpm exec tsx scripts/harness.ts check >/dev/null

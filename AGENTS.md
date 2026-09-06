@@ -59,14 +59,16 @@ DECISIONS.md      what was decided, why, what was rejected
 **Start:** read `PROGRESS.md`, then `DECISIONS.md`, then run `make check` to confirm the
 tree is consistent before touching anything.
 
-**End:** update `PROGRESS.md`, run `make check`, commit. The pre-commit hook enabled by
-`make setup` runs `make check` and the harness invariants, so a commit cannot leave the tree
-failing its own verification. Leave state such that the next session starts in minutes.
+**End:** update `PROGRESS.md`, run `make check`, commit. The pre-commit hook is the fast
+gate only — content validation and harness invariants, about two seconds. The full suite
+runs in CI. Leave state such that the next session starts in minutes.
 
 ## Working the queue
 
-Never edit `state` in `feature_list.json` by hand. The harness owns transitions, and CI
-re-runs every passing claim — a hand-written `passing` fails there rather than being trusted.
+The queue exists to stop work being started everywhere and finished nowhere. It is not
+paperwork: **use it for items worth a session**, and just do small fixes and follow-ups
+directly. Never edit `state` by hand — the harness owns transitions, and CI re-runs every
+passing claim.
 
 ```
 make harness-status               # queue, WIP, review backlog
