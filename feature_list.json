@@ -1,6 +1,13 @@
 {
   "$schema_note": "Each item is sized to close in one session. `verification` is the only path to `passing`; the harness runs it, the agent does not judge. Content items stop at `human_review` — a human closes them. Only a human adds items to this file.",
-  "states": ["not_started", "active", "blocked", "passing", "human_review", "done"],
+  "states": [
+    "not_started",
+    "active",
+    "blocked",
+    "passing",
+    "human_review",
+    "done"
+  ],
   "wip_limit": 1,
   "review_queue_limit": 15,
   "items": [
@@ -41,8 +48,8 @@
       "phase": "0.0",
       "behavior": "A cold session can answer 'how do I run this' and 'how do I verify this' from the repository alone, with no verbal explanation.",
       "verification": "make check && test -f AGENTS.md && test -f CONSTRAINTS.md && test -f PROGRESS.md && test -f DECISIONS.md",
-      "state": "active",
-      "evidence": null
+      "state": "passing",
+      "evidence": "cold start from a fresh clone: make help lists the command surface, make setup installs, make check passes (tsc clean, 24 tests, content valid) with no verbal explanation"
     },
     {
       "id": "vacancy-frequency-map",

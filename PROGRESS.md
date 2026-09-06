@@ -4,11 +4,11 @@ State carried between sessions. Read this first; update it before you stop.
 
 ## Now
 
-**Phase 0.0 — initialization.** Closing `init-harness-contract`, the last item of the phase.
+**Phase 0.0 is complete.** Its gate — cold start — was verified by cloning the repository
+into an empty directory and running `make setup && make check` with no verbal explanation.
 
-- Commit: initial, not yet pushed
 - `make check`: passing (tsc clean, 24 tests, content valid)
-- Blockers: none
+- Blockers: `vacancy-frequency-map` is blocked on a human decision, see below
 
 ## Done
 
@@ -16,14 +16,18 @@ State carried between sessions. Read this first; update it before you stop.
 - `init-schema` — Zod schemas for wiki, questions, DSA concepts/patterns/tasks
 - `init-validator` — cross-file rules with proven negative tests
 - `init-agent-errors` — validation failures reported as what / why / fix
+- `init-harness-contract` — AGENTS.md, CONSTRAINTS.md, feature_list.json, cold start verified
 
 ## Next
 
-1. Push the initial commit to `origin` (private repo already created).
-2. `vacancy-frequency-map` — must run before any bulk authoring; it sets depth per domain.
-   Check the ToS of djinni / DOU / LinkedIn before writing an ingester; prefer official
-   APIs, RSS or manual export over scraping.
-3. `rag-fts-backend` — chunk the wiki by heading, SQLite FTS5 with filters.
+1. `vacancy-frequency-map` — must run before any bulk authoring; it sets depth per domain.
+   Blocked until a ToS-clear source is chosen. Prefer official APIs, RSS or manual export
+   over scraping: this is a commercial product, so the legal footing has to hold.
+2. `rag-fts-backend` — chunk the wiki by heading, SQLite FTS5 with domain and topic filters.
+3. `drill-sm2` — the trainer loop, so the content can be used while the rest is built.
+
+`rag-fts-backend` and `drill-sm2` are not blocked and can start immediately; the frequency
+map only gates *which domains get authored first*, not the machinery.
 
 ## Open questions for the human
 
