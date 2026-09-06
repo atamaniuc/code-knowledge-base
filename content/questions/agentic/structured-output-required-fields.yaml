@@ -1,0 +1,103 @@
+id: 24f8ff72-7b52-4cb4-b238-9ebfe0353622
+slug: structured-output-required-fields
+lang: en
+
+domain: agentic
+topic: integration
+subtopic: schemas
+
+tracks: [backend, fullstack, any]
+levels: [middle, senior, staff]
+tech:
+  name: LLM structured output
+  version_range: ">=2024"
+
+question: >-
+  You extract customer details from support emails into a strict JSON schema with
+  all fields required. Validation passes on every response, but the data is full
+  of plausible-looking wrong values. What is going on?
+
+probes: >-
+  Whether the candidate separates syntactic validity from semantic correctness.
+  The trap is that everything "works" — the schema validates — so the instinct to
+  tighten the schema further makes the problem worse rather than better.
+
+answer_strategy: >-
+  Name the confusion first: the schema guarantees shape, not truth, and those are
+  different guarantees. Then give the mechanism that explains why strictness made
+  it worse — a required field the input cannot support leaves the model no way to
+  decline, so it invents. The fix is counter-intuitive and that is the point, so
+  say it plainly: make absence expressible. Finish with where the real validation
+  lives, which is application invariants, not the schema.
+
+expected_answer:
+  - text: >-
+      Separates the two guarantees: constrained decoding ensures the output parses and
+      matches the schema, and says nothing about whether the values are correct.
+    weight: 5
+    min_level: middle
+  - text: >-
+      Identifies required fields as the cause: when the information is absent from the
+      email, the grammar does not permit omission, so the model invents a value.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Fixes it by making absence expressible — optional or nullable fields, or an explicit
+      not_found variant — rather than by tightening the schema further.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Notes that application invariants live outside the schema and are validated in code:
+      ids that must exist, dates that must be in the past.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Adds a bounded repair path: return the validation error to the model, retry a fixed
+      number of times, define the terminal behaviour.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Uses enums where the value set is known, so downstream code is total rather than
+      defensive.
+    weight: 3
+    min_level: middle
+  - text: >-
+      Mentions field ordering: generation is autoregressive, so reasoning placed before
+      the answer conditions it, and placed after only justifies it.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - How would you detect this in production rather than by reading rows?
+  - The model must return a confidence score. What does that number actually mean?
+  - Would you keep the strict schema for a field that is genuinely always present?
+
+common_mistakes:
+  - >-
+    Concluding the schema needs to be stricter, which removes the remaining ways for the
+    model to signal absence and produces more invention.
+  - >-
+    Trusting a confidence field the model emits under a required-field constraint; it is
+    generated under the same pressure as the value it describes.
+  - >-
+    Assuming structured output mode addresses correctness rather than shape.
+  - >-
+    Leaving repair unbounded, which is the same defect as an agent loop with no stop
+    condition.
+
+related_questions: []
+
+wiki_refs:
+  - slug: structured-output
+    anchor: what-a-schema-does-to-behaviour
+    wiki_reviewed_at: "2026-09-06"
+
+sources:
+  - title: "Efficient Guided Generation for Large Language Models (outlines)"
+    url: https://arxiv.org/abs/2307.09702
+    kind: paper
+
+difficulty: 3
+estimated_minutes: 8
+
+review_status: draft

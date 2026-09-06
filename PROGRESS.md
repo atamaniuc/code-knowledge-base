@@ -7,8 +7,9 @@ State carried between sessions. Read this first; update it before you stop.
 **Phase 0, writing the wedge domain.** `agentic` is the differentiator: LLM appears 41
 times across 173 stack-scoped postings, and structured preparation for it barely exists.
 
-- Content: 7 articles, 8 questions, 3 DSA entities. Target 691 questions.
-- `agentic` covers evaluation, injection, judging, cost/latency and loop design.
+- Content: 9 articles, 10 questions, 3 DSA entities. Target 691 questions.
+- `agentic` covers evaluation, injection, judging, cost and latency, loop design,
+  long context versus retrieval, and structured output.
 - `make check`: passing (84 tests, content valid). CI green.
 - `make drill ARGS="--include-drafts"` works today.
 - Blockers: none. Nothing is waiting on a human.
@@ -28,10 +29,12 @@ times across 173 stack-scoped postings, and structured preparation for it barely
 
 ## Next
 
-1. Keep writing `agentic`: prompt injection is done, next are cost and latency in
-   production, context limits, and agent loop design with stop conditions.
-2. `verifier-source-grounding` — the gate that replaces human fact-checking.
-3. The Chrome extension, once there is enough content to justify a surface.
+1. The Chrome extension — there is now enough content to justify a surface, and it is
+   the prep surface the user actually wants.
+2. `verifier-source-grounding` — the gate that replaces human fact-checking and removes
+   `--include-drafts` from the daily loop.
+3. More `agentic`: fine-tuning versus RAG versus prompting, agent memory across sessions,
+   hallucination and grounding.
 
 
 

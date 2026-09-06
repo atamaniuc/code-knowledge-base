@@ -1,0 +1,103 @@
+id: 4355a484-3566-4037-91f7-1f64ec1ff8f0
+slug: long-context-versus-rag
+lang: en
+
+domain: agentic
+topic: architecture
+subtopic: retrieval
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+tech:
+  name: LLM context
+  version_range: ">=2024"
+
+question: >-
+  Context windows are now large enough to hold our entire knowledge base. A
+  colleague argues we should delete the retrieval layer and just send everything.
+  What do you say?
+
+probes: >-
+  Whether the candidate separates what a system can hold from what it reliably
+  uses, and whether they can argue against a plausible position without dismissing
+  it. Refusing the framing outright scores worse than naming the cases where the
+  colleague is right.
+
+answer_strategy: >-
+  Concede first, specifically: name a case where your colleague is correct, because
+  the ones who only argue against it sound rehearsed and the cases are real. Then
+  give the distinction that carries the answer — capacity is not use — with the
+  position effect as the mechanism. List deciding factors rather than a verdict:
+  corpus size against the window, update frequency, cost times call volume,
+  whole-document reasoning versus passage location, and access control. Access
+  control is the one almost nobody says, so say it.
+
+expected_answer:
+  - text: >-
+      Separates capacity from reliable use: a model accepting a document does not mean it
+      uses every part of it equally.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Names the position effect — material in the middle of a long context is used less
+      reliably than material at the start or the end.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Notes that context cost recurs on every call while an index amortises, and that
+      prefill latency grows with input length.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Concedes cases where the colleague is right: whole-document reasoning, a small
+      stable corpus, or a first version built to find out if anyone wants the feature.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Raises access control: a retriever filters by permission before the model sees
+      anything, while a stuffed context has already leaked.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Raises auditability: a retrieved chunk is a citable provenance record and "somewhere
+      in the context" is not.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Offers the hybrid: retrieve generously into a large window, then rerank or compress
+      so the strongest material occupies the positions the model attends to.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - Your corpus is 200k tokens and stable. Does your answer change?
+  - How would you prove the position effect is happening in your own system?
+  - Where does per-user permission filtering live if you keep the long-context design?
+
+common_mistakes:
+  - >-
+    Dismissing the colleague outright, which skips the cases where long context genuinely
+    wins and reads as a rehearsed position rather than an analysis.
+  - >-
+    Treating window size as the only variable and ignoring recurring cost, prefill latency
+    and access control.
+  - >-
+    Assuming a larger window removes the position effect; capacity and attention are
+    different properties.
+
+related_questions: [rag-evaluation-strategy]
+
+wiki_refs:
+  - slug: long-context-versus-retrieval
+    anchor: where-long-context-genuinely-wins
+    wiki_reviewed_at: "2026-09-06"
+
+sources:
+  - title: "Lost in the Middle: How Language Models Use Long Contexts"
+    url: https://arxiv.org/abs/2307.03172
+    kind: paper
+
+difficulty: 4
+estimated_minutes: 9
+
+review_status: draft
