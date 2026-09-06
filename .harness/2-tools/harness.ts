@@ -9,12 +9,12 @@
  */
 import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
-import { doneness, format, readiness } from "../packages/harness/src/readiness.js";
+import { doneness, format, readiness } from "../../packages/harness/src/readiness.js";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const LIST = resolve(ROOT, "feature_list.json");
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+const LIST = resolve(ROOT, ".harness/4-state/feature_list.json");
 
 type State = "not_started" | "active" | "blocked" | "passing" | "awaiting_gates" | "done";
 
@@ -139,7 +139,7 @@ function activate(id: string): void {
   const notReady = readiness(item as never, list.items as never);
   if (notReady.length > 0) {
     console.error(format(id, notReady));
-    console.error(`\n"${id}" is not ready to start (docs/definition-of-done.md)`);
+    console.error(`\n"${id}" is not ready to start (.harness/1-instructions/definition-of-done.md)`);
     process.exit(1);
   }
 
@@ -190,7 +190,7 @@ function verify(id: string): void {
   console.log(output);
   console.log(`${id} -> ${item.state}`);
   if (item.state === "awaiting_gates") {
-    console.log("  machine checks passed; a human closes this item (CONSTRAINTS.md #1)");
+    console.log("  machine checks passed; a human closes this item (.harness/1-instructions/CONSTRAINTS.md #1)");
   }
 }
 

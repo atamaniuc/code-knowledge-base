@@ -12,7 +12,7 @@ Phase 0 builds a CLI trainer used personally. Phase 1 packages the same `content
 Chrome extension plus a static site. Content is decoupled from delivery, so the surface
 can change without a rewrite.
 
-Full plan: `docs/plan.md` — phases, gates, and the reasoning behind each decision.
+Full plan: `docs/plan.md`. How the project is governed: `.harness/README.md`.
 
 ## How to run
 
@@ -50,22 +50,26 @@ content/          source of truth, independent of any application
   wiki/           Markdown + frontmatter; facts live here first
   questions/      YAML, derived from wiki sections via wiki_refs
   dsa/            concepts (complexity), patterns, tasks
-  domains.yaml    domain tree and weights
+  domains.yaml    domain tree and market weights
   sources.yaml    external sources and licenses — human-edited only
   tech-aliases.yaml  gazetteer for vacancy parsing
-packages/schema/  Zod schemas, loader, validator, agent-facing error messages
+packages/         schema, scheduling, evaluator, rag, pipeline, harness rules
+apps/             drill (CLI), extension (Chrome MV3)
+.harness/         everything governing how work is done — start at .harness/README.md
+  1-instructions/ CONSTRAINTS.md, definition-of-done.md, autonomy.md
+  2-tools/        the queue tool, cold start, locked-surface check
+  3-environment/  reproducibility and the locked-surface baseline
+  4-state/        PROGRESS.md, DECISIONS.md, feature_list.json
+  5-feedback/     map of the checks
 docs/             topical rules, 50-150 lines each
-feature_list.json work queue; each item carries its verification command
-PROGRESS.md       state between sessions
-DECISIONS.md      what was decided, why, what was rejected
 ```
 
 ## Session protocol
 
-**Start:** read `PROGRESS.md`, then `DECISIONS.md`, then run `make check` to confirm the
-tree is consistent before touching anything.
+**Start:** read `.harness/4-state/PROGRESS.md`, then `DECISIONS.md`, then run `make check`
+to confirm the tree is consistent before touching anything.
 
-**End:** update `PROGRESS.md`, run `make check`, commit. The pre-commit hook is the fast
+**End:** update `.harness/4-state/PROGRESS.md`, run `make check`, commit. The pre-commit hook is the fast
 gate only — content validation and harness invariants, about two seconds. The full suite
 runs in CI. Leave state such that the next session starts in minutes.
 
@@ -89,18 +93,16 @@ make cold-start                   # fresh clone must install and verify from the
 ## Working rules
 
 - **WIP = 1.** One item in `active` at a time. Enforced by `harness-activate`.
-- **Do not add items** to `feature_list.json`. Scope belongs to the human.
+- **Do not add items** to `.harness/4-state/feature_list.json`. Scope belongs to the human.
 - **Do not set `review_status: reviewed`.** Ever. See `CONSTRAINTS.md`.
 - **Stop when the review queue is full.** More than 15 items awaiting human review pauses
   generation until they are drained — the bottleneck is review, not authoring. Enforced.
 - **Verify before refactoring.** Correctness first, style after.
 
-Hard constraints: `CONSTRAINTS.md`. Read it before writing content.
+Hard constraints: `.harness/1-instructions/CONSTRAINTS.md`. Read it before writing content.
 
 ## Topical docs
 
 - `docs/content-schema.md` — the entities, their fields, and why the shapes are what they are
 - `docs/review-protocol.md` — what a human review checks, and how repeat findings become checks
 - `docs/plan.md` — the full plan: phases, gates, what was cut and why
-- `docs/definition-of-done.md` — when an item may start, and when it may close
-- `docs/autonomy.md` — how content promotes without a human reviewing each item

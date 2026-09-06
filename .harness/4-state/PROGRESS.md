@@ -8,6 +8,7 @@ State carried between sessions. Read this first; update it before you stop.
 times across 173 stack-scoped postings, and structured preparation for it barely exists.
 
 - Content: 9 articles, 10 questions, 3 DSA entities. Target 691 questions.
+- Harness lives in `.harness/`, five folders by subsystem, each with a plain-language README.
 - `agentic` covers evaluation, injection, judging, cost and latency, loop design,
   long context versus retrieval, and structured output.
 - `make check`: passing (84 tests, content valid). CI green.

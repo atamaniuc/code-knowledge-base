@@ -26,7 +26,7 @@ jobs:
         run: make harness-check ARGS=--reverify
       # The acceptance signal must live outside what the loop can change.
       - name: Locked surfaces
-        run: ./scripts/locked-surfaces.sh ${{ github.event.before || 'HEAD~1' }} HEAD
+        run: ./.harness/2-tools/locked-surfaces.sh ${{ github.event.before || 'HEAD~1' }} HEAD
 
   cold-start:
     runs-on: ubuntu-latest

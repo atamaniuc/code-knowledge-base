@@ -1,7 +1,7 @@
 /**
  * Definition of Ready and Definition of Done, as rules rather than prose.
  *
- * Both exist in docs/definition-of-done.md for people; these are the parts a machine can
+ * Both exist in .harness/1-instructions/definition-of-done.md for people; these are the parts a machine can
  * decide, checked at the two moments they matter — before an item is started, and before
  * it is closed. A definition nothing enforces is a wish.
  */

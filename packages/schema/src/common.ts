@@ -5,7 +5,7 @@ export const LEVELS = ["junior", "middle", "senior", "staff", "head"] as const;
 /** "any" marks a question that applies regardless of track — soft skills, leadership, process. */
 export const TRACKS = ["frontend", "backend", "fullstack", "any"] as const;
 /**
- * Promotion ladder. See docs/autonomy.md.
+ * Promotion ladder. See .harness/1-instructions/autonomy.md.
  *
  * `auto_verified` means every gate passed with stored evidence; `verified` means it has
  * also survived use without dispute. `quarantined` means a gate failed or a dispute

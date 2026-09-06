@@ -6,4 +6,4 @@
 # slow gets bypassed with --no-verify, and a bypassed hook enforces nothing.
 set -e
 pnpm run validate >/dev/null
-pnpm exec tsx scripts/harness.ts check >/dev/null
+pnpm exec tsx .harness/2-tools/harness.ts check >/dev/null

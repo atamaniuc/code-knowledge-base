@@ -14,10 +14,10 @@ set -euo pipefail
 
 LOCKED=(
   "packages/evaluator/"
-  "docs/autonomy.md"
+  ".harness/1-instructions/autonomy.md"
   "content/sources.yaml"
   ".github/workflows/"
-  "scripts/locked-surfaces.sh"
+  ".harness/2-tools/locked-surfaces.sh"
 )
 
 AGENT_TRAILER="Co-Authored-By: Claude"
@@ -27,8 +27,8 @@ HEAD_REF="${2:-HEAD}"
 # Enforcement starts here. Commits at or before the baseline are exempt, because the
 # commit that establishes a locked path necessarily touches it. Moving this baseline
 # forward is expanding the editable surface, which is a human decision — see
-# docs/autonomy.md, "What stays human".
-BASELINE_FILE=".locked-baseline"
+# .harness/1-instructions/autonomy.md, "What stays human".
+BASELINE_FILE=".harness/3-environment/locked-baseline"
 BASELINE=""
 if [ -f "$BASELINE_FILE" ]; then
   BASELINE=$(grep -vE '^\s*(#|$)' "$BASELINE_FILE" | head -1 | tr -d '[:space:]')

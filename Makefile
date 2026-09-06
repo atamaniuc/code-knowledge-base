@@ -47,19 +47,19 @@ extension:
 	@pnpm exec tsx scripts/bundle-extension.ts $(ARGS)
 
 cold-start:
-	./scripts/cold-start.sh
+	./.harness/2-tools/cold-start.sh
 
 harness-status:
-	@pnpm exec tsx scripts/harness.ts status
+	@pnpm exec tsx .harness/2-tools/harness.ts status
 
 harness-activate:
-	@pnpm exec tsx scripts/harness.ts activate $(ID)
+	@pnpm exec tsx .harness/2-tools/harness.ts activate $(ID)
 
 harness-verify:
-	@pnpm exec tsx scripts/harness.ts verify $(ID)
+	@pnpm exec tsx .harness/2-tools/harness.ts verify $(ID)
 
 harness-check:
-	@pnpm exec tsx scripts/harness.ts check $(ARGS)
+	@pnpm exec tsx .harness/2-tools/harness.ts check $(ARGS)
 
 clean:
 	rm -rf node_modules dist

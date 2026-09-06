@@ -85,7 +85,7 @@ and one tool — so the cold-start guarantee only held by accident, on this lapt
 `harness check --reverify` re-runs the verification of every item claiming to pass, and CI
 runs it on every push.
 
-**Why:** the artifacts existed but nothing enforced them. `CONSTRAINTS.md` claimed CI
+**Why:** the artifacts existed but nothing enforced them. `.harness/1-instructions/CONSTRAINTS.md` claimed CI
 enforcement while no CI existed, and item state was being edited by hand — the exact
 failure the feature-list primitive is designed to prevent. Re-verification is what makes a
 hand-written `passing` detectable instead of trusted.
@@ -117,7 +117,7 @@ a harness without a stop condition is not a harness.
 
 ## 2026-09-06 — Enforcement is labelled per constraint
 
-Each rule in `CONSTRAINTS.md` now says whether a command fails on it or whether it is
+Each rule in `.harness/1-instructions/CONSTRAINTS.md` now says whether a command fails on it or whether it is
 caught in review. Four of the fifteen are review-only and say so.
 
 **Why:** claiming enforcement that does not exist is worse than claiming none — it stops
@@ -153,7 +153,7 @@ Recorded so their absence reads as a decision rather than an oversight.
   environment, and cold start proves it from a clean clone. A container would add a build
   step and hide a class of drift rather than fix it.
 - **A secret scanner.** `.gitignore` covers the obvious case; the rule stays review-only
-  and `CONSTRAINTS.md` says so instead of implying a check exists.
+  and `.harness/1-instructions/CONSTRAINTS.md` says so instead of implying a check exists.
 
 ---
 
@@ -251,7 +251,7 @@ against an unverified answer is deliberate rather than accidental.
 The system must self-improve without a human in the loop. `human_review` is gone; content
 promotes through five gates that run unsupervised: source grounding against fetched
 documents, adversarial falsification by an independent model, corpus consistency, version
-currency, and a held-out grounding check. Full design in `docs/autonomy.md`.
+currency, and a held-out grounding check. Full design in `.harness/1-instructions/autonomy.md`.
 
 The premise that made review valuable still has to hold — that this beats what a chatbot
 generates free. It now holds through grounding rather than through a person: a claim ships
@@ -268,7 +268,7 @@ and the decision to abandon a direction.
 
 ## 2026-09-06 — Locked surfaces are enforced in CI, with the limit stated
 
-`packages/evaluator/`, `docs/autonomy.md`, `content/sources.yaml`, `.github/workflows/`
+`packages/evaluator/`, `.harness/1-instructions/autonomy.md`, `content/sources.yaml`, `.github/workflows/`
 and the check itself may not be touched by a commit carrying the agent trailer.
 
 **Why:** a loop optimises whatever signal it is given. Every documented reward hack broke
@@ -336,7 +336,7 @@ his own loops.
 
 ## 2026-09-06 — Definition of Ready and Done are rules, not an agreement
 
-`docs/definition-of-done.md` states both; `packages/harness/src/readiness.ts` enforces the
+`.harness/1-instructions/definition-of-done.md` states both; `packages/harness/src/readiness.ts` enforces the
 decidable parts. Ready is checked when an item is started, Done when it is closed.
 
 **Why enforce Ready at all:** the expensive failure is starting work whose success cannot
@@ -349,4 +349,23 @@ closed honestly.
 behaviour verified; per-item human review, removed by the autonomy design; and estimates,
 since work in progress is capped at one item and duration is information rather than a
 commitment.
+
+---
+
+## 2026-09-06 — Harness artifacts consolidated into .harness/ by subsystem
+
+Five folders matching the five parts of a harness: instructions, tools, environment, state,
+feedback. Each carries a README written for someone with no context, using the kitchen
+comparison the source material uses because it is genuinely the clearest way in.
+
+**Why not everything:** `AGENTS.md` and `Makefile` stay in the project root. Every agent
+tool looks for `AGENTS.md` there, and moving it would trade discoverability for tidiness.
+`AGENTS.md` routes to `.harness/README.md` instead.
+
+**Why this is worth the churn:** the harness was correct and scattered — rules in one file,
+the queue in another, enforcement in a third, and nothing explaining how they relate. A
+newcomer had to reconstruct the design from artifacts. Now the folder structure states it.
+
+Cold start re-run after the move and passes, which is the check that matters here: if the
+reorganisation had broken a path, a fresh clone would stop working.
 

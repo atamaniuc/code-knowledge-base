@@ -50,7 +50,7 @@ a promise the product makes, the doc that states it changed in the same commit. 
 ## Definition of Done — content
 
 Content does not close on a command. It closes on the promotion gates in
-`docs/autonomy.md`, all five, with stored evidence:
+`.harness/1-instructions/autonomy.md`, all five, with stored evidence:
 
 1. Every factual claim matched to a quoted span in a **fetched** source.
 2. An independent model failed to falsify it against those sources.
@@ -73,7 +73,7 @@ validates.
 **Coverage thresholds.** They measure lines executed, not behaviour verified, and a team
 that has to hit one writes tests for the easy paths.
 
-**Review by a person.** Removed on purpose; see `docs/autonomy.md`. Humans own the gates,
+**Review by a person.** Removed on purpose; see `.harness/1-instructions/autonomy.md`. Humans own the gates,
 not the items.
 
 **Estimates.** The queue limits work in progress to one item; how long it takes is

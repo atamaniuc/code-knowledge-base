@@ -74,7 +74,7 @@ paths are outside what it may change:
 | Locked | Why |
 |---|---|
 | `packages/evaluator/**` | The scoring rule. A loop that can edit its own scorer will. |
-| `docs/autonomy.md`, gate configuration | The acceptance criteria themselves. |
+| `.harness/1-instructions/autonomy.md`, gate configuration | The acceptance criteria themselves. |
 | `content/sources.yaml` | Licence clearance is a legal decision. |
 | `.github/workflows/**`, `scripts/locked-surfaces.sh` | The enforcement itself. |
 

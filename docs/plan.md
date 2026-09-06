@@ -2,7 +2,7 @@
 
 > **Reference, not instructions.** Read on demand — when you need the reasoning behind a
 > decision, the phase gates, or what was cut and why. The rules you must follow every
-> session are in `AGENTS.md` and `CONSTRAINTS.md`, which are kept short on purpose.
+> session are in `AGENTS.md` and `.harness/1-instructions/CONSTRAINTS.md`, which are kept short on purpose.
 
 ## Context
 
@@ -72,7 +72,7 @@
 | Файл | Роль | Лимит |
 |---|---|---|
 | `AGENTS.md` | Маршрутизатор: что за проект, как запустить, как проверить, ссылки на тематические доки | ≤ 200 строк, цель ~100 |
-| `CONSTRAINTS.md` | Жёсткие MUST / MUST NOT | **≤ 15 пунктов** |
+| `.harness/1-instructions/CONSTRAINTS.md` | Жёсткие MUST / MUST NOT | **≤ 15 пунктов** |
 | `docs/*.md` | Тематические: схема контента, протокол ревью, правила расширения, RAG-eval, лицензии | 50–150 строк каждый |
 | `ARCHITECTURE.md` | В каждом пакете: ответственность, интерфейсы, ограничения | — |
 | `PROGRESS.md` | Состояние между сессиями: коммит, статус тестов, блокеры, следующий шаг | — |
@@ -82,7 +82,7 @@
 
 Один разросшийся файл инструкций не работает: он съедает 8–15% контекстного окна, важное тонет в середине, и всё выглядит одинаково важным. Отсюда лимиты в таблице. Правила живут **рядом с кодом**, к которому относятся, а не в общей свалке.
 
-### Пятнадцать жёстких запретов (`CONSTRAINTS.md`)
+### Пятнадцать жёстких запретов (`.harness/1-instructions/CONSTRAINTS.md`)
 
 Ровно столько, сколько влезает в рабочую память. Первые шесть проверяются в CI.
 
@@ -186,7 +186,7 @@ human_review   ← агент дальше не идёт
 
 ### Что переиспользовать
 
-OMC уже даёт цикл и состояние: `ralph` / `autopilot` / `ultrawork`, `.omc/state/`. Свой раннер не писать — специфичны только контракт (`AGENTS.md`, `CONSTRAINTS.md`, `feature_list.json`) и запреты выше. Для проектирования — навык `context-engineering:harness-engineering`.
+OMC уже даёт цикл и состояние: `ralph` / `autopilot` / `ultrawork`, `.omc/state/`. Свой раннер не писать — специфичны только контракт (`AGENTS.md`, `.harness/1-instructions/CONSTRAINTS.md`, `feature_list.json`) и запреты выше. Для проектирования — навык `context-engineering:harness-engineering`.
 
 **Побочная выгода:** домен `agentic` в банке вопросов — ровно про это. Строя продукт харнессом, получаешь для него контент из первых рук, а не пересказ чужих статей.
 

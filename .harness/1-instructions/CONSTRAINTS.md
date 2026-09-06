@@ -11,7 +11,7 @@ missed. `make setup` enables the hook; without it, only CI catches violations.
 1. **Never set a promoted status by hand.** _(enforced: `make validate`)_
    `auto_verified` and `verified` are granted by the verification gates, which store the
    fetched source spans that justify them. Writing the status directly asserts evidence
-   that does not exist. Author at `draft` and let the gates promote. See `docs/autonomy.md`.
+   that does not exist. Author at `draft` and let the gates promote. See `.harness/1-instructions/autonomy.md`.
 
 2. **Never edit licenses in `content/sources.yaml`.** _(enforced for use: content whose provenance points at a source without `commercial_ok` fails `make validate`. The edit itself is caught in review.)_
    Whether a source may be used commercially is a legal decision made by a human. An
@@ -68,7 +68,7 @@ missed. `make setup` enables the hook; without it, only CI catches violations.
 ## Locked surfaces
 
 16. **Never modify a locked surface.** _(enforced: `scripts/locked-surfaces.sh` in CI)_
-    `packages/evaluator/`, `docs/autonomy.md`, `content/sources.yaml`,
+    `packages/evaluator/`, `.harness/1-instructions/autonomy.md`, `content/sources.yaml`,
     `.github/workflows/`, and the check itself. These define or enforce the acceptance
     signal; a loop that can edit them can grant itself a passing score. Changing them is
     a human act, in a commit without the agent trailer.
