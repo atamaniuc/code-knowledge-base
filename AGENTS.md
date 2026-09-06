@@ -12,7 +12,7 @@ Phase 0 builds a CLI trainer used personally. Phase 1 packages the same `content
 Chrome extension plus a static site. Content is decoupled from delivery, so the surface
 can change without a rewrite.
 
-Full plan: `~/.claude/plans/prompt-md-jazzy-mccarthy.md`.
+Full plan: `docs/plan.md` — phases, gates, and the reasoning behind each decision.
 
 ## How to run
 
@@ -77,3 +77,4 @@ Hard constraints: `CONSTRAINTS.md`. Read it before writing content.
 
 - `docs/content-schema.md` — the entities, their fields, and why the shapes are what they are
 - `docs/review-protocol.md` — what a human review checks, and how repeat findings become checks
+- `docs/plan.md` — the full plan: phases, gates, what was cut and why

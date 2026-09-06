@@ -64,3 +64,16 @@ min_level, because the evaluator scores coverage per bullet" does not.
 ## 2026-09-06 — Nx is a topic in the question bank, not a tool in this repository
 
 **Why:** a four-package workspace does not repay Nx's configuration surface.
+
+---
+
+## 2026-09-06 — The plan lives in the repository, not in a tool directory
+
+`docs/plan.md`, referenced from `AGENTS.md`.
+
+**Why:** `AGENTS.md` pointed at `~/.claude/plans/`, outside the repository. Anything not in
+the repository does not exist for a cold session, and the path is specific to one machine
+and one tool — so the cold-start guarantee only held by accident, on this laptop.
+
+**Rejected:** a symlink. It would not survive a clone.
+
