@@ -1,0 +1,77 @@
+id: dc4fa976-fd6d-4c7c-9660-9a694a81ee0c
+slug: rag-evaluation-strategy
+lang: en
+domain: agentic
+topic: evaluation
+subtopic: metrics
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+tech:
+  name: RAG
+  version_range: ">=2024"
+question: >-
+  Your team ships a RAG-based support assistant. Answer quality is
+  inconsistent and nobody can say why. How would you set up evaluation?
+probes: >-
+  Whether the candidate separates the system before naming a metric. Reciting
+  recall and faithfulness is easy; recognising that retrieval and generation fail
+  differently and need separate measurement is the actual senior signal.
+answer_strategy: >-
+  Split the pipeline first, in one sentence, before any metric leaves your mouth
+  — retrieval failures and generation failures need opposite fixes, and naming a
+  metric first signals you have not thought about which one you are diagnosing.
+  Then give one metric per side and say what each one being low would tell you.
+  Mention the labelled set last and admit it is the expensive part; claiming
+  evaluation is cheap is the fastest way to look like you have not built one.
+expected_answer:
+  - text: >-
+      Splits the pipeline: the retriever can miss the document, or the generator can
+      ignore a document it was given. These need opposite fixes.
+    weight: 5
+    min_level: middle
+  - text: >-
+      Names recall@k as the retrieval metric that matters most, because a chunk the
+      model never sees cannot be used no matter how good the model is.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Names faithfulness or groundedness separately, as the check that the answer is
+      supported by retrieved context rather than by parametric memory.
+    weight: 5
+    min_level: senior
+  - text: >-
+      States that measurement requires a labelled set of queries with required chunks,
+      and that building it is the real work.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Gives the diagnostic rule: high recall with low faithfulness is a generation
+      problem, low recall means nothing downstream is worth tuning yet.
+    weight: 3
+    min_level: staff
+follow_ups:
+  - Your recall@k is 0.9 and faithfulness is 0.5. What do you change first?
+  - How do you keep a golden set from drifting away from what users actually ask?
+  - What breaks if the judge model is from the same family as the generator?
+common_mistakes:
+  - Naming metrics before splitting the system, which produces a list rather than a
+    diagnosis and cannot tell you which half is broken.
+  - Treating precision@k as the headline number. Extra chunks cost budget; missing ones
+    make the answer unreachable.
+  - Claiming an LLM judge removes the need for labelled data. It removes the need for
+    reference answers, not for a labelled retrieval set.
+related_questions: []
+wiki_refs:
+  - slug: evaluating-rag
+    anchor: what-good-looks-like-in-practice
+    wiki_reviewed_at: "2026-09-06"
+sources:
+  - title: "RAGAS: Automated Evaluation of Retrieval Augmented Generation"
+    url: https://arxiv.org/abs/2309.15217
+    kind: paper
+  - title: "BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of IR Models"
+    url: https://arxiv.org/abs/2104.08663
+    kind: paper
+difficulty: 4
+estimated_minutes: 10
+review_status: draft

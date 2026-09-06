@@ -102,7 +102,7 @@ domains:
   - id: agentic
     title: Agentic & AI-assisted development
     description: Working with LLMs in production, agent harnesses, evaluation. Asked in 2026 interviews and barely covered by free material.
-    target_questions: 49
+    target_questions: 90
     requires_tech: true
     market_weight: 0.0723
 

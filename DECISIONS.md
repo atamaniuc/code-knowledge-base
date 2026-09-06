@@ -306,3 +306,29 @@ fallback for geography hh.ru does not cover.
 against a senior bar, with staff bullets marking what distinguishes the level above. Head
 appears only where a question genuinely has a head-level answer, as in the soft-skills seed.
 
+---
+
+## 2026-09-06 — The wedge is AI-in-production interview prep
+
+The revenue goal is roughly $2,000 a year — about a hundred sales at $20-25. That target
+argues against breadth: a hundred buyers come from one thing done better than anyone else,
+not from covering sixteen domains adequately.
+
+`agentic` is that thing, and the market data rather than taste says so. LLM appears 41
+times across 173 stack-scoped postings, fourth by weight behind frontend, infra and
+backend. Meanwhile structured preparation for it barely exists: the free repositories
+predate it, and the paid courses teach building with LLMs rather than being interviewed
+about them.
+
+It is also the one domain where being first is possible. Nobody has authority on React
+interview questions; the field is thirty years old and saturated. Nobody has authority on
+"how do you evaluate a RAG pipeline in an interview" yet.
+
+**What changes:** `agentic` gets depth well past its 7.2% weight — that weight measures
+how often it is asked, not how badly it is served. Everything else gets enough coverage to
+be credible for a full interview loop, which is what the user needs personally anyway.
+
+**What this does not change:** the other domains still get written. A product that only
+covers AI questions is not an interview-prep product, and the user needs the breadth for
+his own loops.
+

@@ -1,0 +1,73 @@
+id: 06d78d9f-5dc0-4ec5-bc9a-b5588143caf6
+slug: rag-topk-regression
+lang: en
+domain: agentic
+topic: evaluation
+subtopic: retrieval
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+tech:
+  name: RAG
+  version_range: ">=2024"
+question: >-
+  You raise top-k from 5 to 20 to give the model more context, and answer
+  quality gets worse. Explain what is happening.
+probes: >-
+  Whether the candidate knows that context position affects use, not just context
+  presence. Many engineers model the context window as a bag the model reads
+  uniformly, and this question breaks that model.
+answer_strategy: >-
+  Say plainly that more context is not monotonically better, then give the
+  mechanism: attention is not uniform across position, and accuracy is highest at
+  the start and end of the context. Follow with the second-order effects —
+  budget and distraction — and finish with what you would measure to confirm it
+  rather than asserting it. Do not open with 'the model got confused'; that is a
+  restatement of the symptom.
+expected_answer:
+  - text: >-
+      Recognises that adding context is not monotonically better and does not treat the
+      result as a paradox.
+    weight: 4
+    min_level: middle
+  - text: >-
+      Names the position effect: a relevant passage in the middle of a long context is
+      used less reliably than one at the start or the end.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Notes that lower-ranked chunks are lower-ranked for a reason, so the added context
+      is disproportionately irrelevant and dilutes the useful part.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Proposes a measurement rather than an assertion: recall@k against a labelled set to
+      confirm retrieval was already sufficient at k=5.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Offers reranking or contextual compression as the fix — raise recall in the
+      candidate pool, then cut back to what fits where the model attends.
+    weight: 3
+    min_level: staff
+follow_ups:
+  - How would you decide the right k rather than guessing it?
+  - Does this change if the model has a million-token context window?
+  - Where would you place the retrieved chunks relative to the instruction, and why?
+common_mistakes:
+  - Answering 'the model got confused', which restates the symptom as a cause.
+  - Assuming a larger context window removes the effect; capacity and attention are
+    different things.
+  - Proposing to fix it by prompting the model to read everything carefully.
+related_questions: []
+wiki_refs:
+  - slug: evaluating-rag
+    anchor: position-effects
+    wiki_reviewed_at: "2026-09-06"
+sources:
+  - title: "RAGAS: Automated Evaluation of Retrieval Augmented Generation"
+    url: https://arxiv.org/abs/2309.15217
+    kind: paper
+
+difficulty: 4
+estimated_minutes: 8
+review_status: draft
