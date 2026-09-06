@@ -59,16 +59,30 @@ DECISIONS.md      what was decided, why, what was rejected
 **Start:** read `PROGRESS.md`, then `DECISIONS.md`, then run `make check` to confirm the
 tree is consistent before touching anything.
 
-**End:** update `PROGRESS.md`, run `make check`, commit. Leave the tree in a state where
-the next session starts in minutes rather than reconstructing context.
+**End:** update `PROGRESS.md`, run `make check`, commit. The pre-commit hook enabled by
+`make setup` runs `make check` and the harness invariants, so a commit cannot leave the tree
+failing its own verification. Leave state such that the next session starts in minutes.
+
+## Working the queue
+
+Never edit `state` in `feature_list.json` by hand. The harness owns transitions, and CI
+re-runs every passing claim — a hand-written `passing` fails there rather than being trusted.
+
+```
+make harness-status               # queue, WIP, review backlog
+make harness-activate ID=<id>     # start one item; refuses if WIP or the queue is full
+make harness-verify   ID=<id>     # run its verification, record evidence or block it
+make harness-check ARGS=--reverify  # invariants + re-run every passing claim
+make cold-start                   # fresh clone must install and verify from the repo alone
+```
 
 ## Working rules
 
-- **WIP = 1.** One item in `active` at a time. Finish it before starting another.
+- **WIP = 1.** One item in `active` at a time. Enforced by `harness-activate`.
 - **Do not add items** to `feature_list.json`. Scope belongs to the human.
 - **Do not set `review_status: reviewed`.** Ever. See `CONSTRAINTS.md`.
-- **Stop when the review queue is full.** More than 15 items awaiting human review means
-  generation pauses until they are drained — the bottleneck is review, not authoring.
+- **Stop when the review queue is full.** More than 15 items awaiting human review pauses
+  generation until they are drained — the bottleneck is review, not authoring. Enforced.
 - **Verify before refactoring.** Correctness first, style after.
 
 Hard constraints: `CONSTRAINTS.md`. Read it before writing content.

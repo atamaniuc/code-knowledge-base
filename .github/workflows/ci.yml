@@ -1,0 +1,37 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Lint, test and validate content
+        run: make check
+      # Re-runs every item that claims to pass, so a hand-edited state is caught
+      # rather than trusted (lecture 08: the harness owns state, not the agent).
+      - name: Harness invariants and re-verification
+        run: make harness-check ARGS=--reverify
+
+  cold-start:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+      - name: Fresh clone installs and verifies from the repository alone
+        run: make cold-start
