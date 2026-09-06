@@ -71,12 +71,14 @@ directly. Never edit `state` by hand — the harness owns transitions, and CI re
 passing claim.
 
 ```
-make harness-status               # queue, WIP, review backlog
-make harness-activate ID=<id>     # start one item; refuses if WIP or the queue is full
-make harness-verify   ID=<id>     # run its verification, record evidence or block it
+make harness-status               # queue, WIP, verification backlog
+make harness-verify   ID=<id>     # activate if needed, run its verification, record the outcome
 make harness-check ARGS=--reverify  # invariants + re-run every passing claim
 make cold-start                   # fresh clone must install and verify from the repo alone
 ```
+
+`harness-verify` is the only command needed for normal work; it activates the item itself.
+`harness-activate` exists for claiming an item without running it yet.
 
 ## Working rules
 

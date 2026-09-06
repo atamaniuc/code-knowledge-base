@@ -94,3 +94,151 @@ technologies:
   - canonical: Nx
     domain: monorepo
     aliases: [nx workspace, nrwl]
+  - canonical: TypeScript
+    domain: frontend
+    aliases: [ts, тайпскрипт]
+  - canonical: JavaScript
+    domain: frontend
+    aliases: [js, es6, ecmascript, джаваскрипт]
+  - canonical: Vue.js
+    domain: frontend
+    aliases: [vue, vuejs, vue 3, вью]
+  - canonical: Nuxt
+    domain: frontend
+    aliases: [nuxt.js, nuxtjs]
+  - canonical: Angular
+    domain: frontend
+    aliases: [angularjs, ангуляр]
+  - canonical: Svelte
+    domain: frontend
+    aliases: [sveltekit]
+  - canonical: Tailwind CSS
+    domain: frontend
+    aliases: [tailwind, tailwindcss]
+  - canonical: GraphQL
+    domain: network
+    aliases: [apollo, графкуэль]
+  - canonical: REST
+    domain: network
+    aliases: [rest api, restful, openapi, swagger]
+  - canonical: Java
+    domain: backend-node
+    aliases: [java 17, java 21, jvm, джава]
+  - canonical: Spring
+    domain: backend-node
+    aliases: [spring boot, spring framework]
+  - canonical: Kotlin
+    domain: backend-node
+    aliases: [котлин]
+  - canonical: Python
+    domain: backend-node
+    aliases: [python3, py, питон, пайтон]
+  - canonical: Django
+    domain: backend-node
+    aliases: [django rest framework, drf, джанго]
+  - canonical: FastAPI
+    domain: backend-node
+    aliases: [fast api]
+  - canonical: Go
+    domain: backend-node
+    aliases: [golang, го]
+  - canonical: Rust
+    domain: backend-node
+    aliases: [раст]
+  - canonical: C#
+    domain: backend-node
+    aliases: [csharp, c sharp, шарп]
+  - canonical: .NET
+    domain: backend-node
+    aliases: [dotnet, asp.net, .net core, дотнет]
+  - canonical: Ruby
+    domain: backend-node
+    aliases: [ruby on rails, rails, руби]
+  - canonical: Scala
+    domain: backend-node
+    aliases: [скала]
+  - canonical: Express
+    domain: backend-node
+    aliases: [express.js, expressjs, fastify]
+  - canonical: Deno
+    domain: backend-node
+    aliases: [bun]
+  - canonical: Prisma
+    domain: data
+    aliases: [typeorm, drizzle, sequelize, hibernate]
+  - canonical: Cassandra
+    domain: data
+    aliases: [scylladb, dynamodb]
+  - canonical: Snowflake
+    domain: data
+    aliases: [bigquery, redshift]
+  - canonical: Apache Spark
+    domain: data
+    aliases: [spark, pyspark]
+  - canonical: Airflow
+    domain: data
+    aliases: [apache airflow, dagster, dbt]
+  - canonical: Memcached
+    domain: caching
+    aliases: [varnish]
+  - canonical: CDN
+    domain: caching
+    aliases: [cloudflare, cloudfront, fastly, akamai]
+  - canonical: Terraform Cloud
+    domain: iac
+    aliases: [terragrunt]
+  - canonical: Ansible
+    domain: iac
+    aliases: [chef, puppet, saltstack]
+  - canonical: CloudFormation
+    domain: iac
+    aliases: [aws cdk, cdk]
+  - canonical: Helm
+    domain: infra
+    aliases: [kustomize, argocd, argo cd, flux]
+  - canonical: CI/CD
+    domain: infra
+    aliases: [jenkins, gitlab ci, github actions, circleci, teamcity, bitbucket pipelines]
+  - canonical: Linux
+    domain: infra
+    aliases: [unix, bash, shell scripting]
+  - canonical: Serverless
+    domain: infra
+    aliases: [aws lambda, lambda, cloud functions, cloud run, fargate]
+  - canonical: Nginx
+    domain: infra
+    aliases: [haproxy, envoy, traefik, apache httpd]
+  - canonical: Prometheus
+    domain: observability
+    aliases: [grafana, victoriametrics]
+  - canonical: Datadog
+    domain: observability
+    aliases: [new relic, splunk, sentry, elk, kibana, logstash]
+  - canonical: Jaeger
+    domain: observability
+    aliases: [zipkin, tempo]
+  - canonical: Microservices
+    domain: architecture
+    aliases: [microservice, event-driven architecture, ddd, domain-driven design, cqrs, event sourcing]
+  - canonical: TDD
+    domain: architecture
+    aliases: [test-driven development, bdd, unit testing, integration testing]
+  - canonical: Agile
+    domain: softskills
+    aliases: [scrum, kanban, sprint planning]
+  - canonical: Mentoring
+    domain: softskills
+    aliases: [mentorship, coaching, code review culture, onboarding engineers]
+  - canonical: Jest
+    domain: architecture
+    aliases: [vitest, playwright, cypress, pytest, junit, testing library]
+  - canonical: LLM
+    domain: agentic
+    aliases: [large language model, openai, anthropic, claude, gpt-4, gpt-5, rag, retrieval augmented generation, langchain, llamaindex, vector database, embeddings]
+  - canonical: Machine Learning
+    domain: agentic
+    aliases: [ml, pytorch, tensorflow, scikit-learn, mlops]
+  - canonical: System Design
+    domain: system-design
+    aliases: [distributed systems, high load, scalability, load balancing, fault tolerance]
+

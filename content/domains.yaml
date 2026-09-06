@@ -11,86 +11,100 @@ domains:
   - id: frontend
     title: Frontend
     description: React 19, Next.js 15 (RSC, caching, routing), shadcn/ui, performance, state management.
-    target_questions: 60
+    target_questions: 116
     requires_tech: true
+    market_weight: 0.2183
 
   - id: monorepo
     title: Monorepo
     description: Nx project boundaries, computation cache, affected graph, CI strategy.
-    target_questions: 20
+    target_questions: 16
     requires_tech: true
+    market_weight: 0.0011
 
   - id: architecture
     title: Architecture
     description: DDD, Clean, Hexagonal, Vertical Slice — boundaries, trade-offs, when each applies.
-    target_questions: 50
+    target_questions: 32
     requires_tech: true
+    market_weight: 0.036
 
   - id: backend-node
     title: Backend (Node.js)
     description: NestJS, microservices, serverless, V8 isolates and Cloudflare Workers, Supabase, Vercel.
-    target_questions: 70
+    target_questions: 94
     requires_tech: true
+    market_weight: 0.1704
 
   - id: backend-php
     title: Backend (PHP)
     description: PHP 8.x, Laravel, Symfony, and execution models — php-fpm versus long-lived workers (RoadRunner, FrankenPHP, Swoole).
-    target_questions: 60
+    target_questions: 18
     requires_tech: true
+    market_weight: 0.0054
 
   - id: messaging
     title: Messaging
     description: Kafka, NATS, RabbitMQ — delivery guarantees, ordering, partitioning, dead-letter handling, and which to pick.
-    target_questions: 50
+    target_questions: 18
     requires_tech: true
+    market_weight: 0.0065
 
   - id: data
     title: Databases
     description: Postgres, MySQL, MongoDB, Elasticsearch, Redis, ClickHouse — modelling, indexing, transactions, sharding.
-    target_questions: 90
+    target_questions: 45
     requires_tech: true
+    market_weight: 0.0637
 
   - id: caching
     title: Caching
     description: Redis strategies — cache-aside, write-through and write-behind, invalidation, stampede, TTL design.
-    target_questions: 25
+    target_questions: 21
     requires_tech: true
+    market_weight: 0.0137
 
   - id: network
     title: Networking & protocols
     description: HTTP/1.1, HTTP/2, HTTP/3, TCP/UDP, gRPC, WebSocket, SSE, streaming, L4 and L7 load balancing.
-    target_questions: 55
+    target_questions: 41
     requires_tech: true
+    market_weight: 0.0565
 
   - id: infra
     title: Infrastructure
     description: Docker, Kubernetes, AWS, GCP, Azure.
-    target_questions: 60
+    target_questions: 108
     requires_tech: true
+    market_weight: 0.1992
 
   - id: iac
     title: Infrastructure as code
     description: Terraform and Pulumi — state, drift, module design, migration between them.
-    target_questions: 25
+    target_questions: 24
     requires_tech: true
+    market_weight: 0.0198
 
   - id: observability
     title: Observability
     description: Metrics, logs, traces, OpenTelemetry, SLO design, alerting that does not page for noise.
-    target_questions: 30
+    target_questions: 26
     requires_tech: true
+    market_weight: 0.0238
 
   - id: system-design
     title: System design
     description: Integrator domain. Scenarios pull from messaging, data, caching and network; the cross-links are what separate senior from staff answers.
-    target_questions: 40
+    target_questions: 34
     requires_tech: true
+    market_weight: 0.0406
 
   - id: agentic
     title: Agentic & AI-assisted development
     description: Working with LLMs in production, agent harnesses, evaluation. Asked in 2026 interviews and barely covered by free material.
-    target_questions: 25
+    target_questions: 49
     requires_tech: true
+    market_weight: 0.0723
 
   - id: softskills
     title: Soft skills & leadership
@@ -99,5 +113,6 @@ domains:
       decisions that went wrong, influencing without authority, hiring and growing
       people. Weighted toward staff and head-of-development interviews, where these
       decide the outcome more often than the technical rounds do.
-    target_questions: 30
+    target_questions: 49
     requires_tech: false
+    market_weight: 0.0728

@@ -138,10 +138,18 @@ function activate(id: string): void {
 }
 
 function verify(id: string): void {
-  const list = read();
-  const item = find(list, id);
+  let list = read();
+  let item = find(list, id);
+
+  // Activate on the way in when the limits allow. Making the caller run two commands to
+  // do one thing is ceremony, and ceremony gets skipped rather than followed.
+  if (item.state === "not_started" || item.state === "blocked") {
+    activate(id);
+    list = read();
+    item = find(list, id);
+  }
   if (item.state !== "active") {
-    fail(`"${id}" is ${item.state}; only an active item can be verified`, `run "make harness-activate ID=${id}" first`);
+    fail(`"${id}" is ${item.state} and cannot be verified`, "only a not_started, blocked or active item can be verified");
   }
 
   console.log(`running: ${item.verification}\n`);
