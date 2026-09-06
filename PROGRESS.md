@@ -4,13 +4,14 @@ State carried between sessions. Read this first; update it before you stop.
 
 ## Now
 
-**Phase 0.0 is complete and now enforced, not just documented.**
+**Phase 0, writing the wedge domain.** `agentic` is the differentiator: LLM appears 41
+times across 173 stack-scoped postings, and structured preparation for it barely exists.
 
-- `make check`: passing (tsc clean, 24 tests, content valid)
-- `make harness-check ARGS=--reverify`: invariants hold, all 6 passing items re-verified (~30s)
-- `make cold-start`: passing, scripted and repeatable
-- Pre-commit hook active via `make setup`; CI runs check, re-verification and cold start
-- Blockers: `vacancy-frequency-map` is blocked on a human decision, see below
+- Content: 5 articles, 6 questions, 3 DSA entities. Target 691 questions.
+- `make check`: passing (84 tests, content valid). CI green.
+- `make drill ARGS="--include-drafts"` works today.
+- Blockers: none. Nothing is waiting on a human.
+
 
 ## Done
 
@@ -21,17 +22,17 @@ State carried between sessions. Read this first; update it before you stop.
 - `init-harness-contract` — cold start scripted and passing from a fresh clone
 - `harness-enforcement` — harness owns state transitions; CI re-verifies every passing claim
 - `drill-sm2` — SM-2 scheduling, review store on node:sqlite, selection, interactive session
+- `evaluator-golden-set` — coverage to level, golden set true by construction
+- `vacancy-frequency-map` — live postings from Jobicy and Arbeitnow, weights written to domains.yaml
 
 ## Next
 
-1. `rag-fts-backend` — chunk the wiki by heading, SQLite FTS5 with domain and topic filters.
-2. `evaluator-golden-set` — score a free answer against the bullets, against a hand-labelled set.
-3. `vacancy-frequency-map` — must run before any bulk authoring; it sets depth per domain.
-   Blocked until a ToS-clear source is chosen. Prefer official APIs, RSS or manual export
-   over scraping: this is a commercial product, so the legal footing has to hold.
+1. Keep writing `agentic`: prompt injection is done, next are cost and latency in
+   production, context limits, and agent loop design with stop conditions.
+2. `verifier-source-grounding` — the gate that replaces human fact-checking.
+3. The Chrome extension, once there is enough content to justify a surface.
 
-The first two are not blocked. The frequency map only gates *which domains get authored
-first*, not the machinery.
+
 
 `make drill` already works — `--include-drafts` while nothing is reviewed.
 

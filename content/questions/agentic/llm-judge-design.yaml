@@ -1,0 +1,108 @@
+id: 6c7c0056-d942-42f4-929c-75b66dd46e63
+slug: llm-judge-design
+lang: en
+
+domain: agentic
+topic: evaluation
+subtopic: judging
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+tech:
+  name: LLM evaluation
+  version_range: ">=2023"
+
+question: >-
+  You want a quality gate in CI for a feature that generates customer-facing
+  summaries. Would you use an LLM as a judge, and how would you set it up?
+
+probes: >-
+  Whether the candidate asks what is actually being measured before reaching for a
+  judge. Reciting the biases is memorisation; recognising that a checkable property
+  should be checked and a judge belongs only where the question is genuinely
+  subjective is the design signal.
+
+answer_strategy: >-
+  Start by splitting the property, not by answering yes. Say which parts of
+  "quality" here are decidable — schema, length limits, whether required facts
+  appear — and gate those deterministically. Only then introduce the judge, scoped
+  to what is left, which is tone and clarity. Naming the biases is table stakes, so
+  spend your time instead on calibration and on the fact that the judge prompt is
+  versioned code. Close with what you would do when agreement is low, because that
+  is the question behind the question.
+
+expected_answer:
+  - text: >-
+      Asks what is being measured before answering, and separates decidable properties
+      from subjective ones.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Gates the decidable parts deterministically — schema, length, presence of required
+      facts — rather than asking a judge a question with a right answer.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Scopes the judge to genuinely subjective properties such as tone and clarity.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Names concrete biases and their mitigations: position bias handled by evaluating
+      both orderings, verbosity bias as pressure to pad.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Avoids using the same model family as generator and judge, or names the
+      self-preference risk if it does.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Uses a decomposed rubric scored per criterion and aggregated deterministically,
+      rather than a single one-to-ten score.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Calibrates against a small human-labelled set and tracks agreement as a number that
+      is re-checked when the judge prompt or model changes.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Treats the judge prompt as versioned code, because changing it silently invalidates
+      every historical score.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - Agreement with your labelled set is 0.6. Is the gate still useful?
+  - The judge and the generator are both upgraded next quarter. What do you re-run?
+  - How would you stop the team from tuning the summaries to the judge rather than to users?
+
+common_mistakes:
+  - >-
+    Reaching for a judge before asking whether the property is checkable, which adds noise
+    to a question that had a decidable answer.
+  - >-
+    Using a single one-to-ten score and calling it a rubric. Two runs will not agree and
+    disagreement will not be debuggable.
+  - >-
+    Using the same model as generator and judge without naming self-preference.
+  - >-
+    Treating the judge as ground truth rather than as an instrument that itself needs
+    calibration.
+
+related_questions: [rag-evaluation-strategy]
+
+wiki_refs:
+  - slug: llm-as-judge
+    anchor: calibrating-the-judge
+    wiki_reviewed_at: "2026-09-06"
+
+sources:
+  - title: "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena"
+    url: https://arxiv.org/abs/2306.05685
+    kind: paper
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

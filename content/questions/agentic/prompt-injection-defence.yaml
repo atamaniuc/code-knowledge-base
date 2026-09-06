@@ -1,0 +1,108 @@
+id: 015b2b9c-0d4a-4848-a9c5-b1d8dc6eb398
+slug: prompt-injection-defence
+lang: en
+
+domain: agentic
+topic: security
+subtopic: injection
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+tech:
+  name: LLM agents
+  version_range: ">=2023"
+
+question: >-
+  You are building an agent that reads customer support tickets and can reply by
+  email and refund orders. How do you handle prompt injection?
+
+probes: >-
+  Whether the candidate treats this as an architecture problem or a prompt-wording
+  problem. Almost everyone has heard the term; the separation is whether they know
+  filtering cannot close it and move to limiting blast radius instead.
+
+answer_strategy: >-
+  Open by naming the mechanism in one sentence — instructions and data share one
+  channel — so it is clear you understand why it is hard rather than that you have
+  heard the word. Then say explicitly that you assume injection succeeds. That
+  sentence is the pivot the interviewer is waiting for, and everything after it
+  lands differently. Give two or three architectural mitigations tied to this
+  specific system, not a generic list. Close on the trade-off: each one costs
+  product capability and the choice belongs to whoever owns the risk.
+
+expected_answer:
+  - text: >-
+      Names the mechanism: the model receives one token stream with no structural
+      distinction between instructions and data, so any content it reads can instruct it.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Identifies this as indirect injection, where the payload arrives in content
+      processed on someone else's behalf and the victim never sees it.
+    weight: 4
+    min_level: senior
+  - text: >-
+      States that filtering and delimiters reduce the success rate but do not close the
+      hole, and does not propose telling the model to ignore instructions.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Identifies read-plus-act as the risk surface: this agent reads untrusted text and
+      holds refund and email capability.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Proposes least privilege or a split trust boundary — the component that reads
+      untrusted content cannot act, and emits constrained output for one that can.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Requires human confirmation on irreversible actions, naming refunds specifically.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Enforces limits in the runtime rather than the prompt: refund caps, allowlisted
+      recipients, enumerated tool arguments.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Names the trade-off and whose decision it is: every mitigation costs product
+      capability, and the risk owner chooses, not the engineer.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - A ticket contains base64 that decodes to an instruction. Does your defence change?
+  - Where exactly do you draw the boundary between the reading and the acting component?
+  - The refund cap lives in the prompt. Why is that not a control?
+
+common_mistakes:
+  - >-
+    Comparing it to SQL injection and implying a parameterised-query equivalent exists.
+    There is none: interpreting language is what the model is for.
+  - >-
+    Proposing to instruct the model to ignore instructions found in documents, which
+    assumes the model can reliably tell the two apart — the exact thing it cannot do.
+  - >-
+    Treating a classifier for injections as a solution rather than as one layer that
+    lowers a success rate.
+  - >-
+    Listing mitigations generically without tying them to the refund and email capability
+    that makes this particular agent dangerous.
+
+related_questions: []
+
+wiki_refs:
+  - slug: prompt-injection
+    anchor: mitigations-that-are-architectural
+    wiki_reviewed_at: "2026-09-06"
+
+sources:
+  - title: "OWASP Top 10 for Large Language Model Applications"
+    url: https://owasp.org/www-project-top-10-for-large-language-model-applications/
+    kind: spec
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft
