@@ -9,6 +9,7 @@
  */
 import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
+import { doneness, format, readiness } from "../packages/harness/src/readiness.js";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -132,6 +133,16 @@ function activate(id: string): void {
   if (item.state !== "not_started" && item.state !== "blocked") {
     fail(`"${id}" is ${item.state}, not startable`, "pick a not_started or blocked item");
   }
+
+  // Definition of Ready. Starting work whose success cannot be decided is the expensive
+  // failure, because it is only discovered once the work is already done.
+  const notReady = readiness(item as never, list.items as never);
+  if (notReady.length > 0) {
+    console.error(format(id, notReady));
+    console.error(`\n"${id}" is not ready to start (docs/definition-of-done.md)`);
+    process.exit(1);
+  }
+
   item.state = "active";
   write(list);
   console.log(`active: ${id}\n  ${item.behavior}\n  verify with: make harness-verify ID=${id}`);
@@ -166,6 +177,15 @@ function verify(id: string): void {
   item.state = terminalState(item);
   item.evidence = lastLines(output);
   item.last_failure = null;
+
+  // Definition of Done. Passing is necessary and not sufficient — without evidence the
+  // claim cannot be re-checked, and CI re-runs every one of them.
+  const notDone = doneness(item as never, true);
+  if (notDone.length > 0) {
+    console.error(format(id, notDone));
+    process.exit(1);
+  }
+
   write(list);
   console.log(output);
   console.log(`${id} -> ${item.state}`);

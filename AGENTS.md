@@ -102,3 +102,5 @@ Hard constraints: `CONSTRAINTS.md`. Read it before writing content.
 - `docs/content-schema.md` — the entities, their fields, and why the shapes are what they are
 - `docs/review-protocol.md` — what a human review checks, and how repeat findings become checks
 - `docs/plan.md` — the full plan: phases, gates, what was cut and why
+- `docs/definition-of-done.md` — when an item may start, and when it may close
+- `docs/autonomy.md` — how content promotes without a human reviewing each item

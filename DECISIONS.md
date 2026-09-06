@@ -332,3 +332,21 @@ be credible for a full interview loop, which is what the user needs personally a
 covers AI questions is not an interview-prep product, and the user needs the breadth for
 his own loops.
 
+---
+
+## 2026-09-06 — Definition of Ready and Done are rules, not an agreement
+
+`docs/definition-of-done.md` states both; `packages/harness/src/readiness.ts` enforces the
+decidable parts. Ready is checked when an item is started, Done when it is closed.
+
+**Why enforce Ready at all:** the expensive failure is starting work whose success cannot
+be decided, because that is only discovered at the end, when the work is done and
+unfalsifiable. The check that earns its keep is the outcome-versus-activity one — "add
+validation" is complete when you stop typing, and an item phrased that way cannot be
+closed honestly.
+
+**Deliberately excluded:** coverage thresholds, which measure lines executed rather than
+behaviour verified; per-item human review, removed by the autonomy design; and estimates,
+since work in progress is capped at one item and duration is information rather than a
+commitment.
+
