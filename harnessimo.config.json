@@ -1,5 +1,6 @@
 {
-  "$comment": "Checks this repository asks @atamaniuc/harness to enforce. Translated from the scripts that used to live in .harness/2-tools/ \u2014 same rules, one implementation.",
+  "$schema": "https://raw.githubusercontent.com/atamaniuc/harnessimo/main/schema/harnessimo.config.schema.json",
+  "$comment": "Checks this repository asks harnessimo to enforce. Translated from the scripts that used to live in .harness/2-tools/ \u2014 same rules, one implementation.",
   "docs": {
     "roots": [
       ".",
