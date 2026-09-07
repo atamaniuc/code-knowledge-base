@@ -14,7 +14,8 @@
       "dist"
     ],
     "mustCarryProof": [
-      "AGENTS.md"
+      "AGENTS.md",
+      "README.md"
     ],
     "commands": {
       "make": "Makefile",
