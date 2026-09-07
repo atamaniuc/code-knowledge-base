@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
-# Fast gate only — content validation and harness invariants, about two seconds.
+# Fast gate only — content validation and the harness gates, about two seconds.
 #
 # The full suite (typecheck + tests + re-verification + cold start) runs in CI,
 # where it costs nothing you have to wait for. A hook that makes every commit
 # slow gets bypassed with --no-verify, and a bypassed hook enforces nothing.
 set -e
 pnpm run validate >/dev/null
-pnpm exec tsx .harness/2-tools/harness.ts check >/dev/null
+pnpm exec harnessimo check >/dev/null
