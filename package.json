@@ -15,7 +15,7 @@
   "devDependencies": {
     "@types/node": "^24.10.1",
     "esbuild": "^0.28.2",
-    "harnessimo": "github:atamaniuc/Harnessimo#529be5c153edf897d6ed1bc1e706de13c6ecc58c",
+    "harnessimo": "github:atamaniuc/Harnessimo#v0.1.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"
