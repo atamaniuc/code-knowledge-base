@@ -13,6 +13,11 @@ Chrome extension plus a static site. Content is decoupled from delivery, so the 
 can change without a rewrite.
 
 Full plan: `docs/plan.md`. How the project is governed: `.harness/README.md`.
+The model behind that structure is
+[Learn Harness Engineering](https://walkinglabs.github.io/learn-harness-engineering/ru/);
+the checks are [Harnessimo](https://github.com/atamaniuc/harnessimo)
+([гайд на 15 минут](https://github.com/atamaniuc/harnessimo/blob/main/docs/GUIDE.ru.md)).
+<!-- proof: docs/plan.md --> <!-- proof: .harness/README.md -->
 
 ## How to run
 
@@ -32,16 +37,17 @@ There is no server and no database to provision. Everything runs locally.
 
 ## How to verify
 
-`make check` is the only gate that matters. It runs three levels:
+`make check` is the only gate that matters. <!-- proof: make check --> It runs three levels:
 
-1. **Static** — `tsc --noEmit` over the workspace.
+1. **Static** — `tsc --noEmit` over the workspace. <!-- proof: pnpm run lint -->
 2. **Behaviour** — the vitest suite, including negative tests proving the validator
-   actually rejects bad content.
+   actually rejects bad content. <!-- proof: packages/schema/test/validate.test.ts -->
 3. **Content** — schema plus cross-file rules: dangling wiki refs, unknown domains,
    unattributed reviews, non-commercial provenance, placeholder markers.
+   <!-- proof: make validate -->
 
 An item is done when its own `verification` command from `feature_list.json` passes.
-Not when the code looks right.
+Not when the code looks right. <!-- proof: .harness/4-state/feature_list.json -->
 
 ## Layout
 
@@ -89,6 +95,25 @@ make cold-start                   # fresh clone must install and verify from the
 
 `harness-verify` is the only command needed for normal work; it activates the item itself.
 `harness-activate` exists for claiming an item without running it yet.
+
+## Work tracks and handoffs
+
+A session ends and its memory is gone. The queue says which item is in flight; it does not
+say where the work stopped, what was already tried, or what the next session should not
+read. That is what a handoff carries.
+
+- Live tracks are indexed in [`specs/TRACKS.md`](specs/TRACKS.md) — essence, link to its
+  handoff, status, next step. **Starting work on a track means loading its handoff first.**
+- A lane whose work is unfinished at session end carries `handoff.md` next to its spec:
+  context, what to load *and what not to*, state, decisions taken, first step. Edited in
+  place, never appended to.
+- Closing a track is a distillation: the outcome in one or two sentences into
+  [`specs/TRACKS-LOG.md`](specs/TRACKS-LOG.md), lasting decisions into
+  `.harness/4-state/DECISIONS.md`, then the handoff is deleted. Git carries the rest.
+
+The index is machine-checked, because a handoff that lies is worse than no handoff — the
+next session trusts it. A track line with no status, or one linking a handoff that was
+deleted, fails the gate. <!-- proof: specs/TRACKS.md -->
 
 ## Working rules
 
