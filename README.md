@@ -66,7 +66,8 @@ negative tests proving the content validator rejects bad input — content valid
 files, and every gate declared in `harnessimo.config.json`.
 <!-- proof: harnessimo.config.json -->
 
-The harness itself is [Harnessimo](https://github.com/atamaniuc/Harnessimo), a dependency
+The harness itself is [Harnessimo](https://github.com/atamaniuc/Harnessimo)
+([docs](https://atamaniuc.github.io/Harnessimo/)), a dependency
 rather than scripts kept here: the work queue that owns state transitions, the locked-surface
 rule, the cold-start test, proof markers, and the work-track index. `make harness-doctor`
 prints what is actually enforced — and what is not.
