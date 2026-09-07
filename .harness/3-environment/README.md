@@ -18,7 +18,7 @@ Some files define what counts as success: the scoring code, the acceptance rules
 licence registry, the CI workflow. A system that improves itself will, given the
 opportunity, improve its own score instead of its own work — every documented case of this
 happened where the scoring was reachable. So those files are placed out of reach, and
-`../2-tools/locked-surfaces.sh` enforces it.
+`harnessimo locked` enforces it, in CI.
 
 The baseline exists because the commit that *creates* a protected file necessarily touches
 it. Moving the baseline forward widens what the system may change, which is a decision a

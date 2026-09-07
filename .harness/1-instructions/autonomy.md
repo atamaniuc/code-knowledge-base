@@ -76,7 +76,7 @@ paths are outside what it may change:
 | `packages/evaluator/**` | The scoring rule. A loop that can edit its own scorer will. |
 | `.harness/1-instructions/autonomy.md`, gate configuration | The acceptance criteria themselves. |
 | `content/sources.yaml` | Licence clearance is a legal decision. |
-| `.github/workflows/**`, `scripts/locked-surfaces.sh` | The enforcement itself. |
+| `.github/workflows/**` | The enforcement itself. |
 
 Enforcement is in CI, not in prompt text: constraints stated in a prompt get optimised
 away, so they are treated as decorative. A commit that touches a locked path and carries

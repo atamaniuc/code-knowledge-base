@@ -1,42 +1,29 @@
-# Tools — what the project can run
+# Tools — what this project can run
 
-Everything here is reachable through `make`; `make help` lists it. Running the scripts
-directly works too.
+The harness itself is a dependency — [Harnessimo](https://github.com/atamaniuc/Harnessimo) —
+not a folder of scripts kept here. A copied check is a fork the day after it is copied, and
+this repository has already paid for that once: the `.harness/` reorganisation moved
+`cold-start.sh` and left the queue item verifying it pointing at the old path, so CI was red
+on every push until someone read the log.
 
-## harness.ts — the work queue
-
-Owns `../4-state/feature_list.json` and is the **only** thing that marks an item finished.
-
-```
-make harness-status              # what is in flight, what is queued
-make harness-verify ID=<id>      # run that item's own check and record the outcome
-make harness-check ARGS=--reverify   # re-run every finished item's check
-```
-
-Why a tool rather than editing the file: an item is finished when its check passes, not
-when someone believes it is. Models are consistently over-confident about their own work,
-so the judgement is taken away from them and given to a command.
-
-It also enforces one item at a time, and refuses to start an item whose success cannot be
-decided — see `../1-instructions/definition-of-done.md`.
-
-## cold-start.sh — the newcomer test
+What this project enforces is declared in `harnessimo.config.json`. `make harness-doctor`
+prints it, and what it does *not* enforce, which is the half most tools leave out.
 
 ```
-make cold-start
+make check                       lint + test + validate + every harness gate
+make harness-doctor              what is actually enforced here
+make harness-status              the queue: what is in flight, what is queued
+make harness-verify ID=<id>      run that item's own check and record the outcome
+make harness-check ARGS=--reverify   re-run every passing claim
+make cold-start                  a fresh clone installs and verifies from the repo alone
 ```
 
-Clones the project into an empty folder and tries to run and check it using nothing but the
-repository. No explanation, no leftover files, no environment from this machine.
+Project-specific tooling stays here: `scripts/` holds the ingest, extension build and
+content verification, none of which the shared harness knows anything about.
 
-It is the honest test of the documentation. What is not written down does not exist for
-someone arriving fresh — and every session after the first arrives fresh.
+## Why the queue is a command and not a file you edit
 
-## locked-surfaces.sh — protecting the scoring
-
-Refuses a commit written by the agent that touches the files defining success.
-
-Its limit is stated in the script itself rather than hidden: it assumes commits pass
-through CI, so it detects tampering rather than preventing it. Preventing it properly means
-running the work where those files are read-only, which is infrastructure this project does
-not have yet.
+An item is finished when its check passes, not when someone believes it is. Models are
+consistently over-confident about their own work, so the judgement is taken away from them
+and given to a command — and CI re-runs every passing claim, so a hand-edited state is
+detected rather than trusted.

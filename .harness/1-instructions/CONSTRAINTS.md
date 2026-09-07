@@ -67,9 +67,9 @@ missed. `make setup` enables the hook; without it, only CI catches violations.
 
 ## Locked surfaces
 
-16. **Never modify a locked surface.** _(enforced: `scripts/locked-surfaces.sh` in CI)_
+16. **Never modify a locked surface.** _(enforced: `harnessimo locked` in CI)_
     `packages/evaluator/`, `.harness/1-instructions/autonomy.md`, `content/sources.yaml`,
-    `.github/workflows/`, and the check itself. These define or enforce the acceptance
+    and `.github/workflows/`. These define or enforce the acceptance
     signal; a loop that can edit them can grant itself a passing score. Changing them is
     a human act, in a commit without the agent trailer.
     Manifest V3 prohibits it, and it would break the offline guarantee anyway.

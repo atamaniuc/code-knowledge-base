@@ -31,13 +31,14 @@ links here.
 
 ## 2-tools — what it can run *(the knife rack)*
 
-| File | What it is |
-|---|---|
-| `harness.ts` | Owns the work queue. It is the only thing allowed to mark an item finished, and only after running that item's own check. |
-| `cold-start.sh` | Clones the project into an empty folder and tries to run it using nothing but the repository. If a newcomer could not, this fails. |
-| `locked-surfaces.sh` | Refuses commits from the agent that touch the files defining what counts as success. |
+The tools are [Harnessimo](https://github.com/atamaniuc/Harnessimo), installed as a
+dependency and configured in `harnessimo.config.json`. It owns the work queue (the only
+thing allowed to mark an item finished, and only after running that item's own check), the
+cold-start test, the locked-surface rule, and the checks on this project's documents and
+work tracks.
 
-Everything is reachable through `make`; run `make help` for the list.
+Everything is reachable through `make`; run `make help` for the list, or
+`make harness-doctor` for what is actually enforced.
 
 ## 3-environment — what it runs in *(the cooking surface)*
 

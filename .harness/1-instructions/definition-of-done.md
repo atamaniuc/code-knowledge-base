@@ -2,7 +2,7 @@
 
 Two checkpoints, both enforced rather than agreed. Ready is checked when an item is
 started; Done when it is closed. The machine-decidable parts live in
-`packages/harness/src/readiness.ts` and fail the command; the rest is stated here because
+Harnessimo's readiness rules and fail the command; the rest is stated here because
 it is judgement, and judgement that is written down is at least reviewable.
 
 ## Definition of Ready

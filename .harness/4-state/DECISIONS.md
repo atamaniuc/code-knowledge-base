@@ -398,3 +398,29 @@ verdict look wrong and a dishonest one look fine.
 **Fails closed everywhere:** unparseable reply, missing source index, dead link. A gate
 that errors open is not a gate.
 
+---
+
+## 2026-09-07 — The harness is a dependency, not scripts kept in this repository
+
+`harness.ts`, `locked-surfaces.sh`, `cold-start.sh` and `packages/harness` are deleted.
+Their rules live in [Harnessimo](https://github.com/atamaniuc/Harnessimo), installed as a
+dev dependency and configured in `harnessimo.config.json`.
+
+**Why:** a copied check is a fork the day after it is copied, and this repository has
+already paid for that once — the `.harness/` reorganisation moved `cold-start.sh` and left
+the queue item verifying it pointing at the old path, so CI was red on every push until
+someone read the log. One implementation with one set of tests removes that failure mode.
+
+**What this repository gains, having had none of it:** proof markers tying every claim in
+`AGENTS.md` to a real command, an index of live work tracks with handoffs, a gate on ticked
+task boxes, a clean-state check, and a limit on the instruction file's length.
+
+**What was checked before deleting anything:** the shared implementation was run against
+this repository and reproduced what the local scripts enforced. Adoption never trades a
+check away; where the shared one could not express something, the repository would have
+kept its own.
+
+**Consequence, accepted:** the twelve `readiness` unit tests here are gone, because the
+rules they covered are tested in Harnessimo instead. The count in this repository drops;
+the coverage does not.
+

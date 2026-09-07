@@ -10,5 +10,4 @@ dead marker the next session would trust.
 
 Protocol: `AGENTS.md` → "Work tracks and handoffs".
 
-- **Shared harness adoption (spec 0001)** — [handoff](specs/0001-shared-harness/handoff.md) — active, next: replace the three vendored tools in `.harness/2-tools/` with the shared CLI once the package is installable
 - **Verification gates G2–G5** — none — paused (G1 shipped; the rest need the adversarial model wired), next: `verifier-adversarial` in the queue — an independent model asked to falsify each claim against the fetched sources
