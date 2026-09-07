@@ -8,10 +8,14 @@ State carried between sessions. Read this first; update it before you stop.
 times across 173 stack-scoped postings, and structured preparation for it barely exists.
 
 - Content: 9 articles, 10 questions, 3 DSA entities. Target 691 questions.
-- Harness lives in `.harness/`, five folders by subsystem, each with a plain-language README.
+- The harness is [Harnessimo](https://github.com/atamaniuc/Harnessimo), a dependency rather
+  than scripts kept here; `.harness/` holds this project's own rules, state and feedback map,
+  and `harnessimo.config.json` says which checks are enforced (`make harness-doctor` prints
+  it). New here as of this session: proof markers, work tracks with handoffs, the task gate,
+  a clean-state check and a limit on AGENTS.md's length.
 - `agentic` covers evaluation, injection, judging, cost and latency, loop design,
   long context versus retrieval, and structured output.
-- `make check`: passing (84 tests, content valid). CI green.
+- `make check`: passing (111 tests, content valid, every harness gate). CI green.
 - `make drill ARGS="--include-drafts"` and the Chrome extension both work today.
 - Extension: `make extension ARGS="--include-drafts"`, then load `apps/extension/dist` unpacked.
 - Blockers: none. Nothing is waiting on a human.
@@ -60,4 +64,4 @@ is exercised by `make check`:
 
 None are reviewed. Nothing here has been fact-checked by a human yet (CONSTRAINTS #1).
 
-_Last updated: 2026-09-06_
+_Last updated: 2026-09-07_

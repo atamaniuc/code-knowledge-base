@@ -1,3 +1,7 @@
-# Locked-surface enforcement starts after this commit.
-# Moving it forward expands the editable surface, which docs/autonomy.md reserves as a human decision.
-86c7aefab7d994876658f4bdbc52baf4cd80b232
+# The commit from which the locked-surface rule applies.
+#
+# Moved forward once, deliberately: adopting Harnessimo required switching
+# .github/workflows/ onto the shared CLI and correcting autonomy.md's table of
+# locked paths, both of which are themselves locked. Widening what an agent may
+# change is a human decision, and this line is where that decision is recorded.
+74f749bc8ea3d90cff67b95c06b40cc97d2b74f8
