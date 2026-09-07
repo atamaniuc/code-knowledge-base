@@ -13,6 +13,10 @@ Chrome extension plus a static site. Content is decoupled from delivery, so the 
 can change without a rewrite.
 
 Full plan: `docs/plan.md`. How the project is governed: `.harness/README.md`.
+The model behind that structure is
+[Learn Harness Engineering](https://walkinglabs.github.io/learn-harness-engineering/ru/);
+the checks are [`@atamaniuc/harness`](https://github.com/atamaniuc/harness)
+([15-minute guide](https://github.com/atamaniuc/harness/blob/main/docs/GUIDE.ru.md)).
 <!-- proof: docs/plan.md --> <!-- proof: .harness/README.md -->
 
 ## How to run

@@ -1,13 +1,25 @@
 {
-  "$comment": "Checks this repository asks @atamaniuc/harness to enforce. Translated from the scripts that used to live in .harness/2-tools/ — same rules, one implementation.",
-
+  "$comment": "Checks this repository asks @atamaniuc/harness to enforce. Translated from the scripts that used to live in .harness/2-tools/ \u2014 same rules, one implementation.",
   "docs": {
-    "roots": [".", "docs", "specs", ".harness"],
-    "skip": ["node_modules", ".git", "dist"],
-    "mustCarryProof": ["AGENTS.md"],
-    "commands": { "make": "Makefile", "pnpm run": "package.json" }
+    "roots": [
+      ".",
+      "docs",
+      "specs",
+      ".harness"
+    ],
+    "skip": [
+      "node_modules",
+      ".git",
+      "dist"
+    ],
+    "mustCarryProof": [
+      "AGENTS.md"
+    ],
+    "commands": {
+      "make": "Makefile",
+      "pnpm run": "package.json"
+    }
   },
-
   "tracks": {
     "file": "specs/TRACKS.md",
     "log": "specs/TRACKS-LOG.md",
@@ -15,22 +27,72 @@
     "taskFile": "tasks.md",
     "gateTasks": true
   },
-
   "queue": {
     "file": ".harness/4-state/feature_list.json",
     "timeoutMinutes": 10,
-    "terminalByKind": { "content": "awaiting_gates" }
+    "terminalByKind": {
+      "content": "awaiting_gates"
+    }
   },
-
   "locked": {
-    "paths": ["packages/evaluator/", ".harness/1-instructions/autonomy.md", "content/sources.yaml", ".github/workflows/"],
+    "paths": [
+      "packages/evaluator/",
+      ".harness/1-instructions/autonomy.md",
+      "content/sources.yaml",
+      ".github/workflows/"
+    ],
     "baseline": ".harness/3-environment/locked-baseline",
     "agentTrailer": "Co-Authored-By: Claude"
   },
-
   "coldStart": {
-    "requiredFiles": ["AGENTS.md", "Makefile", ".harness/README.md", ".harness/1-instructions/CONSTRAINTS.md", ".harness/4-state/PROGRESS.md", ".harness/4-state/DECISIONS.md", ".harness/4-state/feature_list.json"],
-    "entryDocs": ["AGENTS.md"],
-    "commands": ["make setup", "make check"]
+    "requiredFiles": [
+      "AGENTS.md",
+      "Makefile",
+      ".harness/README.md",
+      ".harness/1-instructions/CONSTRAINTS.md",
+      ".harness/4-state/PROGRESS.md",
+      ".harness/4-state/DECISIONS.md",
+      ".harness/4-state/feature_list.json"
+    ],
+    "entryDocs": [
+      "AGENTS.md"
+    ],
+    "commands": [
+      "make setup",
+      "make check"
+    ]
+  },
+  "cleanExit": {
+    "$comment": "Lecture 12. Scoped to what a session changed, so the rule is about what it leaves behind rather than about history.",
+    "scan": [
+      "packages",
+      "apps",
+      "scripts"
+    ],
+    "markers": [
+      "TODO",
+      "FIXME",
+      "TBD",
+      "XXX",
+      "HACK",
+      "debugger",
+      "test.only",
+      "test.skip",
+      ".only(",
+      ".skip("
+    ],
+    "progressFile": ".harness/4-state/PROGRESS.md",
+    "codePrefixes": [
+      "packages/",
+      "apps/",
+      "scripts/",
+      ".harness/2-tools/"
+    ]
+  },
+  "instructions": {
+    "$comment": "AGENTS.md already asked to be kept under 200 lines. This is that request, enforced.",
+    "limits": {
+      "AGENTS.md": 200
+    }
   }
 }
