@@ -22,8 +22,8 @@ importers:
         specifier: ^0.28.2
         version: 0.28.2
       harnessimo:
-        specifier: github:atamaniuc/Harnessimo#v0.2.0
-        version: https://codeload.github.com/atamaniuc/Harnessimo/tar.gz/cdf9349aafddb42e6031da233520a63b5e441413
+        specifier: github:atamaniuc/Harnessimo#v0.3.0
+        version: https://codeload.github.com/atamaniuc/Harnessimo/tar.gz/02dcad46f5b80e83927a1f0c7e26639d40e94673
       tsx:
         specifier: ^4.20.6
         version: 4.23.13
@@ -439,9 +439,9 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
 
-  harnessimo@https://codeload.github.com/atamaniuc/Harnessimo/tar.gz/cdf9349aafddb42e6031da233520a63b5e441413:
-    resolution: {gitHosted: true, integrity: sha512-uw0xfpbCV5Q22uvfN3RTmNdEGyCmeHZEqELdf+1yC6XsJMpAYP56vCgZacFtFtFtiyqSy/anoGDy5f/2UIsC5Q==, tarball: https://codeload.github.com/atamaniuc/Harnessimo/tar.gz/cdf9349aafddb42e6031da233520a63b5e441413}
-    version: 0.2.0
+  harnessimo@https://codeload.github.com/atamaniuc/Harnessimo/tar.gz/02dcad46f5b80e83927a1f0c7e26639d40e94673:
+    resolution: {gitHosted: true, integrity: sha512-hKHGu1fOQe2B7FEIfqME8jQXcjq5Ej/Gg8iE+wNlUPWqpQNGr7fwJ8AeTzUW56qC0IQd0jJH/TLJbsEQ9CORig==, tarball: https://codeload.github.com/atamaniuc/Harnessimo/tar.gz/02dcad46f5b80e83927a1f0c7e26639d40e94673}
+    version: 0.3.0
     engines: {node: '>=22'}
     hasBin: true
 
@@ -901,7 +901,7 @@ snapshots:
   fsevents@2.3.3:
     optional: true
 
-  harnessimo@https://codeload.github.com/atamaniuc/Harnessimo/tar.gz/cdf9349aafddb42e6031da233520a63b5e441413: {}
+  harnessimo@https://codeload.github.com/atamaniuc/Harnessimo/tar.gz/02dcad46f5b80e83927a1f0c7e26639d40e94673: {}
 
   js-tokens@9.0.1: {}
 
