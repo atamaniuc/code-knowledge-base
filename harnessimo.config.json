@@ -96,5 +96,11 @@
     "limits": {
       "AGENTS.md": 200
     }
+  },
+  "hooks": {
+    "$comment": "Content validation is this project's own fast check, so the hook runs it before the harness gates.",
+    "before": [
+      "pnpm run validate >/dev/null"
+    ]
   }
 }
