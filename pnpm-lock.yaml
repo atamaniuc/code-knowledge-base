@@ -22,8 +22,8 @@ importers:
         specifier: ^0.28.2
         version: 0.28.2
       harnessimo:
-        specifier: https://github.com/atamaniuc/Harnessimo/releases/download/v0.4.1/harnessimo-0.4.1.tgz
-        version: https://github.com/atamaniuc/Harnessimo/releases/download/v0.4.1/harnessimo-0.4.1.tgz
+        specifier: ^0.4.1
+        version: 0.4.1
       tsx:
         specifier: ^4.20.6
         version: 4.23.13
@@ -439,9 +439,8 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
 
-  harnessimo@https://github.com/atamaniuc/Harnessimo/releases/download/v0.4.1/harnessimo-0.4.1.tgz:
-    resolution: {integrity: sha512-GXVqaP2prG+KErHZ4V/D1V4zaAd1j8Ma41w5dsDxloYQKwTjECAmZH5awvAfOn0aarpsssSVOP0U0kxHO0QqEw==, tarball: https://github.com/atamaniuc/Harnessimo/releases/download/v0.4.1/harnessimo-0.4.1.tgz}
-    version: 0.4.1
+  harnessimo@0.4.1:
+    resolution: {integrity: sha512-GXVqaP2prG+KErHZ4V/D1V4zaAd1j8Ma41w5dsDxloYQKwTjECAmZH5awvAfOn0aarpsssSVOP0U0kxHO0QqEw==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -901,7 +900,7 @@ snapshots:
   fsevents@2.3.3:
     optional: true
 
-  harnessimo@https://github.com/atamaniuc/Harnessimo/releases/download/v0.4.1/harnessimo-0.4.1.tgz: {}
+  harnessimo@0.4.1: {}
 
   js-tokens@9.0.1: {}
 
