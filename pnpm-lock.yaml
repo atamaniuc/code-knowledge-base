@@ -22,8 +22,8 @@ importers:
         specifier: ^0.28.2
         version: 0.28.2
       harnessimo:
-        specifier: ^0.7.0
-        version: 0.7.0
+        specifier: ^0.8.0
+        version: 0.8.0
       tsx:
         specifier: ^4.20.6
         version: 4.23.13
@@ -439,8 +439,8 @@ packages:
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
 
-  harnessimo@0.7.0:
-    resolution: {integrity: sha512-uhPpQUQxQmtWJKfYdqPlphR+i7JtEx3wAao09DehIojHBApFeuuQ/SwTgQqeqcufuYniAWm74AH3SibEpYbzWw==}
+  harnessimo@0.8.0:
+    resolution: {integrity: sha512-1OyoyLo6rFl2A1k1t2joPZ0zUaNZ6JaHKj+ymMJQJZQI16/FmtomdtGSBjT83to1+sJsPzykYibj/DRVpxuKGg==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -900,7 +900,7 @@ snapshots:
   fsevents@2.3.3:
     optional: true
 
-  harnessimo@0.7.0: {}
+  harnessimo@0.8.0: {}
 
   js-tokens@9.0.1: {}
 
