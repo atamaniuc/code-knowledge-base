@@ -4,5 +4,15 @@ packages:
 allowBuilds:
   esbuild: true
 
+# pnpm refuses packages published within the last day, which is a good default:
+# most malicious releases are caught and unpublished within hours. harnessimo is
+# excluded because it is not a third-party package to this project — it is built
+# in a repository we control, published only by a trusted-publishing workflow
+# with no token that could be stolen, and every release carries a provenance
+# statement naming the commit and workflow it came from. Waiting a day to adopt
+# our own release buys nothing and leaves CI red in the meantime.
+minimumReleaseAgeExclude:
+  - harnessimo
+
 onlyBuiltDependencies:
   - esbuild
