@@ -1,0 +1,110 @@
+id: 3c24a7b7-e410-4f24-85bf-00c6327b845e
+slug: kafka-duplicate-consumer
+lang: en
+
+domain: messaging
+topic: consistency
+subtopic: idempotency
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: Apache Kafka
+  version_range: ">=3.6"
+
+question: >-
+  A consumer processed the same event twice after a rebalance and a customer was charged
+  twice. Fix the incident, then tell me what you change so the class of bug cannot come back.
+
+probes: >-
+  Whether the candidate separates the immediate remediation from the systemic fix, and
+  whether they understand that at-least-once delivery is a design assumption rather than a
+  broker misconfiguration. The distinguishing answer deduplicates in the same transaction as
+  the effect.
+
+answer_strategy: >-
+  Remediate first and say so — refund or reverse, and find how many other messages repeated
+  rather than fixing the one you were told about. Then move to the design answer: the
+  consumer's write and its deduplication record must commit together, which is a unique
+  constraint, not a check-then-insert. Offer the three ways to be idempotent and pick one
+  with a reason.
+
+expected_answer:
+  - text: >-
+      Separates the remediation — reverse or compensate the duplicate, and look for other
+      repeats — from the design fix.
+    weight: 4
+    min_level: senior
+  - text: >-
+      States that at-least-once is the delivery guarantee being designed for, so a duplicate
+      is expected traffic rather than a broker fault.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Deduplicates on a business or message key recorded in the same transaction as the
+      effect, backed by a unique constraint, instead of a check-then-insert or an in-memory
+      set.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Names the alternative when a deduplication table is unattractive: make the write
+      naturally idempotent, for example an absolute state assignment or a conditional update
+      guarded by the expected previous state.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Points out that the provider's own idempotency key should be derived from the message
+      identity, so the retry is deduplicated even if it reaches the provider twice.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Adds the detection: a metric for duplicates suppressed, and an alert when a consumer's
+      reprocessing rate moves.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Questions whether the commit order and the consumer's offset handling can make a
+      partial effect possible at all.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - Where exactly does the deduplication record live if the effect is a call to a payment
+    provider, not a local write?
+  - What is your retention period for deduplication keys, and what happens after it expires?
+  - How does a rebalance turn a slow consumer into duplicate work?
+
+common_mistakes:
+  - >-
+    Treating the duplicate as a broker or configuration problem and disabling retries, which
+    trades duplicates for lost messages.
+  - >-
+    Checking for the message id and then inserting, which races under concurrency and leaves
+    the same bug in place.
+  - >-
+    Deduplicating on a payload hash, which also drops two genuinely identical legitimate
+    events.
+  - >-
+    Fixing the consumer while leaving the producer's dual write able to publish an event for
+    a transaction that then rolls back.
+
+related_questions: [outbox-saga-funding-flow]
+
+wiki_refs:
+  - slug: outbox-idempotency-and-sagas
+    anchor: idempotent-consumers
+    wiki_reviewed_at: "2026-10-12"
+
+sources:
+  - title: "Apache Kafka — Design and delivery semantics"
+    url: https://kafka.apache.org/documentation/#semantics
+    kind: official-docs
+  - title: "Stripe — Idempotent requests"
+    url: https://docs.stripe.com/api/idempotent_requests
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

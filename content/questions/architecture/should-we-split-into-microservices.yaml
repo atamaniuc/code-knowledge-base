@@ -1,0 +1,90 @@
+id: ba7624f8-1944-485e-8855-a87bdccf529e
+slug: should-we-split-into-microservices
+lang: en
+
+domain: architecture
+topic: distributed-systems
+subtopic: boundaries
+
+tracks: [backend, fullstack]
+levels: [staff]
+
+tech:
+  name: Microservices
+  version_range: ">=2024"
+
+question: >-
+  Leadership wants the platform broken into microservices because the teams keep blocking
+  each other. Where would you push back, and what would you propose instead if the diagnosis
+  is wrong?
+
+probes: >-
+  Whether the candidate can argue against the fashionable answer without arguing against
+  the goal. The separation is between naming a real cost of distribution and naming what
+  would actually fix the blocking — usually ownership and release process, not topology.
+
+answer_strategy: >-
+  Take the complaint seriously before evaluating the proposed remedy: teams blocking each
+  other is a real problem, and microservices is one of several fixes. Then price the
+  remedy — network, two transactions, operational surface — and say which of those the
+  organisation cannot currently absorb. Land on the alternative that keeps the door open,
+  which is a modular monolith with enforced boundaries, and say what evidence would change
+  your mind.
+
+expected_answer:
+  - text: >-
+      Reframes the problem: teams blocking each other is usually a release-process and
+      ownership problem that a service split only sometimes fixes.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Prices the remedy concretely — network calls where function calls were, partial failure
+      as the normal case, per-service deploy and on-call surface, cross-service debugging.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Proposes the modular monolith with compile-time-enforced boundaries as the cheaper step
+      that preserves the option to split.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Names the tell that a split is premature: the same people operate everything, one
+      release touches several services, and the data still lives in one database.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Sets a falsifiable condition for revisiting the decision, rather than treating the
+      argument as won by either side.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - What would you measure to know whether the blocking was caused by deployment coupling?
+  - If the decision is made anyway, what do you do in the first quarter?
+  - What does a module boundary that actually holds require from code review?
+
+common_mistakes:
+  - >-
+    Agreeing immediately because independent deployment is a stated goal, without pricing
+    what it costs this organisation.
+  - >-
+    Arguing against microservices in general rather than against this split at this time.
+  - >-
+    Proposing "just communicate better" as a fix for a genuine deployment coupling problem.
+
+related_questions: [nestjs-microservice-boundaries]
+
+wiki_refs:
+  - slug: microservice-boundaries
+    anchor: when-a-modular-monolith-is-the-right-answer
+    wiki_reviewed_at: "2026-10-12"
+
+sources:
+  - title: "Pattern: Database per service"
+    url: https://microservices.io/patterns/data/database-per-service.html
+    kind: article
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

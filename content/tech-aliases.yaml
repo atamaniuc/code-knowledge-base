@@ -91,6 +91,12 @@ technologies:
   - canonical: OpenTelemetry
     domain: observability
     aliases: [otel, open telemetry]
+  - canonical: Model Context Protocol
+    domain: agentic
+    aliases: [mcp servers, mcp server, mcp]
+  - canonical: Agent Skills
+    domain: agentic
+    aliases: [agent skill, claude skills]
   - canonical: Nx
     domain: monorepo
     aliases: [nx workspace, nrwl]

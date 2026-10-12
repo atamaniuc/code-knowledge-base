@@ -1,0 +1,110 @@
+id: fb089c88-3adf-480a-ac2c-06a75f860a30
+slug: mcp-versus-bespoke-tools
+lang: en
+
+domain: agentic
+topic: integration
+subtopic: mcp
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+
+tech:
+  name: Model Context Protocol
+  version_range: ">=2025-06"
+
+question: >-
+  The team has five agents and eleven tools, and every new tool is a new integration in every
+  agent. Someone proposes adopting MCP. Evaluate that, and tell me what changes about the
+  security review.
+
+probes: >-
+  Whether the candidate can price a protocol decision — what it buys combinatorially and what
+  trust boundary it adds — rather than either adopting it as fashion or rejecting it as
+  overhead. The staff signal is treating a connected server as untrusted code with
+  credentials.
+
+answer_strategy: >-
+  Quantify the status quo first: N times M integrations, each with its own auth and schema
+  conventions, and the tenth one written by copying the ninth. Then say what a protocol
+  changes — discovery at connection time, one client per server, capabilities negotiated
+  rather than compiled in — and immediately price it: a new trust boundary, and an agent
+  permission that is the union of everything connected. End on the review question, because
+  that is usually the part nobody has thought about.
+
+expected_answer:
+  - text: >-
+      Frames the current cost as N times M and the protocol as N plus M, with runtime
+      discovery so capabilities can be added without redeploying the agent.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Names the architectural roles — host owns the model, conversation and permissions; a
+      client per server connection; servers expose tools, resources and prompts.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Says the security review changes shape, not just size: a server's tool descriptions are
+      untrusted text the model reads, so tool poisoning and indirect injection are in scope.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Scopes credentials per server and per user, refuses token passthrough to downstream
+      APIs, and treats a connected server as untrusted code with the permissions it was given.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Requires human confirmation for destructive or money-moving tools, showing the actual
+      arguments rather than a model-written summary.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Handles versioning by date and capability negotiation, so a client that does not support
+      a feature still works.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Says when MCP is the wrong answer: one tool, one agent, no sharing requirement, where a
+      local function has no trust boundary to review.
+    weight: 4
+    min_level: staff
+
+follow_ups:
+  - A third-party server is compromised and starts returning poisoned tool descriptions. What
+    limits the damage?
+  - How do you test an agent whose capabilities are negotiated at runtime rather than
+    compiled in?
+  - What would you connect first, and what would you never connect?
+
+common_mistakes:
+  - >-
+    Treating MCP as a tool library to be adopted wholesale, without deciding which servers
+    this agent should have.
+  - >-
+    Assuming the protocol solves authentication, when it standardises the shape of the
+    conversation rather than the trust model.
+  - >-
+    Connecting a server with broad credentials to "see what it can do" in a shared
+    environment.
+  - >-
+    Reviewing the protocol implementation and not the content the server sends.
+
+related_questions: [agent-skills-context-economy, agent-loop-stop-conditions]
+
+wiki_refs:
+  - slug: mcp-tool-integration
+    anchor: security-the-tool-list-is-the-blast-radius
+    wiki_reviewed_at: "2026-10-12"
+
+sources:
+  - title: "Model Context Protocol — specification 2025-06-18"
+    url: https://modelcontextprotocol.io/specification/2025-06-18
+    kind: spec
+  - title: "Model Context Protocol — architecture"
+    url: https://modelcontextprotocol.io/docs/concepts/architecture
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

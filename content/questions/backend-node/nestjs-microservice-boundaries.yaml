@@ -1,0 +1,109 @@
+id: a1388e70-32b3-4888-a759-24470cadc386
+slug: nestjs-microservice-boundaries
+lang: en
+
+domain: backend-node
+topic: architecture
+subtopic: service-design
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: NestJS
+  version_range: ">=11"
+
+question: >-
+  You own a NestJS service that handles invoices, payments and supplier records in one
+  application, and the team has decided to split it. Walk me through how you would decide
+  the boundaries, and what you would do first.
+
+probes: >-
+  Whether the candidate reasons from data ownership or from the folder tree. The strong
+  answer names the invariant that must change atomically, says where the network is
+  acceptable, and treats the module graph as the seam the split follows rather than
+  something to be designed during the split.
+
+answer_strategy: >-
+  Start by refusing to answer in the abstract: ask what has to be true at the same time.
+  Payments and their ledger entries are one invariant; supplier records are not. Say that
+  before naming any service, because the ordering is the point. Then cover the mechanics —
+  module boundaries first, then extract the service whose data is already cleanest, then the
+  dual-write window and what makes it safe. Finish with what you would not split yet and why.
+
+expected_answer:
+  - text: >-
+      Groups the split by data ownership and invariants that must change atomically, not by
+      technical layer or by noun in the domain model.
+    weight: 5
+    min_level: senior
+  - text: >-
+      States that the module graph is the seam: tighten exports first so no module reaches
+      into another module's entities or repositories, then extract along it.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Chooses the first extraction by the cleanliness of its data rather than by its size or
+      its business importance, so the first split builds confidence and a template.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Names the dual-write problem explicitly and reaches for an outbox or change-data-capture
+      rather than a distributed transaction, and says the window is the risky part.
+    weight: 5
+    min_level: staff
+  - text: >-
+      States which calls stay synchronous and which become events, and can justify both: a
+      user-facing read may be synchronous, a ledger notification may not.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Names what the organisation must absorb — per-service deploys, dashboards, alerts and
+      on-call — as a precondition rather than an afterthought.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Proposes strangling one capability at a time with both paths alive, instead of a big
+      bang rewrite.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - The two services now need the same supplier record. What do you do?
+  - How do you know the split improved anything, six months later?
+  - Which of these services would you merge back if you had to reduce headcount on-call?
+
+common_mistakes:
+  - >-
+    Splitting by entity name and producing a User service that every other service calls
+    synchronously, which is a shared database with latency.
+  - >-
+    Keeping one database for the split services and calling it phase one indefinitely.
+  - >-
+    Replacing a transaction with a chain of synchronous calls, which is neither consistent
+    nor available.
+  - >-
+    Refactoring the whole module graph and extracting services in the same release.
+
+related_questions: [should-we-split-into-microservices]
+
+wiki_refs:
+  - slug: nestjs-service-boundaries
+    anchor: modules-are-the-boundary-you-can-enforce
+    wiki_reviewed_at: "2026-10-12"
+  - slug: microservice-boundaries
+    anchor: split-by-ownership-not-by-layer
+    wiki_reviewed_at: "2026-10-12"
+
+sources:
+  - title: "NestJS — Modules"
+    url: https://docs.nestjs.com/modules
+    kind: official-docs
+  - title: "Pattern: Database per service"
+    url: https://microservices.io/patterns/data/database-per-service.html
+    kind: article
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

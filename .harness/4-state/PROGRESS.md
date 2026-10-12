@@ -7,7 +7,11 @@ State carried between sessions. Read this first; update it before you stop.
 **Phase 0, writing the wedge domain.** `agentic` is the differentiator: LLM appears 41
 times across 173 stack-scoped postings, and structured preparation for it barely exists.
 
-- Content: 9 articles, 10 questions, 3 DSA entities. Target 691 questions.
+- Content: 16 articles, 19 questions, 3 DSA entities. Target 691 questions. The nine new
+  questions and seven new articles came from the posting pipeline below, all at
+  `review_status: draft`: NestJS service boundaries, microservice boundaries, API contract
+  evolution, outbox/idempotency/saga, a PostgreSQL ledger, MCP tool integration, agent
+  skills — plus questions for each.
 - The harness is [Harnessimo](https://github.com/atamaniuc/Harnessimo), a dependency rather
   than scripts kept here; `.harness/` holds this project's own rules, state and feedback map,
   and `harnessimo.config.json` says which checks are enforced (`make harness-doctor` prints
@@ -15,9 +19,17 @@ times across 173 stack-scoped postings, and structured preparation for it barely
   a clean-state check and a limit on AGENTS.md's length.
 - `agentic` covers evaluation, injection, judging, cost and latency, loop design,
   long context versus retrieval, and structured output.
-- `make check`: passing (111 tests, content valid, every harness gate). CI green.
-- `make drill ARGS="--include-drafts"` and the Chrome extension both work today.
-- Extension: `make extension ARGS="--include-drafts"`, then load `apps/extension/dist` unpacked.
+- `make check`: passing (120 tests, content valid, every harness gate). CI green.
+- `make prep ARGS="<job-url>"` turns a posting into a rehearsal plan: requirement emphasis
+  from the gazetteer, a ranked core plan, stretch domains the posting omits, and the gaps
+  that are the authoring backlog. Verified against
+  `https://itentio.com/job/senior-node-js-engineer/`.
+- Extension: `make extension ARGS="--include-drafts"`, then load `apps/extension/dist`
+  unpacked. The panel now drills: the bundle carries `review_status` (the shared selector
+  starts a session only from promoted content, so a bundle without it rendered an empty panel
+  however many questions it held), and the empty states match the CLI's.
+- pnpm pin moved to 12.11.2: pnpm 11 publishes no `darwin-x64` engine binary, so `make setup`
+  failed on Intel macOS before any install ran.
 - Blockers: none. Nothing is waiting on a human.
 
 
@@ -64,4 +76,4 @@ is exercised by `make check`:
 
 None are reviewed. Nothing here has been fact-checked by a human yet (CONSTRAINTS #1).
 
-_Last updated: 2026-09-07_
+_Last updated: 2026-10-12_

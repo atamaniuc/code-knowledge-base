@@ -1,7 +1,7 @@
 # Single command surface for humans, CI and the harness.
 # Every verification command referenced by feature_list.json is a target here.
 
-.PHONY: setup test lint validate check drill ingest extension verify-content cold-start harness-doctor harness-status harness-activate harness-verify harness-check clean help
+.PHONY: setup test lint validate check drill prep ingest extension verify-content cold-start harness-doctor harness-status harness-activate harness-verify harness-check clean help
 
 help:
 	@echo "setup             install dependencies and enable the pre-commit hook"
@@ -10,6 +10,7 @@ help:
 	@echo "validate          validate content/ against schemas and cross-file rules"
 	@echo "check             lint + test + validate; the gate for every feature list item"
 	@echo "drill             run a practice session; ARGS=\"--help\" for options"
+	@echo "prep              ARGS=<job-url>  parse a posting and build a rehearsal plan for it"
 	@echo "ingest            rebuild the topic frequency map from live job postings"
 	@echo "extension         build the unpacked Chrome extension into apps/extension/dist"
 	@echo "verify-content    run the grounding gate over wiki articles and promote what passes"
@@ -39,6 +40,10 @@ check: lint test validate harness-check
 
 drill:
 	@pnpm exec tsx apps/drill/src/cli.ts $(ARGS)
+
+# The only target that reads the network: a posting URL in, a rehearsal plan out.
+prep:
+	@pnpm exec tsx scripts/prep-from-job.ts $(ARGS)
 
 ingest:
 	@pnpm exec tsx scripts/ingest-vacancies.ts $(ARGS)

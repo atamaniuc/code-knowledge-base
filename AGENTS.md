@@ -27,6 +27,7 @@ make check                  # lint + test + validate — the gate for every unit
 make validate               # content only, fastest feedback while authoring
 make drill ARGS="--help"    # practice session in the terminal
 make extension ARGS="--include-drafts"   # build the unpacked extension into apps/extension/dist
+make prep ARGS="<job-url>"  # parse a posting into a rehearsal plan (the only networked command)
 make ingest                 # rebuild the topic frequency map from live job postings
 ```
 

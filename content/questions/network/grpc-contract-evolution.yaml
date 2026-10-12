@@ -1,0 +1,99 @@
+id: f355e684-7e06-4a0d-912a-1a22b4b900da
+slug: grpc-contract-evolution
+lang: en
+
+domain: network
+topic: api-design
+subtopic: grpc
+
+tracks: [backend]
+levels: [senior, staff]
+
+tech:
+  name: gRPC
+  version_range: ">=1.60"
+
+question: >-
+  Two internal services talk over gRPC. You need to rename a field and add a required piece
+  of data to the request. What does the protobuf contract let you do, and what will break
+  anyway?
+
+probes: >-
+  Whether the candidate knows the wire format well enough to reason about compatibility
+  rather than trusting a version number. Field numbers are the contract; names are not. The
+  sharp answer also covers the deployment skew window, where both versions run at once.
+
+answer_strategy: >-
+  Separate the three layers: what protobuf guarantees (field numbers, wire types,
+  unknown-field preservation), what the API means (renaming is safe on the wire and breaking
+  in generated code), and what the deployment does (old and new run simultaneously during a
+  rollout). Say that adding a required field is not a thing protobuf has — proto3 has no
+  required — and that the compatibility problem moves to validation.
+
+expected_answer:
+  - text: >-
+      States that field numbers identify fields on the wire and names do not, so renaming is
+      wire-compatible and source-incompatible, which is a code and rollout problem.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Knows unknown fields are preserved by default so an old server can round-trip data it
+      does not understand, and that removing a field number requires reserving it.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Says proto3 has no required fields, so a new mandatory input is additive at the schema
+      level and needs server-side validation with a clear error.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Plans for the skew window: both versions run at once, so the server must accept old and
+      new, and the client must tolerate responses from either.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Adds visibility into which client versions are actually calling, since a protobuf change
+      cannot be verified from the schema alone.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Names the alternative when the change is not additive: a new method or a new message
+      version, with the old one deprecated and observed.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - How does this change if the caller is a mobile app that updates over months?
+  - What breaks if someone reuses a retired field number?
+  - Where would you put the validation for the newly required data, and what error does the
+    caller see?
+
+common_mistakes:
+  - >-
+    Assuming a version bump makes the change safe, when the schema itself is what decides.
+  - >-
+    Renaming a field and regenerating both sides in one release, ignoring the rollout window.
+  - >-
+    Deleting a field number without reserving it, so a future field silently reuses it.
+  - >-
+    Marking a field optional in the schema and treating it as optional in the handler.
+
+related_questions: [api-versioning-and-idempotency]
+
+wiki_refs:
+  - slug: api-contract-evolution
+    anchor: versioning-strategies
+    wiki_reviewed_at: "2026-10-12"
+
+sources:
+  - title: "Protocol Buffers — Updating message types"
+    url: https://protobuf.dev/programming-guides/proto3/
+    kind: official-docs
+  - title: "gRPC — Guides"
+    url: https://grpc.io/docs/guides/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 9
+
+review_status: draft

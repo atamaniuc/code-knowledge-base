@@ -28,10 +28,13 @@ interface Shipped {
   expected: { text: string; level: string; weight: number }[];
   followUps: string[];
   mistakes: string[];
+  /** Where the item sits on the promotion ladder; the shared selector starts a session only from the top of it. */
+  review_status: string;
   minutes: number;
 }
 
 const includeDrafts = process.argv.includes("--include-drafts");
+if (includeDrafts) console.warn("including drafts: these answers have not been fact-checked by a human");
 
 const questions: Shipped[] = [];
 for (const file of walk(join(ROOT, "content/questions"), [".yaml", ".yml"])) {
@@ -51,6 +54,10 @@ for (const file of walk(join(ROOT, "content/questions"), [".yaml", ".yml"])) {
     expected: q.expected_answer.map((b) => ({ text: b.text.trim(), level: b.min_level, weight: b.weight })),
     followUps: q.follow_ups.map((f) => f.trim()),
     mistakes: q.common_mistakes.map((m) => m.trim()),
+    // Drafts ship as if promoted — the same remap the CLI does for --include-drafts.
+    // The shared selector starts a session only from shippable content, so a bundle
+    // that carried `draft` renders an empty panel however many questions it holds.
+    review_status: includeDrafts ? "auto_verified" : q.review_status,
     minutes: q.estimated_minutes,
   });
 }

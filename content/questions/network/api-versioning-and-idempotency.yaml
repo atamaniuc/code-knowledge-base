@@ -1,0 +1,101 @@
+id: 42ae37f8-93be-4d48-98b3-d5f5045af57a
+slug: api-versioning-and-idempotency
+lang: en
+
+domain: network
+topic: api-design
+subtopic: compatibility
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: HTTP APIs
+  version_range: ">=2022"
+
+question: >-
+  A field that clients depend on has to change shape. There are hundreds of integrations,
+  some of them you cannot see. How do you make the change?
+
+probes: >-
+  Whether the candidate treats an API change as a migration rather than a deploy. The
+  signal is expand-and-contract with observable deprecation, and the deliberate mention of
+  the clients that cannot be enumerated — which is where "we will just version it" fails.
+
+answer_strategy: >-
+  Say what the contract actually contains before saying how to change it: not just the
+  schema, but the error shapes and retry semantics clients have encoded. Then walk
+  expand-and-contract — add alongside, migrate, observe, remove — and be explicit that the
+  removal needs telemetry proving nobody is on the old path. If the interviewer pushes on
+  versioning, give the trade between URI and header versioning rather than a preference.
+
+expected_answer:
+  - text: >-
+      Expands first: add the new field or endpoint alongside the old one, so both are valid
+      while clients migrate.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Instruments the old path per client, because a deprecation with no usage data is a
+      guess about who breaks.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Sets a dated deprecation window and says what happens at the end of it, rather than
+      leaving the old shape alive indefinitely.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Treats error shapes, pagination order and retry semantics as part of the contract, not
+      only the field being changed.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Knows which changes are compatible (optional field, new enum member) and which are not
+      (required field, narrowed enum, changed nullability), and can say why.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Chooses a versioning strategy deliberately, naming the cost — forked resource identity
+      for URI versioning, invisible skew for header versioning — instead of defaulting.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - A client is sending a field the old API tolerated and the new one rejects. What now?
+  - How would you run the migration if the integration belonged to a customer who never
+    answers email?
+  - When is deleting the old path the wrong call even if usage looks like zero?
+
+common_mistakes:
+  - >-
+    Versioning the endpoint and calling the change done, while the old version is never
+    removed and both code paths must now be maintained forever.
+  - >-
+    Breaking the shape behind a feature flag and assuming clients will not notice until the
+    flag flips.
+  - >-
+    Treating the OpenAPI document as the whole contract and ignoring error and retry
+    behaviour.
+  - >-
+    Removing the old path on a date rather than on evidence.
+
+related_questions: []
+
+wiki_refs:
+  - slug: api-contract-evolution
+    anchor: prefer-additive-change
+    wiki_reviewed_at: "2026-10-12"
+
+sources:
+  - title: "RFC 9110 — HTTP Semantics"
+    url: https://www.rfc-editor.org/rfc/rfc9110.html
+    kind: rfc
+  - title: "Stripe — Idempotent requests"
+    url: https://docs.stripe.com/api/idempotent_requests
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

@@ -6,6 +6,9 @@ Reproducibility, so that "works here" and "works anywhere" are the same statemen
   and a laptop cannot silently diverge.
 - **Dependencies** — pinned in `pnpm-lock.yaml`. Installs are exact rather than
   approximately right.
+- **pnpm version** — pinned in `package.json#packageManager`, and it has to be v12 or
+  newer. pnpm 11 publishes no `darwin-x64` engine binary, so on an Intel Mac the version
+  switch fails before any install runs.
 - **No services.** No database to provision, no server to start, no API key needed to run
   the checks. `make setup && make check` is the whole setup, which is what makes the
   cold-start test meaningful.

@@ -1,0 +1,107 @@
+id: 4bfc0a16-72b6-4441-9d95-a02f560ae166
+slug: postgres-ledger-read-model
+lang: en
+
+domain: data
+topic: schema-design
+subtopic: ledger
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: PostgreSQL
+  version_range: ">=16"
+
+question: >-
+  The ledger table has a few hundred million rows and the statement page got slow. Balances
+  are recomputed by summing it on every read. What do you change, and what stops the change
+  from being wrong?
+
+probes: >-
+  Whether the candidate separates the transactional write path from the read path, and
+  whether they insist on reconciliation. The signal is that a cached balance is a cache, with
+  a job that proves it still agrees with the entries it summarises.
+
+answer_strategy: >-
+  Split the problem in two before answering: the write path must stay append-only and
+  transactionally correct, and the read path is a materialised answer that is allowed to be
+  stale. Then give the read model and, immediately after, the reconciliation that makes it
+  trustworthy — the second half is what separates a design from a hope. Close on the
+  migration mechanics for the indexes and the balance backfill.
+
+expected_answer:
+  - text: >-
+      Keeps the ledger append-only and moves the balance to a maintained read model updated
+      in the same transaction as the entry, so contention is per account rather than per
+      table.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Adds a reconciliation job that recomputes balances from entries and alerts on drift, and
+      says why a cached balance without it is a bug waiting for a month-end.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Indexes the actual access path — composite on (account_id, created_at) for statements,
+      an index on transaction_id — rather than adding indexes generally.
+    weight: 4
+    min_level: senior
+  - text: >-
+      States which isolation level the write path uses and why read committed is not enough
+      for the check-then-write patterns around a balance.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Applies migrations without a long lock: index CONCURRENTLY, add nullable, backfill in
+      batches, add constraints as NOT VALID then VALIDATE.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Considers partitioning by time when the retention story is "keep N months", so dropping
+      old data is a metadata operation.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Keeps money as integers in minor units and says what that removes from the problem.
+    weight: 2
+    min_level: senior
+
+follow_ups:
+  - A statement request arrives for an account with a balance that disagrees with the sum of
+    its entries. What do you show the user?
+  - How would you find out which query got slow, and what would you look at first?
+  - What changes if the ledger is the system of record for a regulator?
+
+common_mistakes:
+  - >-
+    Adding an index per slow query and never looking at the plan, which makes writes slower
+    and leaves the read slow.
+  - >-
+    Caching the balance in Redis with a TTL and calling the staleness acceptable without a
+    reconciliation.
+  - >-
+    Running a migration that takes an ACCESS EXCLUSIVE lock on the hot table inside the
+    deploy window.
+  - >-
+    Recomputing the balance in the application and storing a float.
+
+related_questions: []
+
+wiki_refs:
+  - slug: postgres-ledger-design
+    anchor: balances-are-a-read-model
+    wiki_reviewed_at: "2026-10-12"
+
+sources:
+  - title: "PostgreSQL — Indexes"
+    url: https://www.postgresql.org/docs/current/indexes.html
+    kind: official-docs
+  - title: "PostgreSQL — Transaction isolation"
+    url: https://www.postgresql.org/docs/current/transaction-iso.html
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

@@ -1,0 +1,104 @@
+id: 95476db1-cf92-400e-a6f5-c9357f5b9419
+slug: agent-skills-context-economy
+lang: en
+
+domain: agentic
+topic: context-engineering
+subtopic: skills
+
+tracks: [backend, fullstack, any]
+levels: [staff]
+
+tech:
+  name: Agent Skills
+  version_range: ">=2025"
+
+question: >-
+  A team's agent has grown a system prompt of four thousand words of house procedure, and it
+  is getting worse at the tasks it used to do well. Someone proposes packaging the procedure
+  as skills. What does that actually fix, and how would you know it worked?
+
+probes: >-
+  Whether the candidate connects context size to behaviour rather than treating it as a
+  storage problem, and whether they propose an evaluation instead of declaring the
+  refactoring a success. The staff signal is ownership: a skill with no owner drifts.
+
+answer_strategy: >-
+  Diagnose before prescribing: a large always-loaded prompt spends attention on procedures
+  irrelevant to the task in hand, and the failure looks like degraded judgement rather than
+  a missing instruction. Then explain progressive disclosure — metadata always, body on
+  match, files on demand — and be precise that the description becomes the routing interface.
+  Finish with evaluation and ownership, because a refactor with no measurement is a
+  preference.
+
+expected_answer:
+  - text: >-
+      Connects the symptom to always-loaded context: tokens spent on irrelevant procedure
+      degrade attention on the task being performed, which is why quality fell as the prompt
+      grew.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Describes progressive disclosure precisely: names and descriptions at startup, the body
+      only when the task matches, referenced files only when the procedure asks for them.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Treats the description as the routing interface and says a vague one makes the skill
+      either never load or load for the wrong task.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Distinguishes connectivity from expertise: MCP is what the agent can reach, a skill is
+      the team's judgement about how to use it.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Proposes an evaluation — a task set run with and without the change — instead of
+      assuming the refactor improved anything.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Assigns ownership and tracks which skills actually load, treating an unloaded skill as
+      dead weight to delete.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Keeps unstable facts out of skills: anything that changes weekly belongs in a tool, a
+      document or a database, not in always-available instructions.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - How do you test whether a skill made an agent worse without a full eval suite?
+  - Two skills give contradictory instructions for the same task. What happens, and how do
+    you prevent it?
+  - When is a skill the wrong packaging, and a tool or a plain document the right one?
+
+common_mistakes:
+  - >-
+    Compressing the prompt and calling the size reduction the outcome, with no behavioural
+    evaluation.
+  - >-
+    One giant skill that is the old system prompt with a filename.
+  - >-
+    Writing descriptions for humans, then wondering why the skill never loads when it should.
+  - >-
+    Shipping skills with no owner, so they silently describe a procedure that changed.
+
+related_questions: [mcp-versus-bespoke-tools, agent-loop-stop-conditions]
+
+wiki_refs:
+  - slug: agent-skills
+    anchor: progressive-disclosure
+    wiki_reviewed_at: "2026-10-12"
+
+sources:
+  - title: "Equipping agents for the real world with Agent Skills"
+    url: https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills
+    kind: article
+
+difficulty: 5
+estimated_minutes: 10
+
+review_status: draft

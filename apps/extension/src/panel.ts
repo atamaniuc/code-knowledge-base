@@ -1,4 +1,4 @@
-import { type Grade, PASSING_GRADE, nextUp } from "@scheduling/index.js";
+import { type Grade, PASSING_GRADE, eligible, nextUp } from "@scheduling/index.js";
 import { BrowserReviewLog } from "./storage.js";
 
 /**
@@ -20,6 +20,8 @@ interface Shipped {
   expected: { text: string; level: string; weight: number }[];
   followUps: string[];
   mistakes: string[];
+  /** Written by the bundler; the selector refuses a session on anything the gates have not promoted. */
+  review_status: string;
   minutes: number;
 }
 
@@ -118,9 +120,17 @@ function render(): void {
 
   const q = queue[0];
   if (!q) {
+    // Three ways to run dry, and they need different actions; the CLI draws the same
+    // distinction. A bank that is present but unpromoted must not read as "nothing due".
+    const promoted = eligible(bundle.questions as never[], {}).length;
     const p = document.createElement("p");
     p.className = "empty";
-    p.textContent = bundle.questions.length === 0 ? "No questions bundled yet." : "Nothing due. Come back later or widen the filter.";
+    p.textContent =
+      bundle.questions.length === 0
+        ? "No questions bundled yet."
+        : promoted === 0
+          ? "Nothing to drill: no question has been promoted yet. Rebuild with --include-drafts to work against unreviewed content."
+          : "Nothing due. Come back later or widen the filter.";
     main.append(p);
     return;
   }

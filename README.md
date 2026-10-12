@@ -31,14 +31,33 @@ free repositories hold the top of the search results. What a chat does not give 
 ## Quick start
 
 ```bash
-make setup                                # dependencies (pnpm, Node >= 24) and the pre-commit hook
+make setup                                # dependencies and the pre-commit hook
 make check                                # lint + tests + content validation + harness gates
 make drill ARGS="--include-drafts"        # a practice session in the terminal
+make prep ARGS="<job-url>"                # parse a posting into a rehearsal plan for it
 make extension ARGS="--include-drafts"    # build the unpacked Chrome extension
 ```
 
-Loading the extension: Chrome → `chrome://extensions` → Developer mode → Load unpacked →
-`apps/extension/dist`. The toolbar icon opens the side panel.
+`make prep` is the only command that reads the network: it fetches one posting, extracts
+the stack with the same closed gazetteer the vacancy map uses, and prints what the posting
+emphasises, which questions in the bank cover it, and which of its requirements nothing
+covers yet. <!-- proof: make prep -->
+
+The toolchain is pinned rather than assumed: Node >= 24 in `.nvmrc`, and pnpm v12 or newer
+in `package.json#packageManager`. `make setup` installs with that exact version and is the
+only install step. The floor is real — pnpm 11 ships no `darwin-x64` engine binary, so a pin
+to it fails on an Intel Mac before any install runs. <!-- proof: package.json -->
+
+### Loading the extension
+
+`make extension ARGS="--include-drafts"` writes the unpacked extension to
+`apps/extension/dist`; without `ARGS` the bundle carries no questions, because nothing in
+`content/` is published yet. Then:
+
+1. Open `chrome://extensions` in Chrome.
+2. Turn on **Developer mode** (top right).
+3. **Load unpacked** → `apps/extension/dist`.
+4. Click the toolbar icon; it opens the side panel.
 
 There is no server and no database to provision, and no API key is needed to run the checks.
 Everything runs locally. <!-- proof: make check -->

@@ -1,0 +1,106 @@
+id: fd0c402a-766d-468a-a120-42f1ee811faa
+slug: outbox-saga-funding-flow
+lang: en
+
+domain: messaging
+topic: consistency
+subtopic: saga
+
+tracks: [backend, fullstack]
+levels: [staff]
+
+tech:
+  name: Apache Kafka
+  version_range: ">=3.6"
+
+question: >-
+  A funding request walks through risk checks, a payment provider, a ledger write and a
+  notification. Design the flow so a failure halfway through leaves the system explainable.
+
+probes: >-
+  Whether the candidate designs for partial failure as the normal case, and whether they
+  produce a visible process rather than a chain of events. The senior-vs-staff separation is
+  usually the terminal state that a human owns.
+
+answer_strategy: >-
+  Do not start with the diagram. Start by naming which steps must be atomic together and
+  which can be eventually consistent, because that decides how many transactions exist. Then
+  choose orchestration over choreography at this number of steps and say why. Finish on the
+  two things interviewers listen for: bounded retries with compensations, and a terminal
+  state where a human is asked rather than the saga looping.
+
+expected_answer:
+  - text: >-
+      Groups the steps by what must change atomically, keeping the ledger write and the state
+      that authorises it in one transaction.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Chooses orchestration with an explicit state machine for a flow of this length, and can
+      say what choreography would cost here — a process nobody can see end to end.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Defines a compensating action per step and can say what compensation means when the
+      payment provider cannot be rolled back, for example a refund is a new transaction.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Bounds retries per step with a deadline, then escalates, instead of retrying forever.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Has a terminal failure state that a human owns, with the information needed to act,
+      rather than an implicit "stuck" state.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Makes every step idempotent by key so a retry after an ambiguous timeout is safe.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Publishes state changes through an outbox so the ledger and the downstream notification
+      cannot disagree about what happened.
+    weight: 4
+    min_level: staff
+
+follow_ups:
+  - The provider times out and you do not know whether the transfer happened. What does the
+    saga do next?
+  - How do you reconcile the saga's view of a funding request with the ledger a month later?
+  - What would you need in the audit trail to answer a regulator's question about one
+    request?
+
+common_mistakes:
+  - >-
+    Chaining synchronous calls and calling the result a saga, which is a distributed
+    transaction by another name and no more available.
+  - >-
+    A compensating action that is itself not idempotent, so a retried compensation reverses
+    twice.
+  - >-
+    No terminal state: the flow retries until someone notices, and the observability story is
+    a dashboard nobody watches.
+  - >-
+    Publishing the event before the transaction commits, which is the dual-write bug the
+    outbox exists to prevent.
+
+related_questions: [kafka-duplicate-consumer]
+
+wiki_refs:
+  - slug: outbox-idempotency-and-sagas
+    anchor: saga-orchestration-or-choreography
+    wiki_reviewed_at: "2026-10-12"
+
+sources:
+  - title: "Pattern: Saga"
+    url: https://microservices.io/patterns/data/saga.html
+    kind: article
+  - title: "Pattern: Transactional outbox"
+    url: https://microservices.io/patterns/data/transactional-outbox.html
+    kind: article
+
+difficulty: 5
+estimated_minutes: 14
+
+review_status: draft
