@@ -3,18 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
     <title>Interview Prep</title>
     <link rel="stylesheet" href="panel.css" />
   </head>
   <body>
-    <header>
-      <div id="progress">loading</div>
-      <div id="filters">
-        <select id="domain"><option value="">all domains</option></select>
-        <select id="level"><option value="">all levels</option></select>
-      </div>
-    </header>
-    <main id="main"></main>
+    <a class="skip-link" href="#main">Skip to the session</a>
+    <div id="app"></div>
+    <div id="announce" class="sr-only" role="status" aria-live="polite"></div>
     <script type="module" src="panel.js"></script>
   </body>
 </html>

@@ -1,168 +1,368 @@
-import { type Grade, PASSING_GRADE, eligible, nextUp } from "@scheduling/index.js";
+import { type Grade, eligible, nextUp } from "@scheduling/index.js";
+import {
+  applyFilters,
+  domainOptions,
+  emptyState,
+  hasActiveFilters,
+  levelOptions,
+  NO_FILTERS,
+  techOptions,
+  withPinned,
+  type Filters,
+} from "./bank.js";
+import { articleBySlug, parseBundle, toSelectorPool, type Bundle, type Question } from "./bundle.js";
+import { mount, render } from "./dom.js";
+import { resolveKey, type Action, type ViewId } from "./keys.js";
+import { dayProgress, streak } from "./stats.js";
 import { BrowserReviewLog } from "./storage.js";
+import * as view from "./view.js";
 
 /**
- * The drill panel.
+ * The side panel controller.
  *
- * Deliberately two-stage: the question and what it probes are shown first, and the
- * expected answer only after you commit. Seeing the answer while thinking is the failure
- * mode of every flashcard app used for interview practice — it produces recognition,
- * which is not what an interview tests.
+ * Views are pure specs (view.ts) and this file only decides which one to build and what a
+ * click or a key means. The two-stage drill lives here as one boolean: `revealed` is set
+ * only by an explicit commit, and a new question clears it, which is what keeps the
+ * expected answer off the screen while you are still thinking.
  */
-interface Shipped {
-  id: string;
-  slug: string;
-  domain: string;
-  levels: string[];
-  question: string;
-  probes: string;
-  answerStrategy?: string;
-  expected: { text: string; level: string; weight: number }[];
-  followUps: string[];
-  mistakes: string[];
-  /** Written by the bundler; the selector refuses a session on anything the gates have not promoted. */
-  review_status: string;
-  minutes: number;
-}
+async function main(): Promise<void> {
+  const found = document.getElementById("app");
+  const announcer = document.getElementById("announce");
+  if (!found) return;
+  // Non-null alias: closures below are analysed outside the guard's narrowing.
+  const app = found;
 
-interface Bundle {
-  questions: Shipped[];
-  domains: string[];
-  levels: string[];
-}
-
-const el = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
-const main = el("main");
-const domainSelect = el<HTMLSelectElement>("domain");
-const levelSelect = el<HTMLSelectElement>("level");
-const progressEl = el("progress");
-
-const bundle: Bundle = await fetch("content.json").then((r) => r.json());
-const log = await BrowserReviewLog.load();
-
-const LEVEL_ORDER = ["junior", "middle", "senior", "staff", "head"];
-for (const d of bundle.domains) domainSelect.append(new Option(d, d));
-for (const l of LEVEL_ORDER.filter((l) => bundle.levels.includes(l))) levelSelect.append(new Option(l, l));
-
-const filters = {
-  get domains() {
-    return domainSelect.value ? [domainSelect.value] : undefined;
-  },
-  get levels() {
-    return levelSelect.value ? [levelSelect.value] : undefined;
-  },
-};
-
-function renderProgress(remaining: number): void {
-  const { answered, recalled } = log.todaysProgress();
-  const today = answered === 0 ? "nothing answered today" : `${recalled}/${answered} recalled today`;
-  progressEl.textContent = `${today} · ${remaining} in queue`;
-}
-
-function list(items: string[]): HTMLUListElement {
-  const ul = document.createElement("ul");
-  for (const item of items) {
-    const li = document.createElement("li");
-    li.textContent = item;
-    ul.append(li);
-  }
-  return ul;
-}
-
-function section(title: string, body: Node): HTMLElement {
-  const s = document.createElement("section");
-  const h = document.createElement("h2");
-  h.textContent = title;
-  s.append(h, body);
-  return s;
-}
-
-function showAnswer(q: Shipped, onGrade: (g: Grade) => void): void {
-  const answers = document.createElement("ul");
-  for (const b of q.expected) {
-    const li = document.createElement("li");
-    const level = document.createElement("span");
-    level.className = "level";
-    level.textContent = b.level;
-    li.append(level, document.createTextNode(b.text));
-    answers.append(li);
-  }
-  main.append(section("Expected", answers));
-
-  if (q.answerStrategy) {
-    const p = document.createElement("div");
-    p.className = "strategy";
-    p.textContent = q.answerStrategy;
-    main.append(section("How to deliver it", p));
-  }
-  if (q.mistakes.length) main.append(section("Common mistakes", list(q.mistakes)));
-  if (q.followUps.length) main.append(section("Follow-ups they may ask", list(q.followUps)));
-
-  const grades = document.createElement("div");
-  grades.className = "grades";
-  for (let g = 0; g <= 5; g++) {
-    const button = document.createElement("button");
-    button.textContent = String(g);
-    button.title = g < PASSING_GRADE ? "missed it" : g === PASSING_GRADE ? "got there, with effort" : "immediate";
-    button.addEventListener("click", () => onGrade(g as Grade));
-    grades.append(button);
-  }
-  const hint = document.createElement("p");
-  hint.className = "hint";
-  hint.textContent = "0 blank · 3 correct but hard · 5 immediate. Grade honestly; the schedule is only as good as this.";
-  main.append(grades, hint);
-}
-
-function render(): void {
-  const queue = nextUp(bundle.questions as never[], log, filters as never) as unknown as Shipped[];
-  renderProgress(queue.length);
-  main.replaceChildren();
-
-  const q = queue[0];
-  if (!q) {
-    // Three ways to run dry, and they need different actions; the CLI draws the same
-    // distinction. A bank that is present but unpromoted must not read as "nothing due".
-    const promoted = eligible(bundle.questions as never[], {}).length;
-    const p = document.createElement("p");
-    p.className = "empty";
-    p.textContent =
-      bundle.questions.length === 0
-        ? "No questions bundled yet."
-        : promoted === 0
-          ? "Nothing to drill: no question has been promoted yet. Rebuild with --include-drafts to work against unreviewed content."
-          : "Nothing due. Come back later or widen the filter.";
-    main.append(p);
+  let bundle: Bundle;
+  try {
+    const response = await fetch("content.json");
+    if (!response.ok) throw new Error("content.json returned HTTP " + String(response.status));
+    bundle = parseBundle(await response.json());
+  } catch (error) {
+    mount(app, view.errorView(error instanceof Error ? error.message : String(error)));
     return;
   }
 
-  const meta = document.createElement("div");
-  meta.className = "meta";
-  meta.textContent = `${q.domain} · ${q.levels.join("/")} · ~${q.minutes} min`;
+  const log = await BrowserReviewLog.load();
 
-  const question = document.createElement("p");
-  question.className = "question";
-  question.textContent = q.question;
+  let viewId: ViewId = "drill";
+  let filters: Filters = { ...NO_FILTERS };
+  let revealed = false;
+  let shownId: string | null = null;
+  let pinned: Question | null = null;
+  let expanded: string | null = null;
+  let wiki: { slug: string; anchor: string; from: ViewId } | null = null;
+  let sheet = false;
+  let pending: "g" | null = null;
 
-  const probes = document.createElement("div");
-  probes.className = "probes";
-  const label = document.createElement("b");
-  label.textContent = "What they are testing";
-  probes.append(label, document.createTextNode(q.probes));
+  function announce(message: string): void {
+    if (announcer) announcer.textContent = message;
+  }
 
-  const reveal = document.createElement("button");
-  reveal.className = "primary";
-  reveal.textContent = "Answer out loud, then reveal";
-  reveal.addEventListener("click", () => {
-    reveal.remove();
-    showAnswer(q, async (grade) => {
-      await log.record(q.id, grade);
-      render();
-    });
+  function snapshot(): {
+    filtered: Question[];
+    queue: Question[];
+    progress: view.Chrome["progress"];
+    streak: number;
+    seen: ReadonlySet<string>;
+    due: ReadonlySet<string>;
+  } {
+    const filtered = applyFilters(bundle.questions, filters);
+    const chosen = pinned;
+    if (chosen && !filtered.some((q) => q.id === chosen.id)) pinned = null;
+
+    // The selector reads review_status and nothing else about provenance; the pool is
+    // pre-filtered here so domain/level/tech/search all behave as one filter set.
+    const byId = new Map(filtered.map((q) => [q.id, q]));
+    const ordered = nextUp(toSelectorPool(filtered) as never, log, {}) as unknown as { id: string }[];
+    const queue = withPinned(
+      pinned,
+      ordered.map((s) => byId.get(s.id)).filter((q): q is Question => q !== undefined),
+    );
+
+    const records = log.allRecords();
+    return { filtered, queue, progress: dayProgress(records), streak: streak(records), seen: log.seenIds(), due: new Set(log.dueIds(new Date())) };
+  }
+
+  type Snap = ReturnType<typeof snapshot>;
+
+  function currentQuestion(snap: Snap): Question | null {
+    const next = snap.queue[0] ?? null;
+    if ((next ? next.id : null) !== shownId) {
+      shownId = next ? next.id : null;
+      revealed = false;
+    }
+    return next;
+  }
+
+  function promptPool(): number {
+    return eligible(toSelectorPool(bundle.questions) as never, {}).length;
+  }
+
+  function wikiTitles(): Record<string, string> {
+    const out: Record<string, string> = {};
+    for (const article of bundle.wiki) out[article.slug] = article.title;
+    return out;
+  }
+
+  function bankInput(snap: Snap): view.BankInput {
+    return {
+      questions: snap.filtered,
+      total: bundle.questions.length,
+      filters,
+      domains: bundle.domains,
+      // Option lists come from the whole bank, not the filtered slice, so a filter cannot
+      // hide the values needed to undo it.
+      domainOptions: domainOptions(bundle.questions, bundle.domains),
+      levelOptions: levelOptions(bundle.questions, bundle.levels),
+      techOptions: techOptions(bundle.questions),
+      expanded,
+      seen: snap.seen,
+      due: snap.due,
+      wikiTitles: wikiTitles(),
+    };
+  }
+
+  function body(snap: Snap): view.Spec[] {
+    if (wiki) {
+      const article = articleBySlug(bundle, wiki.slug);
+      if (article) return [view.wikiView({ article, articles: bundle.wiki, domains: bundle.domains })];
+      wiki = null;
+    }
+    if (viewId === "bank") return [view.bankView(bankInput(snap))];
+    if (viewId === "posting") {
+      return [view.postingView({ plan: bundle.plan, questions: bundle.questions, domains: bundle.domains })];
+    }
+    const question = currentQuestion(snap);
+    if (!question) {
+      const empty = emptyState({
+        total: bundle.questions.length,
+        promoted: promptPool(),
+        shown: snap.filtered.length,
+        filtered: hasActiveFilters(filters),
+      });
+      return [view.emptyView(empty.title, empty.hint)];
+    }
+    return [view.drillView({ question, revealed, domains: bundle.domains, wikiTitles: wikiTitles(), remaining: snap.queue.length })];
+  }
+
+  function scrollToAnchor(anchor: string): void {
+    if (!anchor) return;
+    const node = document.getElementById(anchor);
+    if (!node) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    node.scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" });
+  }
+
+  function rerender(): void {
+    const active = document.activeElement;
+    const focusKey = active instanceof HTMLElement ? active.getAttribute("data-focus-key") : null;
+
+    const snap = snapshot();
+    const specs = body(snap);
+    const chrome: view.Chrome = {
+      view: wiki ? wiki.from : viewId,
+      progress: snap.progress,
+      streak: snap.streak,
+      remaining: snap.queue.length,
+    };
+    mount(app, view.shell(chrome, specs, sheet ? view.shortcutSheetView() : undefined));
+
+    const restored = focusKey ? app.querySelector('[data-focus-key="' + focusKey + '"]') : null;
+    const target = restored ?? app.querySelector("[data-autofocus]");
+    if (target instanceof HTMLElement) target.focus();
+
+    if (wiki && wiki.anchor) {
+      scrollToAnchor(wiki.anchor);
+      wiki = { ...wiki, anchor: "" };
+    }
+  }
+
+  /** Search re-renders only the list, so the caret survives every keystroke. */
+  function refreshResults(): void {
+    const snap = snapshot();
+    const old = app.querySelector("#bank-results");
+    if (old) old.replaceWith(render(view.bankResults(bankInput(snap))));
+    const text = view.countText(snap.filtered.length, bundle.questions.length, filters.query);
+    const count = app.querySelector("#bank-count");
+    if (count) count.textContent = text;
+    announce(text);
+  }
+
+  async function gradeQuestion(question: Question, grade: Grade): Promise<void> {
+    try {
+      await log.record(question.id, grade);
+    } catch {
+      announce("That review could not be saved.");
+      return;
+    }
+    const meaning = view.GRADE_SCALE[grade];
+    announce("Graded " + String(grade) + (meaning ? " (" + meaning.short + ")" : ""));
+    pinned = null;
+    expanded = null;
+    revealed = false;
+    shownId = null;
+    rerender();
+  }
+
+  function apply(action: Action): void {
+    switch (action.type) {
+      case "reveal":
+        if (viewId === "drill" && !wiki && !sheet && !revealed) {
+          revealed = true;
+          announce("Expected answer shown.");
+          rerender();
+        }
+        return;
+      case "grade": {
+        if (wiki || sheet) return;
+        const snap = snapshot();
+        const question = currentQuestion(snap);
+        if (revealed && question) void gradeQuestion(question, action.grade);
+        return;
+      }
+      case "view":
+        viewId = action.view;
+        wiki = null;
+        sheet = false;
+        rerender();
+        return;
+      case "focusSearch":
+        viewId = "bank";
+        wiki = null;
+        sheet = false;
+        rerender();
+        app.querySelector<HTMLInputElement>("#search")?.focus();
+        return;
+      case "shortcuts":
+        sheet = !sheet;
+        rerender();
+        return;
+      case "back":
+        if (sheet) {
+          sheet = false;
+          rerender();
+          return;
+        }
+        if (wiki) {
+          viewId = wiki.from;
+          wiki = null;
+          rerender();
+          return;
+        }
+        if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+        return;
+      case "none":
+        return;
+    }
+  }
+
+  function dispatch(action: string, element: HTMLElement): void {
+    switch (action) {
+      case "reveal":
+        apply({ type: "reveal" });
+        return;
+      case "grade": {
+        const grade = Number(element.getAttribute("data-grade")) as Grade;
+        apply({ type: "grade", grade });
+        return;
+      }
+      case "view": {
+        const target = element.getAttribute("data-view");
+        if (target === "drill" || target === "bank" || target === "posting") apply({ type: "view", view: target });
+        return;
+      }
+      case "toggle": {
+        const id = element.getAttribute("data-id");
+        expanded = expanded === id ? null : id;
+        rerender();
+        return;
+      }
+      case "drill": {
+        const question = bundle.questions.find((q) => q.id === element.getAttribute("data-id"));
+        if (!question) return;
+        pinned = question;
+        viewId = "drill";
+        wiki = null;
+        expanded = null;
+        revealed = false;
+        shownId = null;
+        rerender();
+        return;
+      }
+      case "wiki": {
+        const slug = element.getAttribute("data-slug") ?? "";
+        if (!articleBySlug(bundle, slug)) return;
+        wiki = { slug, anchor: element.getAttribute("data-anchor") ?? "", from: viewId };
+        sheet = false;
+        rerender();
+        return;
+      }
+      case "back":
+        apply({ type: "back" });
+        return;
+      case "shortcuts":
+        apply({ type: "shortcuts" });
+        return;
+      case "close-shortcuts":
+        sheet = false;
+        rerender();
+        return;
+      case "open-question": {
+        const id = element.getAttribute("data-id");
+        if (!id) return;
+        viewId = "bank";
+        wiki = null;
+        expanded = id;
+        rerender();
+        return;
+      }
+      default:
+        return;
+    }
+  }
+
+  app.addEventListener("click", (event) => {
+    const hit = event.target instanceof Element ? event.target.closest("[data-action]") : null;
+    if (hit instanceof HTMLElement) dispatch(hit.getAttribute("data-action") ?? "", hit);
   });
 
-  main.append(meta, question, probes, reveal);
+  app.addEventListener("input", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement) || target.getAttribute("data-action") !== "search") return;
+    filters = { ...filters, query: target.value };
+    refreshResults();
+  });
+
+  app.addEventListener("change", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLSelectElement) || target.getAttribute("data-action") !== "filter") return;
+    const name = target.getAttribute("data-filter");
+    if (name === "domain") filters = { ...filters, domain: target.value };
+    else if (name === "level") filters = { ...filters, level: target.value };
+    else if (name === "tech") filters = { ...filters, tech: target.value };
+    rerender();
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    const target = event.target;
+    const inField =
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLSelectElement ||
+      target instanceof HTMLTextAreaElement ||
+      (target instanceof HTMLElement && target.isContentEditable);
+    const result = resolveKey(pending, event.key, { inField });
+    pending = result.pending;
+
+    const action = result.action;
+    if (action.type === "none") return;
+    // A digit is a grade only while an answer is committed and nothing is covering it.
+    if (action.type === "grade" && (viewId !== "drill" || wiki !== null || sheet || !revealed)) return;
+    event.preventDefault();
+    apply(action);
+  });
+
+  rerender();
 }
 
-domainSelect.addEventListener("change", render);
-levelSelect.addEventListener("change", render);
-render();
+void main();

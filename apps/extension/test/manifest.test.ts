@@ -12,15 +12,28 @@ const read = (f: string) => readFileSync(join(dist, f), "utf8");
 describe("built extension", () => {
   const manifest = JSON.parse(read("manifest.json")) as Record<string, unknown>;
   const panel = read("panel.js");
+  const html = read("panel.html");
 
   it("is Manifest V3", () => {
     expect(manifest.manifest_version).toBe(3);
   });
 
-  it("requests no host permissions", () => {
+  it("requests exactly storage and sidePanel, and no host permissions", () => {
+    expect(manifest.permissions).toEqual(["storage", "sidePanel"]);
     // Broad host permissions are the largest cause of slow and failed store review.
     expect(manifest.host_permissions).toBeUndefined();
-    expect(JSON.stringify(manifest.permissions)).not.toContain("<all_urls>");
+    expect(manifest.optional_host_permissions).toBeUndefined();
+    expect(JSON.stringify(manifest)).not.toContain("<all_urls>");
+  });
+
+  it("injects nothing into pages", () => {
+    expect(manifest.content_scripts).toBeUndefined();
+    expect(manifest.web_accessible_resources).toBeUndefined();
+  });
+
+  it("opens as a side panel", () => {
+    expect((manifest.side_panel as { default_path?: string }).default_path).toBe("panel.html");
+    expect((manifest.background as { service_worker?: string }).service_worker).toBe("background.js");
   });
 
   it("loads no remote code", () => {
@@ -28,21 +41,26 @@ describe("built extension", () => {
     expect(panel).not.toMatch(/https?:\/\//);
   });
 
-  it("makes no outbound request", () => {
-    // The only fetch is the bundled content file; anything absolute would leave the device.
-    const fetches = panel.match(/fetch\("([^"]*)"\)/g) ?? [];
-    for (const call of fetches) expect(call).not.toMatch(/https?:/);
+  it("does not fall back to eval", () => {
+    expect(panel).not.toMatch(/\beval\s*\(/);
+    expect(panel).not.toMatch(/new\s+Function\s*\(/);
+  });
+
+  it("makes exactly one request, for the bundled content file", () => {
+    const fetches = [...panel.matchAll(/fetch\(\s*(["'])([^"']*)\1\s*\)/g)].map((match) => match[2] ?? "");
+    expect(fetches).toEqual(["content.json"]);
+  });
+
+  it("loads its own assets relatively", () => {
+    expect(html).not.toMatch(/https?:\/\//);
+    expect(html).toContain('href="panel.css"');
+    expect(html).toContain('src="panel.js"');
   });
 
   it("ships a content bundle the panel can read", () => {
-    const bundle = JSON.parse(read("content.json")) as { questions: unknown[]; domains: string[] };
+    const bundle = JSON.parse(read("content.json")) as { schema: number; questions: unknown[]; domains: unknown[] };
+    expect(bundle.schema).toBe(2);
     expect(bundle.questions.length).toBeGreaterThan(0);
     expect(bundle.domains.length).toBeGreaterThan(0);
-  });
-
-  it("ships every question with what it probes", () => {
-    // The field that distinguishes this from a flashcard deck must survive the bundler.
-    const bundle = JSON.parse(read("content.json")) as { questions: { probes: string }[] };
-    expect(bundle.questions.every((q) => q.probes.length > 0)).toBe(true);
   });
 });

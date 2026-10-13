@@ -1,4 +1,5 @@
 import { INITIAL, type Grade, type ReviewLog, type ReviewRecord, nextDue, review } from "@scheduling/index.js";
+import { dayProgress } from "./stats.js";
 
 /**
  * Review history in IndexedDB.
@@ -91,10 +92,13 @@ export class BrowserReviewLog implements ReviewLog {
     return entry;
   }
 
-  /** Answered today, and how many of those were recalled. For the session header. */
+  /** Everything answered, for the header and the streak. A copy: the log stays the only writer. */
+  allRecords(): ReviewRecord[] {
+    return [...this.records];
+  }
+
+  /** Answered today, and how many of those were recalled. Shares the implementation with the header stats. */
   todaysProgress(now = new Date()): { answered: number; recalled: number } {
-    const day = now.toISOString().slice(0, 10);
-    const today = this.records.filter((r) => r.answeredAt.slice(0, 10) === day);
-    return { answered: today.length, recalled: today.filter((r) => r.grade >= 3).length };
+    return dayProgress(this.records, now);
   }
 }
