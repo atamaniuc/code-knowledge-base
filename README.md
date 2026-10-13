@@ -74,6 +74,16 @@ it emphasises, its ordered plan, and what nothing in the bank covers yet) and th
 citations point at, so a missed bullet ends in the section that explains it. A build without
 `--plan` has no Posting surface and says so.
 
+The toolbar icon is the brand mark itself — a blue rounded square with `IP`, drawn as real PNGs
+by `make icons` (`scripts/make-icons.ts`) rather than imported as art.
+
+The header carries back and forward through the session, text size (`-` and `+`, remembered
+between openings), and fullscreen. The panel remembers where you stopped — view, question,
+filters, scroll — because a side panel is destroyed when it is hidden and reopened when the
+toolbar icon is clicked again. Select any text and a small **Translate → RU** popup appears at
+the cursor: that click is the only thing in the extension that leaves the device, and the
+manifest grants exactly the two Google Translate origins for it.
+
 There is no server and no database to provision, and no API key is needed to run the checks.
 Everything runs locally. <!-- proof: make check -->
 

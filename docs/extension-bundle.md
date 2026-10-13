@@ -5,10 +5,14 @@ What the side panel reads, and why the shape is what it is. The producer is
 
 ## Why a bundle at all
 
-Manifest V3 forbids remotely hosted code, and the product promise is that the bank works
-with the network off: nothing is sent anywhere and nothing is fetched at runtime except the
-file that ships inside the package. So the content is baked in at build time and updates
-arrive as extension updates.
+Manifest V3 forbids remotely hosted code, and the bank works with the network off: the content
+is baked in at build time, updates arrive as extension updates, and nothing is fetched at
+runtime except the bundle that ships inside the package.
+
+There is exactly one exception, and it is a click away: selecting text in the panel offers to
+translate it, and only that click sends the selected phrase to Google Translate. It is
+implemented in `apps/extension/src/translate.ts`, the manifest grants the two translate
+origins and nothing else, and no other module may reach the network.
 
 **The posting URL is an argument, never a repository value.** A job posting is a thing a
 person runs a command against; a repository that stores one has quietly become about that
@@ -69,9 +73,10 @@ impossible.
 
 ## Constraints a change must not break
 
-- `permissions` stay `["storage", "sidePanel"]`; no host permissions.
-- No remote code, and no absolute URL in the built `panel.js`.
-- The only `fetch` is the relative `content.json`.
+- `permissions` stay `["storage", "sidePanel"]`; `host_permissions` are exactly the two
+  Google Translate origins from `TRANSLATE_ORIGINS` and never a wildcard.
+- No remote code. The only absolute URLs in the built `panel.js` are those two endpoints, and
+  the only literal `fetch` is the relative `content.json`.
 - The drill stays two-stage: question and probes first, expected answer only after the user
   commits. Seeing the answer while thinking produces recognition, which is what an interview
   does not test.
