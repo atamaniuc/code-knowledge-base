@@ -34,6 +34,10 @@ make ingest                 # rebuild the topic frequency map from live job post
 **Loading the extension:** Chrome → `chrome://extensions` → Developer mode → Load unpacked →
 `apps/extension/dist`. The toolbar icon opens the side panel.
 
+`make prep ARGS="<job-url> --out=<file>"` writes a rehearsal plan for one posting;
+`make extension ARGS="--include-drafts --plan=<file>"` bakes that plan into the side panel
+alongside the whole bank. The posting URL is always an argument, never stored here.
+
 There is no server and no database to provision. Everything runs locally.
 
 ## How to verify

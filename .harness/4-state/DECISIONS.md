@@ -424,3 +424,29 @@ kept its own.
 rules they covered are tested in Harnessimo instead. The count in this repository drops;
 the coverage does not.
 
+---
+
+## 2026-10-13 — The bank ships in the extension, and a posting is an argument
+
+The bundle grew from a question list to the whole product: every question the gates allow,
+the wiki articles they cite, the domain registry, and — when one was parsed — the rehearsal
+plan for a single posting. `docs/extension-bundle.md` is the contract. The posting URL is
+passed to `make prep` and then to `make extension --plan=`; no URL is stored in the
+repository, because a repository that stores one becomes about that posting.
+
+**Why the wiki ships rather than links.** A question's feedback cites a section: "read
+this". A citation that needs the network contradicts the offline promise the extension
+makes, and a side panel that cannot answer the follow-up is not a study tool.
+
+**Why the plan carries identities, not questions.** A copy of a question inside a plan
+drifts from the bank the first time either is edited, and the drift is invisible — the drill
+still runs, on a question that is no longer the one reviewed. The bundler instead resolves
+every plan entry against the questions that shipped and drops what does not resolve, with a
+warning, so an empty plan session cannot be silently authored.
+
+**Why drafts are remapped at bundle time.** `review_status: draft` is correct in the
+repository and fatal in the panel: the shared selector refuses a session on unpromoted
+content, so the first shipped bundle rendered "Nothing due" over ten questions. `--include-drafts`
+now means the same thing on both surfaces, and the empty states say which of the three ways
+the bank ran dry.
+

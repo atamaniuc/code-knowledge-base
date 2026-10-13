@@ -7,30 +7,36 @@ State carried between sessions. Read this first; update it before you stop.
 **Phase 0, writing the wedge domain.** `agentic` is the differentiator: LLM appears 41
 times across 173 stack-scoped postings, and structured preparation for it barely exists.
 
-- Content: 16 articles, 19 questions, 3 DSA entities. Target 691 questions. The nine new
-  questions and seven new articles came from the posting pipeline below, all at
-  `review_status: draft`: NestJS service boundaries, microservice boundaries, API contract
-  evolution, outbox/idempotency/saga, a PostgreSQL ledger, MCP tool integration, agent
-  skills — plus questions for each.
+- Content: **100 articles, 115 questions**, 3 DSA entities, all `review_status: draft`
+  (the gates promote; nobody writes a promoted status by hand). The bank now covers the
+  posting's whole stack rather than one wedge: Node runtime and NestJS 12 and Hono,
+  Kubernetes/Helm/AWS/Docker/CI, PostgreSQL 18/Redis 8/Kafka 4, gRPC/GraphQL/REST, SRE-grade
+  observability, architecture and resiliency, agentic systems including MCP 2026-07-28 and
+  skills, a fintech domain (ledgers, idempotency, reconciliation, payments, KYC vocabulary)
+  and staff-level behaviour. Version facts for October 2026 are in
+  `.pipeline/fact-sheet-2026-10.md` with the command that produced each one.
 - The harness is [Harnessimo](https://github.com/atamaniuc/Harnessimo), a dependency rather
   than scripts kept here; `.harness/` holds this project's own rules, state and feedback map,
   and `harnessimo.config.json` says which checks are enforced (`make harness-doctor` prints
-  it). New here as of this session: proof markers, work tracks with handoffs, the task gate,
-  a clean-state check and a limit on AGENTS.md's length.
-- `agentic` covers evaluation, injection, judging, cost and latency, loop design,
-  long context versus retrieval, and structured output.
-- `make check`: passing (120 tests, content valid, every harness gate). CI green.
-- `make prep ARGS="<job-url>"` turns a posting into a rehearsal plan: requirement emphasis
-  from the gazetteer, a ranked core plan, stretch domains the posting omits, and the gaps
-  that are the authoring backlog. Verified against
-  `https://itentio.com/job/senior-node-js-engineer/`.
-- Extension: `make extension ARGS="--include-drafts"`, then load `apps/extension/dist`
-  unpacked. The panel now drills: the bundle carries `review_status` (the shared selector
-  starts a session only from promoted content, so a bundle without it rendered an empty panel
-  however many questions it held), and the empty states match the CLI's.
-- pnpm pin moved to 12.11.2: pnpm 11 publishes no `darwin-x64` engine binary, so `make setup`
-  failed on Intel macOS before any install ran.
-- Blockers: none. Nothing is waiting on a human.
+  it).
+- `make check`: passing (23 files, 215 tests, 4 skipped without a plan; content valid; every
+  harness gate). The validator now reports an unparseable file instead of dying on it, with
+  the line and the fix — one bad file used to hide the state of the whole tree.
+- `make prep ARGS="<job-url> [--out=<file>]"` turns a posting into a rehearsal plan:
+  requirement emphasis from the closed gazetteer, the band to rehearse, a ranked core plan,
+  stretch domains the posting omits, and the gaps that are the authoring backlog. The posting
+  is always an argument; no URL is stored in the repository.
+- Extension: `make extension ARGS="--include-drafts --plan=<file>"`, then load
+  `apps/extension/dist` unpacked. Bundle **schema 2** (`docs/extension-bundle.md`) ships the
+  whole bank — questions, the wiki they cite, the domain registry — plus the plan for one
+  posting. The panel is a keyboard-first three-view tool: Drill (two-stage, graded, stats and
+  streak), Bank (filters, search, show answer, drill this), Posting (emphasis, ordered plan,
+  gaps) and a wiki reader, light and dark.
+- pnpm pin is 12.11.2: pnpm 11 publishes no `darwin-x64` engine binary, so `make setup` failed
+  on Intel macOS before any install ran.
+- Blockers: none. Nothing is waiting on a human. The whole bank is draft and unreviewed —
+  `.harness/1-instructions/CONSTRAINTS.md` #1 still stands, and `--include-drafts` is how a
+  session reaches it.
 
 
 ## Done
@@ -76,4 +82,4 @@ is exercised by `make check`:
 
 None are reviewed. Nothing here has been fact-checked by a human yet (CONSTRAINTS #1).
 
-_Last updated: 2026-10-12_
+_Last updated: 2026-10-13_

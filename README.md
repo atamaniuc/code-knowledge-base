@@ -43,6 +43,14 @@ the stack with the same closed gazetteer the vacancy map uses, and prints what t
 emphasises, which questions in the bank cover it, and which of its requirements nothing
 covers yet. <!-- proof: make prep -->
 
+Pass `--out` and the plan is archived as data, which the extension can be built with: the
+posting is an argument to both commands and is never a URL stored in this repository.
+
+```bash
+make prep ARGS="<job-url> --out=.pipeline/prep/role.json"
+make extension ARGS="--include-drafts --plan=.pipeline/prep/role.json"
+```
+
 The toolchain is pinned rather than assumed: Node >= 24 in `.nvmrc`, and pnpm v12 or newer
 in `package.json#packageManager`. `make setup` installs with that exact version and is the
 only install step. The floor is real — pnpm 11 ships no `darwin-x64` engine binary, so a pin
@@ -59,6 +67,13 @@ to it fails on an Intel Mac before any install runs. <!-- proof: package.json --
 3. **Load unpacked** → `apps/extension/dist`.
 4. Click the toolbar icon; it opens the side panel.
 
+The panel has four surfaces: **Drill** (question and probes first, expected answer only after
+you commit, graded 0-5, with today's progress and a streak), **Bank** (every question,
+filtered by domain, level and technology, with search), **Posting** (a parsed posting — what
+it emphasises, its ordered plan, and what nothing in the bank covers yet) and the **wiki** the
+citations point at, so a missed bullet ends in the section that explains it. A build without
+`--plan` has no Posting surface and says so.
+
 There is no server and no database to provision, and no API key is needed to run the checks.
 Everything runs locally. <!-- proof: make check -->
 
@@ -71,11 +86,13 @@ content/          the source of truth, independent of any application
   dsa/            concepts (complexity), patterns, tasks
   domains.yaml    the domain tree and its market weights
   sources.yaml    external sources and their licences — human-edited only
+  tech-aliases.yaml  the closed gazetteer the posting pipeline reads
 packages/         schema, scheduling, evaluator, rag, pipeline, verifier
 apps/             drill (CLI), extension (Chrome MV3)
 .harness/         how work is governed here — start at .harness/README.md
 specs/            live work tracks and their handoffs
-docs/             topical documents: the plan, the content schema, the review protocol
+docs/             topical documents: the plan, the content schema, the review protocol,
+                  the extension bundle contract
 ```
 
 ## How it is verified
@@ -96,10 +113,13 @@ claim, so a state edited by hand is detected rather than trusted.
 
 ## Status
 
-Phase 0: the wedge domain is `agentic` — AI in production — because the market data says so
-and structured preparation for it barely exists. Nine articles, ten questions and the three
-DSA entity types are written; the target is 691 questions across sixteen domains, ordered by
-market weight.
+Phase 0, and the bank now covers a whole role rather than a single wedge: **100 articles and
+115 questions** across seventeen domains, all `review_status: draft`, aimed at senior and
+staff interviews, plus the three DSA entity types. The depth follows a real senior Node.js +
+platform posting — Node, NestJS and Hono, Kubernetes, Kafka, AWS, PostgreSQL, Redis, gRPC —
+and keeps the `agentic` wedge (MCP 2026-07-28, agent skills, agent evaluation) and a fintech
+domain: ledgers, idempotency, reconciliation, payments. The target is 691 questions, ordered
+by market weight.
 
 Nothing in `content/` has been fact-checked by a human yet, which is why `--include-drafts`
 exists and warns. The verification gates are what will replace that review: source grounding
