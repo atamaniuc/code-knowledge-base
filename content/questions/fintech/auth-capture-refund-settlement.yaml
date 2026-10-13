@@ -1,0 +1,114 @@
+id: 5e86d0f8-80fb-489b-88be-6430b776b0d5
+slug: auth-capture-refund-settlement
+lang: en
+
+domain: fintech
+topic: payments
+subtopic: lifecycle
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+
+tech:
+  name: Stripe API
+  version_range: ">=2024"
+
+question: >-
+  You are designing the payment step for a marketplace that ships goods about a week after
+  the order. The team wants to charge the card at checkout. What flow do you propose, and
+  what breaks if you authorise and capture wrongly?
+
+probes: >-
+  Whether the candidate knows that a payment is a state machine with several clocks, and
+  whether they can reason about authorisation expiry, the difference between a cancellation
+  and a refund, and the gap between capture and settlement.
+
+answer_strategy: >-
+  Separate the three events in your opening: authorisation reserves the money, capture takes
+  it, settlement and payout make it available. Then apply that to the scenario — authorise at
+  checkout, capture on shipment — and immediately raise the clock, because the authorisation
+  window differs by card brand and transaction type and is far shorter than the shipping
+  delay. Handle the awkward cases out loud: capture before expiry, cancel rather than refund
+  when nothing was captured, and what the customer is told when a hold is released.
+
+expected_answer:
+  - text: >-
+      Distinguishes authorisation, capture, settlement and payout, and states that capture is
+      what takes the money and settlement is when it becomes available.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Proposes authorising at checkout and capturing on shipment, with the state machine
+      modelled explicitly rather than as a boolean paid flag.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Names the authorisation expiry as the hard constraint and says it varies by card brand
+      and by customer-initiated versus merchant-initiated transaction, and must be tracked
+      per authorisation.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Distinguishes cancelling an uncaptured authorisation from refunding a captured payment,
+      including that the processing fee is generally not returned on a refund.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Makes every transition idempotent and consumes provider events idempotently, since
+      webhooks arrive out of order and more than once.
+    weight: 4
+    min_level: staff
+  - text: >-
+      States that a capture failure after expiry releases the funds and can leave a
+      fulfilled order unpaid, and says what the system does about it.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Recognises the credit decision hidden in the design: letting a merchant spend against
+      unsettled funds is lending, whether or not it was intended.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The customer cancels after you capture but before you ship. What happens to the fee, and
+    what does the ledger record?
+  - A partial shipment goes out. How do you capture partially?
+  - The authorisation expires while the order is in a warehouse queue. What notifies the
+    customer?
+
+common_mistakes:
+  - >-
+    Treating an authorised payment as paid money.
+  - >-
+    Assuming a single fixed authorisation window, so a week-long fulfilment silently loses
+    holds.
+  - >-
+    Offering one refund button for both an uncaptured authorisation and a captured payment.
+  - >-
+    Processing provider webhooks without deduplication, so a redelivered event posts twice.
+
+related_questions: [chargeback-engineering, idempotency-key-design, derived-balances-and-ledger-invariants]
+
+wiki_refs:
+  - slug: payment-lifecycle
+    anchor: authorisation-and-capture
+    wiki_reviewed_at: "2026-10-13"
+  - slug: payment-lifecycle
+    anchor: where-the-engineering-lives
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Stripe — How Payment Intents and Setup Intents work"
+    url: https://docs.stripe.com/payments/paymentintents/lifecycle
+    kind: official-docs
+  - title: "Stripe — Place a hold on a payment method"
+    url: https://docs.stripe.com/payments/place-a-hold-on-a-payment-method
+    kind: official-docs
+  - title: "Stripe — Refund and cancel payments"
+    url: https://docs.stripe.com/refunds
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

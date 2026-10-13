@@ -1,0 +1,103 @@
+id: 1d660d05-4825-458a-9c78-7af8c8b50117
+slug: idempotency-key-concurrent-duplicates
+lang: en
+
+domain: network
+topic: api-design
+subtopic: idempotency
+
+tracks: [backend]
+levels: [senior, staff]
+
+tech:
+  name: HTTP APIs
+  version_range: ">=2022"
+
+question: >-
+  A payment endpoint accepts an idempotency key, and it works in testing. Under load, two
+  requests with the same key both execute and the customer is charged twice. Explain the
+  bug and how you fix it.
+probes: >-
+  Whether the candidate spots the check-then-act race rather than blaming the client, and
+  whether the fix is a database guarantee in the same transaction as the effect. This is a
+  concurrency question wearing an API costume.
+answer_strategy: >-
+  Name the race explicitly: both requests read the key store, neither sees the key, and both
+  proceed. Then give the fix as a uniqueness guarantee in the same transaction, explain what
+  the losing request returns, and cover the storage details that make replay work. Finish on
+  the metric — duplicate rate and conflict rate — that would have shown this before a
+  customer did.
+expected_answer:
+  - text: >-
+      Identifies the check-then-insert race: concurrent requests both miss the key and both
+      execute.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Fixes it with a unique constraint on the key, or a row lock or lease, inside the same
+      transaction as the business effect.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Defines the losing request's behaviour: wait and return the stored response, or return a
+      documented conflict for a request still in flight, never a second charge.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Stores the response body and status, not a boolean, so a replay returns the original
+      result rather than an empty success.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Scopes the key to the account and defines its retention window, and says what happens to a
+      retry after the window closes.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Deduplicates by key rather than by payload hash, because two identical legitimate payments
+      exist.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Instruments the duplicate rate and the conflict rate, and alerts on them rather than
+      discovering the next occurrence from a support ticket.
+    weight: 2
+    min_level: staff
+
+follow_ups:
+  - The business effect spans two systems. Where does the key constraint live then?
+  - How do you migrate existing clients onto keys without breaking the ones that send none?
+  - What does your endpoint do with a key it has never seen but that collides with a stored one?
+
+common_mistakes:
+  - >-
+          Blaming the client for retrying when retrying on a timeout is the documented behaviour.
+  - >-
+          Checking the key in the application and inserting later, which is the bug itself.
+  - >-
+          Using a distributed lock without a fencing token and assuming it is a guarantee.
+  - >-
+          Returning 200 with no body on a replay, so the client cannot use the original result.
+
+related_questions: [rest-resource-modelling-and-idempotency, api-versioning-and-idempotency]
+
+wiki_refs:
+  - slug: rest-resource-modelling-and-idempotency
+    anchor: idempotency-keys-for-everything-else
+    wiki_reviewed_at: "2026-10-13"
+  - slug: rest-resource-modelling-and-idempotency
+    anchor: conditional-requests-and-lost-updates
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Stripe — Idempotent requests"
+    url: https://docs.stripe.com/api/idempotent_requests
+    kind: official-docs
+  - title: "RFC 9110 — HTTP Semantics"
+    url: https://www.rfc-editor.org/rfc/rfc9110.html
+    kind: rfc
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

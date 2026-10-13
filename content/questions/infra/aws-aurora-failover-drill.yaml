@@ -1,0 +1,108 @@
+id: 8fb83b60-45e4-4b0f-b682-cabda394d504
+slug: aws-aurora-failover-drill
+lang: en
+
+domain: infra
+topic: aws
+subtopic: databases
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: AWS
+  version_range: ">=2024"
+
+question: >-
+  Your database failed over automatically at 02:00. The database was healthy
+  within a minute, but the application stayed broken for ten minutes afterwards.
+  Walk me through what you would fix.
+
+probes: >-
+  Whether the candidate understands that a managed failover solves the database
+  half and leaves the client half to the application. The ten-minute tail is the
+  question, and it is a connection-management problem rather than a database one.
+
+answer_strategy: >-
+  Separate the two timelines immediately — database recovered versus service
+  recovered — because that framing is the answer. Then walk the client-side chain
+  from stale pooled connections through DNS to retry policy, and finish with the
+  only proof that matters, a rehearsed failover with a measured recovery time.
+
+expected_answer:
+  - text: >-
+      Distinguishes the two timelines and locates the ten minutes in the
+      application's connection handling rather than in the database.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Explains that a long-lived connection pool holds sockets to the old primary,
+      and the application must detect the failure, discard stale connections and
+      reconnect.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Names DNS as a contributor — the cluster endpoint record is repointed and
+      caching extends the outage — and prescribes a short TTL and a re-resolve on
+      connection failure.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Describes the RDS and Aurora difference: Multi-AZ fails over to a standby
+      instance, while Aurora promotes a reader over a shared storage volume.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Uses a connection proxy or pooler to hold client connections through the
+      failover, and notes that it also prevents a serverless fleet from exhausting
+      database connections.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Adds retry with exponential backoff and jitter so every client does not
+      reconnect simultaneously and turn recovery into a thundering herd.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Commits to a rehearsed failover with a measured recovery time, because an
+      untested failover is a plan rather than a capability.
+    weight: 5
+    min_level: staff
+
+follow_ups:
+  - How would you measure recovery time without waiting for a real incident?
+  - What changes if the application uses a serverless runtime that opens a fresh connection per invocation?
+  - A read replica lags after the failover. How does the application handle that?
+
+common_mistakes:
+  - >-
+    Concluding the incident was a database problem because the database failed
+    over, and missing that recovery is a client concern.
+  - >-
+    Raising the failover priority or instance class without touching connection
+    handling.
+  - >-
+    Adding unlimited retries with no backoff, which converts recovery into an
+    overload.
+  - >-
+    Never testing the failover path, then discovering the ten minutes again in
+    production.
+
+related_questions: [aws-cost-right-sizing, aws-irsa-and-least-privilege]
+
+wiki_refs:
+  - slug: aws-database-operations
+    anchor: failover-and-multi-az
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Amazon Aurora: High availability for Amazon Aurora"
+    url: https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Concepts.AuroraHighAvailability.html
+    kind: official-docs
+  - title: "Amazon RDS: Configuring and managing a Multi-AZ deployment"
+    url: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZ.html
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

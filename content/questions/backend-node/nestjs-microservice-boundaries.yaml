@@ -11,7 +11,7 @@ levels: [senior, staff]
 
 tech:
   name: NestJS
-  version_range: ">=11"
+  version_range: ">=12"
 
 question: >-
   You own a NestJS service that handles invoices, payments and supplier records in one

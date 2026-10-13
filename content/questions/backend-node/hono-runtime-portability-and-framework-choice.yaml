@@ -1,0 +1,114 @@
+id: 340df42e-dd63-4cf7-b5c3-e57725eaa82a
+slug: hono-runtime-portability-and-framework-choice
+lang: en
+
+domain: backend-node
+topic: framework
+subtopic: choice
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: Hono
+  version_range: ">=4.13"
+
+question: >-
+  A team is building a small public API that will run on Cloudflare Workers and is consumed
+  by their own Next.js front end in the same repository. They are deciding between Nest and
+  Hono. What do you recommend, and what would you warn them about?
+probes: >-
+  Whether the candidate chooses from the deployment target and the team's needs rather than
+  from popularity, and whether they can state precisely where Web Standards portability ends.
+  The typed client is the second signal: useful for first-party clients, not a public
+  contract.
+answer_strategy: >-
+  Take the deployment target first, because it eliminates options: a Workers deployment and
+  a bundle-size budget point at Hono, while a deep domain with framework-managed lifecycles
+  points at Nest. Then be concrete about what portability does not cover — bindings,
+  filesystem, background work — and how you would isolate it. Finish on the contract
+  question: an inferred TypeScript client is not an API contract for anyone outside the
+  repository.
+expected_answer:
+  - text: >-
+      Chooses from the deployment target and operational constraints first: edge or serverless,
+      cold start and bundle size favour Hono, which is built on Web Standards.
+    weight: 5
+    min_level: senior
+  - text: >-
+      States where portability leaks: runtime bindings, environment access, filesystem and
+      background work are runtime-specific and should sit behind a small adapter.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Describes Hono middleware as explicit async composition where next() must be awaited, and
+      notes the ordering consequence when middleware is registered in several files.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Recommends Nest when the domain needs dependency injection, long-lived provider
+      lifecycles and a conventional structure several teams can follow.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Knows the typed RPC client infers types from the app definition and is compile-time only, so
+      it suits first-party clients and is not a runtime contract.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Says validation belongs at the route — a schema validator on each request part — and that
+      the error body is part of the public contract.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Rejects router benchmarks as the deciding factor, since routing is rarely the bottleneck
+      compared with dependency calls and data access.
+    weight: 2
+    min_level: staff
+
+follow_ups:
+  - The API needs to write to object storage from a Worker. How does that change the adapter design?
+  - How would you version this API for a customer who is not using your TypeScript client?
+  - What would make you regret this choice in a year?
+
+common_mistakes:
+  - >-
+          Calling the handlers portable while importing Node built-ins inside business code.
+  - >-
+          Treating the inferred TypeScript client as documentation for external consumers.
+  - >-
+          Choosing Hono for an edge deployment and then adding a dependency that only runs on Node.
+  - >-
+          Picking a framework from a benchmark rather than from the deployment target and the team.
+
+related_questions: [api-versioning-and-idempotency, nestjs-testing-strategy]
+
+wiki_refs:
+  - slug: hono-runtime-agnostic-handlers
+    anchor: web-standards-as-the-portability-layer
+    wiki_reviewed_at: "2026-10-13"
+  - slug: hono-runtime-agnostic-handlers
+    anchor: when-hono-beats-nest-or-express
+    wiki_reviewed_at: "2026-10-13"
+  - slug: hono-validation-and-rpc
+    anchor: the-typed-rpc-client
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Hono — Documentation"
+    url: https://hono.dev/docs/
+    kind: official-docs
+  - title: "Hono — Node.js"
+    url: https://hono.dev/docs/getting-started/nodejs
+    kind: official-docs
+  - title: "Hono — RPC"
+    url: https://hono.dev/docs/guides/rpc
+    kind: official-docs
+  - title: "Hono — Validation"
+    url: https://hono.dev/docs/guides/validation
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

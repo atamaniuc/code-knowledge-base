@@ -1,0 +1,97 @@
+id: a904db6b-dd61-45fc-80f1-fa758299a9a4
+slug: kubernetes-rbac-least-privilege
+lang: en
+
+domain: infra
+topic: kubernetes
+subtopic: security
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: Kubernetes
+  version_range: ">=1.34"
+
+question: >-
+  You are reviewing a namespaced RoleBinding that grants get on secrets and
+  create on pods. The author says it is least privilege because it is scoped to
+  one namespace. Walk me through the escalation paths and what you would change.
+
+probes: >-
+  Whether the candidate knows that privilege in Kubernetes flows through the
+  workloads you can create, so a namespaced grant on pods plus secrets is
+  effectively namespace admin. The word namespaced is doing false work in the
+  author's argument.
+
+answer_strategy: >-
+  Agree with the scoping and then show what it still allows: create a pod that
+  mounts any secret in the namespace, or a pod that runs as any service account.
+  That single demonstration is the answer. Then generalise to the other
+  escalation paths and end with a review process — authorization checks in CI,
+  per-workload service accounts, no default account.
+
+expected_answer:
+  - text: >-
+      Demonstrates the escalation: create on pods plus get on secrets lets the
+      holder read every secret in the namespace by running a pod that mounts it.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Extends it to service accounts — create on serviceaccounts plus
+      rolebindings lets the holder grant themselves more.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Rejects the framing that a namespaced role is automatically least privilege,
+      and audits the effective permission rather than the binding's scope.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Names wildcard resources or verbs as the accidental admin grant, and the
+      need to enumerate pods/log and pods/exec as separate resources.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Notes that cluster-scoped resources — CRDs, PersistentVolumes, admission
+      webhooks, Namespaces — escape the namespace and must be in the review.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Proposes verification rather than trust: an authorization check such as
+      kubectl auth can-i or a policy test in CI, plus one service account per
+      workload and no use of the default account.
+    weight: 4
+    min_level: staff
+
+follow_ups:
+  - The holder also has create on rolebindings. What is the worst they can do?
+  - How would you let a CI job deploy to one namespace without giving it cluster access?
+  - What does a wildcard in the resources field actually grant that a list does not?
+
+common_mistakes:
+  - >-
+    Accepting namespace scope as sufficient evidence of least privilege.
+  - >-
+    Reviewing only identity-based policy and ignoring cluster-scoped resources.
+  - >-
+    Granting secrets read without considering which workloads can then mount them.
+  - >-
+    Fixing the binding by hand rather than adding a check that prevents the next
+    one.
+
+related_questions: [kubernetes-multi-tenancy-isolation, aws-irsa-and-least-privilege]
+
+wiki_refs:
+  - slug: kubernetes-rbac-and-multi-tenancy
+    anchor: least-privilege-in-practice
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Kubernetes: RBAC Authorization"
+    url: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

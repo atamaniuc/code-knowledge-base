@@ -1,0 +1,106 @@
+id: 13874b37-e995-49fa-a13d-44ed1252c0d5
+slug: cursor-pagination-and-error-contract
+lang: en
+
+domain: network
+topic: api-design
+subtopic: contract
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: HTTP APIs
+  version_range: ">=2022"
+
+question: >-
+  A list endpoint is paged with page and per_page. Users report seeing the same item twice
+  while scrolling, and support sees a different error shape depending on which layer
+  rejected a request. What is wrong, and how do you fix both?
+probes: >-
+  Whether the candidate connects offset pagination to concurrent writes rather than to a client
+  bug, and whether they treat the error model as a contract. Two separate fixes that a strong
+  answer keeps separate.
+answer_strategy: >-
+  Handle pagination first: explain why OFFSET shifts under writes, give keyset pagination with
+  a unique tie-breaker, and describe the opaque cursor and the response shape. Then handle the
+  errors: one normalised problem document produced in one place, with a stable machine-readable
+  code and a retryability signal. Finish on what the client branches on, which should never be
+  a message string.
+expected_answer:
+  - text: >-
+      Diagnoses offset pagination correctly: rows inserted or deleted between pages shift the
+      window, so clients skip and duplicate items.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Replaces it with keyset pagination ordered by a unique, immutable key — typically a
+      timestamp plus an id as a tie-breaker.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Makes the cursor opaque and versioned, and describes the page response as data plus a next
+      token and an explicit end-of-list signal.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Says total counts are expensive and immediately stale, so they should be optional and
+      labelled approximate rather than computed per page.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Normalises errors into one shape — a problem document with type, status, a stable code
+      and a correlation id — produced in one place.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Distinguishes the HTTP status class from the machine-readable code and adds an explicit
+      retryability signal so clients do not guess.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Keeps internal detail out of the response: no stack traces, SQL or upstream host names.
+    weight: 2
+    min_level: senior
+
+follow_ups:
+  - A product requirement demands page 37 of a filtered list. What do you build?
+  - How does an error model change when the same API is consumed by a mobile client with offline retries?
+  - How would you detect in production that clients are being affected by the pagination change?
+
+common_mistakes:
+  - >-
+    Blaming the client cache for duplicates that the pagination window creates.
+  - >-
+    Cursor pagination ordered by a non-unique timestamp with no tie-breaker, which repeats the
+    same boundary.
+  - >-
+    Returning the total count on every page and locking the collection to compute it.
+  - >-
+    Letting validation, authorization and the domain layer each return a different error shape.
+
+related_questions: [rest-resource-modelling-and-idempotency, api-versioning-and-idempotency]
+
+wiki_refs:
+  - slug: api-pagination-and-error-models
+    anchor: offset-pagination-is-a-lie-under-writes
+    wiki_reviewed_at: "2026-10-13"
+  - slug: api-pagination-and-error-models
+    anchor: cursor-pagination-that-is-actually-stable
+    wiki_reviewed_at: "2026-10-13"
+  - slug: api-pagination-and-error-models
+    anchor: an-error-model-a-client-can-branch-on
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "RFC 9457 — Problem Details for HTTP APIs"
+    url: https://www.rfc-editor.org/rfc/rfc9457.html
+    kind: rfc
+  - title: "RFC 9110 — HTTP Semantics"
+    url: https://www.rfc-editor.org/rfc/rfc9110.html
+    kind: rfc
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

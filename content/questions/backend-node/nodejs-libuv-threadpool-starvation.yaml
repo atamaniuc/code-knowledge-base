@@ -1,0 +1,104 @@
+id: f88c8f7c-fbb1-4eb6-bc44-c48d3063d081
+slug: nodejs-libuv-threadpool-starvation
+lang: en
+
+domain: backend-node
+topic: runtime
+subtopic: threadpool
+
+tracks: [backend]
+levels: [senior, staff]
+
+tech:
+  name: Node.js
+  version_range: ">=24"
+
+question: >-
+  A service that does password hashing and DNS lookups starts timing out under load.
+  Event-loop lag is flat and the database pool is mostly idle. What is happening, and how do
+  you fix it without moving the failure elsewhere?
+probes: >-
+  Whether the candidate knows that fs, DNS, crypto and zlib share one libuv threadpool and
+  that its size is fixed per process. The second signal is how they propose to fix it: the
+  strong answer reduces or isolates the pooled work before touching the size, and names what
+  the pool's concurrency is already pushing on.
+answer_strategy: >-
+  Name the mechanism first: those APIs are not handled by the loop, they are queued to a
+  shared pool whose default size is four, so a handful of slow hashes starves every other
+  pooled operation. Then walk the fixes in order of correctness — remove the slow work, then
+  isolate it, and only then consider the pool size, with the downstream concurrency it
+  implies. Close on the measurement that would have found it: the wait time around each
+  pooled call.
+expected_answer:
+  - text: >-
+      Identifies the libuv threadpool as the shared resource behind fs, DNS, crypto and zlib,
+      with a default size of four per process.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Explains the combination of flat event-loop lag and high latency as queueing in the pool
+      rather than a blocked loop.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Knows UV_THREADPOOL_SIZE is read at startup and is process-wide, and that raising it is a
+      capacity decision rather than a default answer.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Reduces or isolates the pooled work: cache and coalesce DNS, tune the hashing cost factor,
+      move heavy hashing to a worker pool or an external service.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Notes that a larger pool multiplies concurrent calls against the next dependency — the DNS
+      resolver, the database, the upstream — so the bottleneck can move rather than disappear.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Instruments the pool: per-call duration and wait time around fs, DNS and crypto, so the
+      queueing is visible rather than inferred.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - How would you prove the pool is the bottleneck rather than guess it?
+  - What breaks when the pool is set to 128?
+  - Which of these calls would you move to a worker thread, and why?
+
+common_mistakes:
+  - >-
+          Raising the pool size first and declaring victory while the downstream dependency absorbs the
+          new concurrency.
+  - >-
+          Adding worker threads for I/O-bound work, which the official guidance says does not help.
+  - >-
+          Reading threadpool starvation as a blocked event loop and looking for synchronous JavaScript.
+  - >-
+          Caching DNS indefinitely, which trades a latency problem for a correctness problem.
+
+related_questions: [nodejs-event-loop-blocking-tail-latency, nodejs-worker-threads-vs-cluster]
+
+wiki_refs:
+  - slug: nodejs-event-loop-and-latency
+    anchor: the-libuv-threadpool
+    wiki_reviewed_at: "2026-10-13"
+  - slug: nodejs-event-loop-and-latency
+    anchor: telling-the-two-apart
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Node.js — Do not block the event loop (or the worker pool)"
+    url: https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop
+    kind: official-docs
+  - title: "Node.js CLI — UV_THREADPOOL_SIZE"
+    url: https://nodejs.org/api/cli.html
+    kind: official-docs
+  - title: "Node.js — File system"
+    url: https://nodejs.org/api/fs.html
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 9
+
+review_status: draft

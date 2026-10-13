@@ -1,0 +1,106 @@
+id: eac3ee09-d05d-4e3b-b0d0-bf06bbf8c73b
+slug: alert-noise-reduction
+lang: en
+
+domain: observability
+topic: sre
+subtopic: alerting
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: Prometheus
+  version_range: ">=3.0"
+
+question: >-
+  Your on-call rotation got two hundred pages last week and most of them needed
+  no action. Walk me through how you would fix it without hiding real problems.
+
+probes: >-
+  Whether the candidate can state what makes an alert worth a human interruption,
+  and whether they treat alert quality as a measurable property with an owner
+  rather than as a matter of personal discipline.
+
+answer_strategy: >-
+  Bring data first — pages per shift and the fraction that led to action — because
+  that framing makes the fix objective. Then apply the two tests, symptom and
+  actionability, and finish with the pipeline features, grouping and inhibition,
+  that collapse correlated noise.
+
+expected_answer:
+  - text: >-
+      Measures before changing anything: pages per shift and what fraction led to
+      an action, so the problem is quantified rather than felt.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Pages on symptoms the user experiences and demotes causes to tickets or
+      dashboards, with the exception of a cause that is imminent and actionable.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Requires every page to carry what is broken in user terms, a first check, a
+      runbook and an owner.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Uses grouping to collapse correlated alerts into one notification instead
+      of one per instance or per rack.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Uses inhibition so a root alert suppresses the derived alerts it explains,
+      which is what stops a cluster-wide event from producing hundreds of pages.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Encodes severity as the response — page now, ticket this week, log for
+      analysis — rather than as an emotion about the metric.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Closes the loop by reviewing every page in a weekly on-call review or the
+      postmortem, fixing the rules, and giving silences an owner and an expiry.
+    weight: 4
+    min_level: staff
+
+follow_ups:
+  - A cause-based alert has been useful twice in a year. Do you keep it?
+  - How would you decide between paging and ticketing for a slow-burn SLO alert?
+  - What happens to a silence that nobody remembers to remove?
+
+common_mistakes:
+  - >-
+    Telling the rotation to be more discerning, which moves the problem onto the
+    human instead of the rule.
+  - >-
+    Deleting noisy alerts wholesale and removing the signal that would have caught
+    a real outage.
+  - >-
+    Grouping so aggressively that two unrelated failures arrive as one page.
+  - >-
+    Never revisiting a muted alert, so it is effectively deleted but still
+    counted.
+
+related_questions: [slo-burn-rate-alerting, incident-command-and-communication]
+
+wiki_refs:
+  - slug: alerting-that-does-not-page
+    anchor: page-on-symptoms
+    wiki_reviewed_at: "2026-10-13"
+  - slug: alerting-that-does-not-page
+    anchor: reviewing-noise
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "The Site Reliability Workbook: Alerting on SLOs"
+    url: https://sre.google/workbook/alerting-on-slos/
+    kind: book
+  - title: "Site Reliability Engineering: Managing Incidents"
+    url: https://sre.google/sre-book/managing-incidents/
+    kind: book
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

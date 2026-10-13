@@ -1,0 +1,109 @@
+id: 3763ac8b-dceb-42b6-8f88-a5aa9b0afc22
+slug: multi-agent-versus-more-tools
+lang: en
+
+domain: agentic
+topic: architecture
+subtopic: orchestration
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+
+tech:
+  name: LLM agents
+  version_range: ">=2024"
+
+question: >-
+  A team wants to replace one agent with twelve tools by a supervisor and four specialist
+  agents. They say it will be more reliable. What do you ask for before agreeing?
+
+probes: >-
+  Whether the candidate treats a multi-agent split as an architectural decision with a cost
+  curve, or as a capability upgrade. The staff signal is asking for a measurement and
+  naming the constraint that forces the split, instead of debating agent topologies in the
+  abstract.
+
+answer_strategy: >-
+  Start from the null hypothesis: one agent with more tools keeps one context, one budget
+  and one trace, so the split must justify itself. Then price it in the three currencies
+  that actually matter — tokens, latency and debuggability — and pick the two or three
+  conditions under which the split genuinely wins. Finish with the measurement: success
+  rate per verified goal at a given cost, on a fixed task set, for both designs. If you
+  spend the answer listing frameworks, you have answered a different question.
+
+expected_answer:
+  - text: >-
+      States the null hypothesis explicitly: a single agent with more tools is simpler to
+      trace, budget and evaluate, and the burden of proof is on the split.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Prices the split in context fragmentation, coordination tokens and debug difficulty,
+      not only in capability.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Names conditions that justify multiple agents: genuinely parallel independent
+      subtasks, context that must not pollute the parent, credential or security isolation,
+      or work that outlives one context.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Asks for a trajectory-level measurement — verified goal reached, tokens and latency
+      spent, where it went wrong — rather than a demo or an anecdote.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Requires an explicit contract at every delegation boundary: output schema, timeout,
+      retry policy and idempotency for any side effect the subagent performs.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Applies budgets per agent and to the system as a whole, because multi-agent designs
+      fail with unbounded conversation as readily as single agents do.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Prefers the smallest interesting split: two agents with a clear contract over five
+      with a choreography, and a fixed pipeline where the steps are known.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - Two of the specialist agents start waiting for each other to make a change. How does
+    your design detect that and end it?
+  - How do you attribute a failure to one agent when the output is a collaboration?
+  - When would you use five agents rather than two, and what would you give up?
+
+common_mistakes:
+  - >-
+    Treating more agents as more capability, without naming the constraint that requires
+    the split.
+  - >-
+    Optimising for a demo where the parallelism is visible, rather than for a success rate
+    and a cost per verified task.
+  - >-
+    Delegating without a contract, so the orchestrator receives prose it cannot check.
+  - >-
+    Forgetting that each agent needs its own budgets, and that coordination itself consumes
+    tokens.
+
+related_questions: [agent-loop-stop-conditions, replaying-an-agent-run, agent-skills-context-economy]
+
+wiki_refs:
+  - slug: multi-agent-orchestration
+    anchor: what-the-split-actually-costs
+    wiki_reviewed_at: "2026-10-13"
+  - slug: multi-agent-orchestration
+    anchor: when-multiple-agents-earn-it
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Anthropic — Building effective agents"
+    url: https://www.anthropic.com/engineering/building-effective-agents
+    kind: article
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

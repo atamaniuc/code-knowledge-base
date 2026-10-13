@@ -1,0 +1,108 @@
+id: 45f5f2dd-314b-4a1a-8861-6d14f4e96a8d
+slug: redis-structure-choice
+lang: en
+
+domain: caching
+topic: data-structures
+subtopic: modelling
+
+tracks: [backend, fullstack]
+levels: [middle, senior, staff]
+tech:
+  name: Redis
+  version_range: ">=8"
+
+question: >-
+  A URL shortener stores each link as a JSON string in Redis. Product now wants
+  "trending links in the last hour" and a per-link click counter. Walk me through the
+  Redis design you would add, and what you would change about the existing value.
+
+probes: >-
+  Whether the structure follows from the read and update pattern, and whether the
+  candidate avoids read-modify-write on a serialised blob. A staff answer also bounds
+  memory and cardinality instead of storing every event forever.
+
+answer_strategy: >-
+  Start from the queries, not the structures: rank by clicks within a window, and
+  increment one counter atomically. Then name one structure per query — a sorted set for
+  the ranking, a hash or counter key for the clicks — and say why the JSON string cannot
+  serve the increment. Finish on memory: the sorted set must be trimmed to the window,
+  and the leaderboard must be bounded to top-N, because unbounded is a production
+  incident with a delay.
+
+expected_answer:
+  - text: >-
+      Derives the structures from the access pattern and rejects rewriting the JSON
+      string to increment a field, naming the read-modify-write race.
+    weight: 5
+    min_level: middle
+  - text: >-
+      Uses a sorted set scored by click count for the ranking, with the time window
+      handled by bucketing keys per minute or hour rather than one unbounded set.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Uses a hash or dedicated counter keys with HINCRBY or INCR for per-link clicks, so
+      the increment is one atomic command.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Trims the window — ZREMRANGEBYSCORE, expiring per-bucket keys, or a bounded top-N
+      set — so memory is a function of the window and not of all history.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Puts a TTL on the link mapping and states the staleness it implies, rather than
+      caching forever.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Estimates cardinality and memory before choosing, and says what happens at ten
+      times the current link count.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Mentions a stream instead of a sorted set if the requirement changes to "every
+      click must be processed downstream", because a sorted set is not a durable log.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - Two regions each build their own leaderboard. How do you merge them without double
+    counting?
+  - The counter key is the hottest key in the cluster. What do you do?
+  - Trending must reflect the last 60 minutes exactly. Would you still bucket by minute?
+
+common_mistakes:
+  - >-
+    Keeping one JSON string per link and reading, mutating and writing it for every
+    click.
+  - >-
+    One unbounded sorted set of every link ever clicked, growing until eviction starts
+    deleting the hot keys.
+  - >-
+    Using KEYS or a full scan to find the top links instead of letting the sorted set do
+    the ranking.
+  - >-
+    Forgetting that a sorted set pop is destructive and using it as a queue the business
+    depends on.
+
+related_questions: [cache-write-strategy-for-money, redis-rate-limiter-design]
+
+wiki_refs:
+  - slug: redis-data-structures
+    anchor: the-question-is-the-access-pattern
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Redis — Data types"
+    url: https://redis.io/docs/latest/develop/data-types/
+    kind: official-docs
+  - title: "Redis — SET command (expiry options)"
+    url: https://redis.io/docs/latest/commands/set/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

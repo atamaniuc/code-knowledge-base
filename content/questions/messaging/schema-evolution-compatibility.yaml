@@ -1,0 +1,111 @@
+id: 6627094d-bc35-431d-8b8c-5ca0a7bfb8c9
+slug: schema-evolution-compatibility
+lang: en
+
+domain: messaging
+topic: contracts
+subtopic: evolution
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: Apache Kafka
+  version_range: ">=4.0"
+
+question: >-
+  The order event needs a new field that consumers require for a new feature, and three
+  teams consume the topic. Walk me through the schema change, the registry configuration
+  and the deploy order, and tell me what you would refuse to do.
+
+probes: >-
+  Whether the candidate maps compatibility mode to deploy order rather than treating the
+  mode as a setting, and whether they know that adding a required field is a breaking
+  change. "We add the field and tell the teams" is the answer being screened out.
+
+answer_strategy: >-
+  Avoid the word "required" as a first move: make the field optional with a default and
+  let consumers treat it as required once every producer sends it. Then give the mode and
+  the deploy order as a pair — BACKWARD means consumers can be ahead of producers, so
+  consumers deploy first — and say what FULL and transitive would buy if deploy order
+  cannot be guaranteed. Finish with the registry's own availability: it is in the produce
+  and consume path, so it needs caching and redundancy.
+
+expected_answer:
+  - text: >-
+      Refuses to add the field as required immediately, because a producer running the old
+      schema cannot satisfy it and every old record lacks it.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Adds the field as optional with a default, then tightens it in a later step once
+      producers and existing data are consistent.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Names the registry and the subject that holds the schema, and states the default
+      compatibility mode is BACKWARD.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Pairs the mode with deploy order: backward means new consumers can read old data, so
+      consumers are deployed before producers.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Explains when FULL or transitive is worth the stricter rule — when deploy order
+      cannot be guaranteed, or when a consumer may still be pinned to an older version.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Notes the registry is not the broker: it is another service in the critical path, so
+      its client needs a schema cache and the service needs an availability story.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Gives the equivalent discipline without a registry, if the organisation will not run
+      one: never remove or retype a field, always add optional fields, and version the
+      event type explicitly.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Mentions format-specific hazards, such as renumbering a Protobuf field, which a
+      name-based compatibility check cannot detect.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - Two consumers are still on a version three releases old. What mode do you need, and
+    how long is that affordable?
+  - The registry is down for ten minutes. What happens to producers?
+  - How would you remove a field that has been unused for a year?
+
+common_mistakes:
+  - >-
+    Treating a new required field as an additive change and deploying it in one step.
+  - >-
+    Setting compatibility to NONE for a shared topic to unblock a release.
+  - >-
+    Confusing the registry with the broker, or assuming the broker validates payload
+    schemas.
+  - >-
+    Assuming a compatibility check catches a Protobuf field renumbering.
+
+related_questions: [kafka-producer-durability, api-versioning-and-idempotency]
+
+wiki_refs:
+  - slug: schema-registry-and-evolution
+    anchor: compatibility-modes
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Confluent — Schema Evolution and Compatibility"
+    url: https://docs.confluent.io/platform/current/schema-registry/fundamentals/schema-evolution.html
+    kind: official-docs
+  - title: "Confluent — Schema Registry overview"
+    url: https://docs.confluent.io/platform/current/schema-registry/index.html
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

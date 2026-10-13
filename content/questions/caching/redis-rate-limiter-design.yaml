@@ -1,0 +1,110 @@
+id: fedc591b-327e-4290-ab43-52a09110796a
+slug: redis-rate-limiter-design
+lang: en
+
+domain: caching
+topic: rate-limiting
+subtopic: algorithms
+
+tracks: [backend, fullstack]
+levels: [middle, senior, staff]
+tech:
+  name: Redis
+  version_range: ">=8"
+
+question: >-
+  We need to limit an API key to 10 requests per second with a burst of 50. Walk me
+  through the algorithm you would implement on Redis, how you make the counter correct
+  when five service instances share it, and what happens when Redis is down.
+
+probes: >-
+  Whether the algorithm is derived from the stated allow/burst requirement, and whether
+  the candidate understands that a limiter needs a single arbiter and an explicit
+  failure policy. The Redis-down answer is the part most candidates skip.
+
+answer_strategy: >-
+  Translate the requirement first: 10 per second sustained plus 50 burst is a token
+  bucket, not a fixed window. Then show the implementation shape — a hash of tokens and
+  timestamp, refilled lazily, all inside one Lua script so it is atomic — and say why
+  INCR plus EXPIRE as two commands is a bug. Address the distributed question as "one key
+  is the arbiter, and in cluster mode it must live in one slot". Finish with fail-open
+  versus fail-closed as an explicit product decision.
+
+expected_answer:
+  - text: >-
+      Maps the requirement to a token bucket, explaining that the sustained rate is the
+      refill rate and the burst is the bucket capacity, where a fixed window cannot
+      express either.
+    weight: 5
+    min_level: middle
+  - text: >-
+      Implements the refill and decrement atomically, in one Lua script or one transaction,
+      and identifies the read-modify-write race in doing it with separate commands.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Uses one Redis key per limiter identity so it is a single arbiter, and notes that
+      in Redis Cluster the limiter's counters must stay within one hash slot and
+      multi-key scripts cannot span slots.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Chooses and states a failure policy for Redis being unavailable: fail-open protects
+      availability and removes the limit, fail-closed protects the downstream and takes
+      the product down.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Returns useful headers — limit, remaining, reset or Retry-After — so clients back
+      off instead of retrying in a storm.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Notes the memory and precision trade in the alternatives: an exact sliding window
+      as a sorted set stores one entry per request, while a sliding-window counter
+      approximates with two windows.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Considers a local per-instance limiter when the limit is soft fairness, and says
+      why it is wrong when the limit is a billing or abuse control.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The key gets a burst of traffic from many pods at once. Does the token bucket absorb
+    it or reject it, and which do you want?
+  - How would you test the limiter's behaviour under a clock skew between instances?
+  - The limit needs to be per tenant across three regions. What changes?
+
+common_mistakes:
+  - >-
+    Reaching for a fixed window and discovering the boundary doubles the effective rate.
+  - >-
+    Issuing INCR and EXPIRE as separate commands, so a crash between them leaves a
+    counter that never resets.
+  - >-
+    Keying the limiter on something the client controls, which makes the limit optional.
+  - >-
+    Not deciding what happens when Redis is unreachable, so the behaviour is whatever the
+    exception path does.
+
+related_questions: [cache-penetration-and-avalanche, redis-durability-choice]
+
+wiki_refs:
+  - slug: redis-rate-limiting
+    anchor: token-bucket
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Redis — INCR command"
+    url: https://redis.io/docs/latest/commands/incr/
+    kind: official-docs
+  - title: "Redis — Key eviction"
+    url: https://redis.io/docs/latest/develop/reference/eviction/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

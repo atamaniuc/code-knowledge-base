@@ -1,0 +1,105 @@
+id: 5ef18fcd-b214-4dfd-a07a-f0b3289b8c62
+slug: kubernetes-workload-object-choice
+lang: en
+
+domain: infra
+topic: kubernetes
+subtopic: workloads
+
+tracks: [backend, fullstack, any]
+levels: [middle, senior]
+tech:
+  name: Kubernetes
+  version_range: ">=1.34"
+
+question: >-
+  You are picking a controller for a new service. Walk me through how you choose
+  between a Deployment, a StatefulSet, a DaemonSet and a Job, and what breaks if
+  you pick the wrong one.
+
+probes: >-
+  Whether the candidate reasons from the identity and lifecycle contract rather
+  than reciting definitions. The tell is whether they can say what fails later —
+  two writers, orphaned volumes, blocked drains — instead of what each object is.
+
+answer_strategy: >-
+  Open with the question that decides it: does a pod need to be identifiable to
+  its peers, does it run per node, does it ever finish. Then give the mapping and
+  spend the rest of the answer on failure modes, because that is the part that
+  shows operational experience. Keep the definitions short; the interviewer
+  already knows what a Deployment is.
+
+expected_answer:
+  - text: >-
+      Frames the choice as a contract about identity, ordering and lifetime rather
+      than a packaging preference.
+    weight: 4
+    min_level: middle
+  - text: >-
+      States that interchangeable stateless replicas are a Deployment, which
+      promises neither ordering nor a stable name nor exclusive volume access.
+    weight: 4
+    min_level: middle
+  - text: >-
+      Reaches for a StatefulSet when a peer must be addressable by a stable name or
+      each replica owns its own volume, and names the per-replica PVC and ordered
+      start or stop as the mechanism.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Uses a DaemonSet when the desired count tracks nodes rather than traffic, and
+      names node-local agents such as log shippers or CSI node plugins.
+    weight: 3
+    min_level: middle
+  - text: >-
+      Uses a Job or CronJob for work that completes, and mentions a deadline or
+      backoff limit so a stuck run cannot retry forever.
+    weight: 3
+    min_level: middle
+  - text: >-
+      Names a concrete failure of the wrong choice: two primaries if a database is
+      wrapped in a Deployment, orphaned volumes after a StatefulSet scale-down, or
+      overlapping CronJob runs without a concurrency policy.
+    weight: 5
+    min_level: senior
+
+follow_ups:
+  - A StatefulSet cannot start because ordinal zero will not become ready. What do you do?
+  - When would you deliberately run a database outside Kubernetes entirely?
+  - What does a Deployment give you that a bare ReplicaSet does not?
+
+common_mistakes:
+  - >-
+    Listing the objects and their fields without naming the property that decides
+    between them.
+  - >-
+    Saying a StatefulSet is for databases without explaining stable identity or
+    per-replica storage.
+  - >-
+    Using a DaemonSet for an application and then fighting the scheduler to keep it
+    off some nodes.
+  - >-
+    Treating a CronJob as a scheduler with no overlap story.
+
+related_questions: [kubernetes-statefulset-ordering-and-recovery, kubernetes-eviction-and-disruption-budget]
+
+wiki_refs:
+  - slug: kubernetes-workload-objects
+    anchor: choosing-under-pressure
+    wiki_reviewed_at: "2026-10-13"
+  - slug: kubernetes-workload-objects
+    anchor: the-object-is-a-contract-about-identity-and-lifecycle
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Kubernetes: Deployments"
+    url: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+    kind: official-docs
+  - title: "Kubernetes: StatefulSets"
+    url: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+    kind: official-docs
+
+difficulty: 3
+estimated_minutes: 8
+
+review_status: draft

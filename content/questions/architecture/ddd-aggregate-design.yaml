@@ -1,0 +1,110 @@
+id: 79a36ca9-35a3-432d-844a-4f4eae6acc7f
+slug: ddd-aggregate-design
+lang: en
+
+domain: architecture
+topic: design
+subtopic: ddd
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: Domain-driven design
+  version_range: ">=2024"
+
+question: >-
+  Model an order that has customer, lines, payment and shipment. The team wants one aggregate
+  so everything is consistent. Walk me through where you put the transaction boundary, and
+  what you deliberately leave outside it.
+probes: >-
+  Whether the candidate derives the aggregate boundary from the invariant that must hold in one
+  transaction rather than from the nouns in the domain. Whether they can say what becomes
+  eventually consistent, and whether they know the operational cost of a large aggregate.
+answer_strategy: >-
+  Start from the invariant, not the diagram: say what must be true at the end of one
+  transaction, and therefore what belongs in the aggregate. Then split the rest out explicitly —
+  payment and shipment are their own lifecycles — and describe how they agree, with an event and
+  a compensating action rather than a distributed transaction. Finish on the failure mode you
+  are avoiding: a growing aggregate that serialises writes and an invariant that is only
+  eventually true while the code pretends otherwise.
+expected_answer:
+  - text: >-
+      Defines the aggregate as the consistency boundary and the root as the only entry point,
+      referencing other aggregates by identity.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Derives the boundary from the invariant: what must be true at the end of one transaction,
+      usually the order header and its lines, not the customer, payment or shipment.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Explains that payment and shipment are separate aggregates with their own lifecycles, and
+      that agreement across them is a process with compensations or reservations.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Names the operational cost of a large aggregate: it is the unit of locking, so every write
+      competes and latency follows.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Describes the growing-aggregate smell and the fix: header invariants stay in the root,
+      append-only line items become their own aggregate with a projected total.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Distinguishes bounded contexts, so billing's customer and support's customer are separate
+      models rather than one shared entity.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Says what the business loses in the eventual window and how it is detected and repaired.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The order total must never exceed the customer's credit limit. Which aggregate is that invariant in?
+  - An order accumulates a hundred thousand lines over a year. What breaks?
+  - How do you handle a payment that succeeds after the order is cancelled?
+
+common_mistakes:
+  - >-
+    One aggregate for the whole order including payment and shipment, which creates a lock and a
+    long transaction.
+  - >-
+    Treating the database schema as the aggregate boundary and merging everything joined by a
+    foreign key.
+  - >-
+    Enforcing a cross-aggregate rule with a distributed transaction when a saga or a reservation
+    is the honest option.
+  - >-
+    Letting services mutate aggregate internals, so the invariant is enforced in two places and
+    eventually in neither.
+
+related_questions: [cqrs-and-event-sourcing-costs, consistency-models-business-tolerance]
+
+wiki_refs:
+  - slug: ddd-aggregates-and-boundaries
+    anchor: an-aggregate-is-a-transaction-boundary
+    wiki_reviewed_at: "2026-10-13"
+  - slug: ddd-aggregates-and-boundaries
+    anchor: where-the-model-breaks-down
+    wiki_reviewed_at: "2026-10-13"
+  - slug: ddd-aggregates-and-boundaries
+    anchor: the-consistency-question-is-the-interview
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Pattern: Saga"
+    url: https://microservices.io/patterns/data/saga.html
+    kind: article
+  - title: "Pattern: Database per service"
+    url: https://microservices.io/patterns/data/database-per-service.html
+    kind: article
+
+difficulty: 5
+estimated_minutes: 13
+
+review_status: draft

@@ -1,0 +1,111 @@
+id: 338c9692-a228-4b27-8a4a-ffdab2fd3d19
+slug: aws-sqs-idempotency-and-dlq
+lang: en
+
+domain: infra
+topic: aws
+subtopic: messaging
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: AWS
+  version_range: ">=2024"
+
+question: >-
+  A consumer charges a customer's card when it processes an order message. The
+  queue gives at-least-once delivery, and this morning the dead-letter queue is
+  filling up. Walk me through the design and the incident.
+
+probes: >-
+  Whether the candidate treats duplicate delivery as a property of the system
+  rather than a bug, and whether the dead-letter queue is a designed destination
+  with an alarm or a bucket nobody reads. The payment context makes idempotency
+  non-negotiable.
+
+answer_strategy: >-
+  Lead with the delivery semantics and what they force on the consumer, because
+  everything else follows. Then explain the DLQ as a designed failure path with
+  an alarm and a redrive, and finish with how a poison message is separated from
+  transient failure. Stay concrete about money — this is a charging flow.
+
+expected_answer:
+  - text: >-
+      States that at-least-once delivery makes duplicates normal, so the consumer
+      must be idempotent — a deduplication key tied to the order and the charge,
+      checked before the side effect.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Sets the visibility timeout to exceed the maximum processing time and deletes
+      the message only after the side effect commits, or duplicates are produced by
+      design.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Configures a redrive policy with a maxReceiveCount that reflects the
+      difference between a transient failure and a poison message, and alarms on
+      the DLQ depth.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Investigates the DLQ contents and redrives them after the consumer is fixed,
+      rather than deleting the queue.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Uses exponential backoff with jitter and reports partial batch failures so a
+      whole batch is not redelivered because one record failed.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Chooses a FIFO queue only when ordering is genuinely required, and knows that
+      ordering is per message group, not global.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Reasons about the failure mode where the charge succeeds and the process
+      crashes before deleting the message, which is exactly what the idempotency
+      key has to handle.
+    weight: 4
+    min_level: staff
+
+follow_ups:
+  - The payment provider is idempotent but your ledger write is not. Where do you fix it?
+  - What maxReceiveCount would you start with, and what signal makes you change it?
+  - When would you choose EventBridge over SQS for this flow?
+
+common_mistakes:
+  - >-
+    Treating a duplicate charge as a queue bug rather than a consumer design
+    requirement.
+  - >-
+    Deleting the message before the side effect commits, which loses work, or
+    after an unbounded delay, which duplicates it.
+  - >-
+    Setting a visibility timeout shorter than the worst-case processing time.
+  - >-
+    Having a DLQ with no alarm, so data loss is silent.
+
+related_questions: [aws-compute-choice-for-workload, aws-irsa-and-least-privilege]
+
+wiki_refs:
+  - slug: aws-event-driven-messaging
+    anchor: sqs
+    wiki_reviewed_at: "2026-10-13"
+  - slug: aws-event-driven-messaging
+    anchor: dead-letters-and-retries
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Amazon SQS: Using dead-letter queues"
+    url: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html
+    kind: official-docs
+  - title: "Amazon EventBridge: What is Amazon EventBridge?"
+    url: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

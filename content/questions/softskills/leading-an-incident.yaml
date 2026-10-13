@@ -1,0 +1,105 @@
+id: a1f40b32-aac3-441e-8291-716b2d27822d
+slug: leading-an-incident
+lang: en
+
+domain: softskills
+topic: leadership
+subtopic: incidents
+
+tracks: [any]
+levels: [senior, staff, head]
+
+question: >-
+  Tell me about the most significant incident you led. Checkout was failing, you were on
+  call, and nobody knew why yet. What did you do in the first thirty minutes?
+
+probes: >-
+  Whether the candidate took command of the situation rather than personally debugging it.
+  The interview is scoring role assignment, communication cadence, mitigation before cause,
+  and whether the follow-up changed the system.
+
+answer_strategy: >-
+  Structure the story as a timeline, not a root-cause essay. First thirty minutes: declare
+  the incident, open a channel, assign roles, state what is known and unknown, and start
+  mitigating. Then the middle: status updates on a cadence, decisions recorded, the commander
+  not in the terminal. Then the end: restore service, preserve evidence, write the postmortem,
+  and above all name the systemic change that came out of it. Do not open with the bug.
+
+expected_answer:
+  - text: >-
+      Describes declaring the incident and opening a single channel, which stops the response
+      fragmenting across direct messages.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Assigns explicit roles — incident commander, operations lead, communications lead,
+      scribe — and keeps the commander out of the debugging.
+    weight: 5
+    min_level: staff
+  - text: >-
+      States what is known, what is unknown and the next check, and writes it down so the
+      team stops re-litigating the first hypothesis.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Mitigates before diagnosing: roll back, fail over or disable a feature, while
+      preserving evidence for the analysis.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Communicates on a fixed cadence to a known audience, including when nothing has
+      changed, because silence escalates.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Produces a postmortem with a timeline, impact, contributing causes and action items
+      that are specific, owned and dated.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Names at least one systemic change that would have caught or bounded the failure, and
+      distinguishes blameless analysis from having no owners at all.
+    weight: 4
+    min_level: staff
+
+follow_ups:
+  - The most senior engineer ignored your role assignment and started changing production.
+    What do you do?
+  - >-
+      The action items from that postmortem: how do you know they were done, and that
+      they worked?
+  - What would you do differently in the first ten minutes, and why?
+
+common_mistakes:
+  - >-
+    Opening with the root cause, which answers a different question than the one asked.
+  - >-
+    Commanding and debugging at the same time, so the team loses its coordinator.
+  - >-
+    Diagnosing before mitigating, while customers are still affected.
+  - >-
+    Ending on the fix, with no postmortem or with action items that are exhortations rather
+    than mechanisms.
+
+related_questions: [decision-that-failed, saying-no-with-evidence, influencing-without-authority]
+
+wiki_refs:
+  - slug: incident-leadership-and-postmortems
+    anchor: the-first-ten-minutes
+    wiki_reviewed_at: "2026-10-13"
+  - slug: incident-leadership-and-postmortems
+    anchor: the-postmortem-that-changes-something
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Site Reliability Engineering — Managing Incidents"
+    url: https://sre.google/sre-book/managing-incidents/
+    kind: book
+  - title: "Site Reliability Engineering — Postmortem Culture: Learning from Failure"
+    url: https://sre.google/sre-book/postmortem-culture/
+    kind: book
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

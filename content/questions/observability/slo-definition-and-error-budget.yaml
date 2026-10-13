@@ -1,0 +1,105 @@
+id: b17eadc5-89eb-433f-b7c5-80e14598569d
+slug: slo-definition-and-error-budget
+lang: en
+
+domain: observability
+topic: sre
+subtopic: slo
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: Prometheus
+  version_range: ">=3.0"
+
+question: >-
+  Define an SLO for checkout. Then tell me what you do when the error budget is
+  exhausted.
+
+probes: >-
+  Whether the candidate starts from a user-visible signal and a cost argument
+  rather than a round number, and whether the budget has a pre-agreed consequence.
+  An SLO with no policy is decoration, and that is the point of the second half.
+
+answer_strategy: >-
+  Give the definition as one sentence — indicator, target, window — and then walk
+  the choices inside it, because those choices are the engineering. Add the
+  dependency ceiling so the target is defensible, and finish with the policy as
+  something agreed in advance, not negotiated during the incident.
+
+expected_answer:
+  - text: >-
+      Starts from a user-visible indicator measured at the boundary the user
+      crosses — request success rate or latency — not from CPU or queue depth.
+    weight: 5
+    min_level: senior
+  - text: >-
+      States the target with a cost argument and checks it against the
+      dependencies, because a service cannot be more available than what it
+      depends on.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Chooses the window deliberately — a rolling window is stable, a calendar
+      window creates a boundary effect — and can explain what a long window
+      detects that a short one does not.
+    weight: 4
+    min_level: staff
+  - text: >-
+      States latency as the proportion of requests faster than a threshold rather
+      than an average, so the tail cannot hide behind the mean.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Defines the error budget as the permitted failure over the window and
+      converts it into something concrete, such as minutes of full outage or a
+      permitted error count.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Has a written policy for exhaustion: feature work pauses, reliability work
+      takes priority, and a named owner decides when normal work resumes.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Distinguishes the SLO from an SLA, and knows that an internal SLO may be
+      stricter than the contractual commitment rather than identical to it.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The product team says the target slows them down. What is your argument?
+  - How many SLOs would you run for a platform, and who owns each?
+  - The service is healthy but a dependency is burning your budget. What do you do?
+
+common_mistakes:
+  - >-
+    Picking three nines because it sounds reasonable, without a cost or
+    dependency argument.
+  - >-
+    Measuring CPU or pod count and calling it an SLI.
+  - >-
+    Using an average latency objective that passes while the tail is unusable.
+  - >-
+    Setting a target with no consequence, so a breach produces a meeting rather
+    than a decision.
+
+related_questions: [slo-burn-rate-alerting, promql-cardinality-blowup]
+
+wiki_refs:
+  - slug: slos-and-error-budgets
+    anchor: defining-the-slo
+    wiki_reviewed_at: "2026-10-13"
+  - slug: slos-and-error-budgets
+    anchor: error-budget-policy
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "The Site Reliability Workbook: Alerting on SLOs"
+    url: https://sre.google/workbook/alerting-on-slos/
+    kind: book
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

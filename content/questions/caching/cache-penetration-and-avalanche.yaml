@@ -1,0 +1,111 @@
+id: be92e416-117d-46b4-bb49-c0d2eb715821
+slug: cache-penetration-and-avalanche
+lang: en
+
+domain: caching
+topic: failure-modes
+subtopic: penetration
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: Redis
+  version_range: ">=8"
+
+question: >-
+  You are on call and the primary database is at 100% CPU. Traffic is mostly requests
+  for ids that do not exist. Two hours later a Redis restart produces the same symptom
+  with ordinary traffic. Are these the same problem? Walk me through both.
+
+probes: >-
+  Whether the candidate separates penetration from avalanche instead of reaching for one
+  generic "cache defence", and whether the defences are ordered by cost. Naming the
+  adversarial nature of the first case is a strong signal.
+
+answer_strategy: >-
+  Answer the direct question first: they are different failures that look identical from
+  the database's side. Then take them one at a time — penetration is about keys that do
+  not exist anywhere, avalanche is about many keys disappearing at once — and give two or
+  three defences each, ordered from cheapest to strongest. Finish by saying which single
+  change you would make tonight under pressure, because that is what an on-call answer
+  is judged on.
+
+expected_answer:
+  - text: >-
+      States plainly that the two are different: one is misses for keys that do not
+      exist at all, the other is many existing keys expiring or being lost at once.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Names penetration and proposes negative caching with a short TTL, plus validation
+      at the edge so malformed or impossible ids never reach the database.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Describes a Bloom filter as the strongest penetration defence: a definite negative
+      is impossible to get wrong, false positives are bounded misses, and the filter must
+      be rebuilt as the dataset grows.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Treats penetration as adversarial and says the rate limiter or WAF belongs in the
+      response, not only the cache.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Handles avalanche structurally: TTL jitter, deliberate warm-up with bounded
+      concurrency instead of live traffic, and a multi-level cache so a lost Redis is not
+      a lost cache.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Puts a concurrency limit on the cache-to-database path so the origin degrades
+      instead of collapsing when either failure occurs.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Chooses a single immediate mitigation for tonight and says what it does not fix,
+      rather than presenting every defence as equally applicable.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - The Bloom filter starts returning false negatives after a large import. What went
+    wrong, and how do you detect it before users do?
+  - Negative caching hides a deleted-then-recreated entity. How do you fix that without
+    dropping the defence?
+  - The attacker switches to valid ids they do not have access to. What changes?
+
+common_mistakes:
+  - >-
+    Calling both incidents a cache stampede and applying single-flight, which does
+    nothing for keys that do not exist.
+  - >-
+    Caching negative results with no TTL or a long one, so a created entity stays
+    invisible.
+  - >-
+    Warming the cache after a restart with unlimited concurrency, recreating the
+    avalanche during the warm-up.
+  - >-
+    Defending only in the cache layer while the limiter that would stop the scan is not
+    in the request path.
+
+related_questions: [cache-stampede-mitigation, redis-eviction-policy]
+
+wiki_refs:
+  - slug: cache-penetration-and-avalanche
+    anchor: penetration
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Redis — SET command (NX, EX)"
+    url: https://redis.io/docs/latest/commands/set/
+    kind: official-docs
+  - title: "Redis — Data types (probabilistic types)"
+    url: https://redis.io/docs/latest/develop/data-types/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

@@ -1,0 +1,123 @@
+id: 144a424f-ea35-48b1-9a7c-f2ae74b86ea4
+slug: broker-choice-notification-flow
+lang: en
+
+domain: messaging
+topic: selection
+subtopic: trade-offs
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: Message brokers
+  version_range: ">=2024"
+
+question: >-
+  Design the messaging behind an order flow: reserve inventory, capture payment through
+  an external provider that can take minutes, then notify the customer. Analytics also
+  wants every order event, replayable. Pick your brokers and defend the choices.
+
+probes: >-
+  Whether the candidate derives the tooling from the flow's properties — long waits,
+  external calls, compensation, replay — instead of picking one broker for everything.
+  Naming the roles separately is the staff signal.
+
+answer_strategy: >-
+  Do not name a product in the first sentence. List the flow's properties: multiple
+  steps, an external call with an unbounded wait, a failure that must be explainable, and
+  a second consumer that needs replay. Then assign roles — a durable workflow engine for
+  the process, an event log for analytics — and put the transactional outbox between the
+  database and the log. Mention the queue-based alternative and what it costs, because
+  the interviewer may prefer that answer as long as it is reasoned.
+
+expected_answer:
+  - text: >-
+      Derives the choice from the flow's properties rather than from a preferred product,
+      naming the long external wait, the multi-step process and the replay requirement.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Chooses a durable workflow engine for the order process, because timers, retries,
+      state reconstruction and compensation are its native features rather than code you
+      build on a queue.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Chooses a partitioned, replayable log for the event backbone so analytics and other
+      consumers can read history independently.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Bridges the database commit and the publish with a transactional outbox, so an
+      event cannot be published for a transaction that rolled back or lost when the
+      process dies.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Makes each step idempotent by key, especially the payment capture, and explains
+      what compensation means when the provider cannot be rolled back.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Offers a credible alternative if the team will not run a workflow engine: a managed
+      queue plus an explicit state machine and its own durable timers, and states what
+      that costs to build.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Gives the process a terminal state a human owns, with the information needed to act,
+      instead of leaving it retrying forever.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Justifies the managed-queue option when operational cost matters — no cluster to
+      run — and names its trade: no replay, a fixed feature set, and its own retention
+      limit.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - The provider times out and you do not know whether the payment happened. What does the
+    flow do next?
+  - Analytics needs ninety days of replay and the event topic keeps seven. What now?
+  - Where does the customer notification live — the workflow, or a consumer of the event
+    log?
+
+common_mistakes:
+  - >-
+    Choosing Kafka for the whole problem and then building delays, timers and priority on
+    top of it.
+  - >-
+    Chaining synchronous calls and calling it a saga.
+  - >-
+    Publishing the order event inside the database transaction through ORM hooks and
+    assuming it is atomic.
+  - >-
+    A compensating action that is not idempotent, so a retried compensation reverses
+    twice.
+
+related_questions: [outbox-saga-funding-flow, kafka-poison-message-dlq]
+
+wiki_refs:
+  - slug: choosing-a-message-broker
+    anchor: the-flow-decides
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Temporal Workflow Execution"
+    url: https://docs.temporal.io/workflow-execution
+    kind: official-docs
+  - title: "Apache Kafka 4.3 — Design"
+    url: https://kafka.apache.org/43/design/design/
+    kind: official-docs
+  - title: "Amazon SQS Developer Guide"
+    url: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html
+    kind: official-docs
+  - title: "NATS JetStream"
+    url: https://docs.nats.io/nats-concepts/jetstream
+    kind: official-docs
+
+difficulty: 5
+estimated_minutes: 15
+
+review_status: draft

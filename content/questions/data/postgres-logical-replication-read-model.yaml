@@ -1,0 +1,108 @@
+id: 0c4f79a7-0a4b-4579-b565-97a9be958eda
+slug: postgres-logical-replication-read-model
+lang: en
+
+domain: data
+topic: replication
+subtopic: read-models
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: PostgreSQL
+  version_range: ">=16"
+
+question: >-
+  A search team wants a denormalised read model fed from the orders database. Someone
+  proposed a cron job that polls updated_at every minute. Argue the alternative and tell
+  me how you keep the projection correct.
+
+probes: >-
+  Whether the candidate understands change capture as an at-least-once pipeline whose
+  consumer must be idempotent, and whether they name the failure modes of both polling
+  and replication. Correctness of the projection is the core of the question, not the
+  transport.
+
+answer_strategy: >-
+  Start with what polling cannot give you — missed deletes, races around the timestamp,
+  load proportional to table size — then describe logical replication as decoded row
+  changes. Move quickly to the projection, because that is where the level is decided:
+  idempotent upserts, initial sync then indexes, lag as a stated product bound, and a
+  conflict policy that fails loudly.
+
+expected_answer:
+  - text: >-
+      Explains why polling is inadequate: it cannot see deletes without extra state,
+      races with the timestamp it orders by, misses intermediate updates, and scales with
+      table size rather than change rate.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Describes logical replication as decoding WAL into row changes via a publication
+      and subscription, so the projection is fed by changes rather than by a scan.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Recognises the pipeline is at-least-once and makes the projection idempotent — an
+      upsert keyed by the source primary key, or a conditional update guarded by a
+      version — not a plain insert.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Plans initial sync against empty target tables and creates indexes and constraints
+      after the bulk copy, so the copy is not slowed by maintaining them per row.
+    weight: 4
+    min_level: staff
+  - text: >-
+      States the staleness bound explicitly and checks it against the consumer: a
+      dashboard and a payment authorisation do not accept the same lag.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Handles conflicts deliberately — error rather than skip by default — and has a
+      procedure to find the conflicting rows and advance past them.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Monitors the replication slot: a subscriber that stops acknowledging retains WAL on
+      the publisher and can fill its disk.
+    weight: 4
+    min_level: staff
+
+follow_ups:
+  - The projection has a duplicate row that the source does not have. How did it get
+    there, and how do you find the others?
+  - How do you apply a schema change to both sides without a coordinated freeze?
+  - When would you choose the outbox pattern over logical replication for this?
+
+common_mistakes:
+  - >-
+    Building the projection as inserts, so a restart or a redelivery duplicates rows.
+  - >-
+    Aggregating across rows incrementally, when changes from independent transactions
+    are not a total order.
+  - >-
+    Leaving an abandoned replication slot in place and discovering it when the publisher
+    runs out of disk.
+  - >-
+    Claiming the read model is real-time without measuring or stating a lag bound.
+
+related_questions: [postgres-ledger-read-model, outbox-saga-funding-flow]
+
+wiki_refs:
+  - slug: postgres-logical-replication-and-read-models
+    anchor: read-models-and-projections
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "PostgreSQL 18 — Logical Replication"
+    url: https://www.postgresql.org/docs/18/logical-replication.html
+    kind: official-docs
+  - title: "PostgreSQL 18 — Transaction Isolation"
+    url: https://www.postgresql.org/docs/18/transaction-iso.html
+    kind: official-docs
+
+difficulty: 5
+estimated_minutes: 15
+
+review_status: draft

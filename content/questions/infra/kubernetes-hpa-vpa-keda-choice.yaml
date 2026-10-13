@@ -1,0 +1,104 @@
+id: 03ed8d19-7aeb-4f04-ae0a-535e26e9cc12
+slug: kubernetes-hpa-vpa-keda-choice
+lang: en
+
+domain: infra
+topic: kubernetes
+subtopic: autoscaling
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: Kubernetes
+  version_range: ">=1.34"
+
+question: >-
+  You are on call. A queue-driven worker has scaled to its maximum replica count
+  and the queue is still growing, while the CPU metric your autoscaler uses is
+  low. Walk me through the diagnosis and the redesign.
+
+probes: >-
+  Whether the candidate understands that an autoscaler is only as good as its
+  signal. Scaling on CPU for queue work is a signal error, not a tuning error, and
+  the strong answer reframes the metric before touching replica counts.
+
+answer_strategy: >-
+  Open by naming the wrong signal, not by adding replicas. Explain what the worker
+  is actually doing when the queue is deep — waiting on a downstream call, so CPU
+  is idle — and then move the autoscaling decision onto the queue itself. Finish
+  by acknowledging that maximum replicas is a capacity statement, and ask what the
+  bottleneck downstream is.
+
+expected_answer:
+  - text: >-
+      Identifies that CPU utilisation is the wrong signal for queue-driven work:
+      idle workers waiting on I/O keep the metric low while the backlog grows.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Moves the decision to the amount of pending work — queue depth or consumer
+      lag — through an event-driven scaler or a custom metrics adapter.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Names a per-replica throughput target so that a backlog converts into a
+      replica count instead of a guess.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Separates the three autoscalers by question: horizontal for how many,
+      vertical for how large a replica should be, event-driven for whether there
+      is work waiting.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Treats reaching maximum replicas as a capacity finding and looks downstream
+      — database connections, a rate-limited API — rather than raising the cap
+      blindly.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Discusses scale-to-zero honestly: it is right for spiky work and wrong for a
+      latency-critical path, where minReplicaCount buys away the cold start.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - What stops the HPA and the VPA from fighting if both watch CPU?
+  - How would you set the per-replica throughput number, and what happens if it is wrong?
+  - The queue is deep but the downstream database is saturated. What does the autoscaler do now?
+
+common_mistakes:
+  - >-
+    Raising maxReplicas as the first action, which scales the pressure on whatever
+    is actually saturated.
+  - >-
+    Adding a CPU-based HPA to a workload that is waiting on network I/O.
+  - >-
+    Running VPA in auto mode and HPA on the same CPU metric for the same workload.
+  - >-
+    Assuming the autoscaler can add replicas faster than a cold start and a slow
+    readiness probe allow.
+
+related_questions: [kubernetes-requests-limits-and-qos, aws-compute-choice-for-workload]
+
+wiki_refs:
+  - slug: kubernetes-autoscaling
+    anchor: keda-and-event-driven-scale
+    wiki_reviewed_at: "2026-10-13"
+  - slug: kubernetes-autoscaling
+    anchor: three-different-questions
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Kubernetes: Horizontal Pod Autoscaling"
+    url: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+    kind: official-docs
+  - title: "KEDA documentation"
+    url: https://keda.sh/docs/2.18/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

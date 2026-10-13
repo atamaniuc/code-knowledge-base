@@ -1,0 +1,112 @@
+id: a0fb72e3-9307-40b0-b8e5-4bb6e5f366f7
+slug: aws-compute-choice-for-workload
+lang: en
+
+domain: infra
+topic: aws
+subtopic: compute
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: AWS
+  version_range: ">=2024"
+
+question: >-
+  Choose compute for two workloads and defend it. The first is a queue-driven
+  image-processing worker with spiky load. The second is a multi-tenant API made
+  of forty services that share mTLS and one ingress layer. EKS, ECS, Fargate or
+  Lambda.
+
+probes: >-
+  Whether the candidate eliminates options on the runtime contract and the shared
+  platform requirement before comparing prices. A cost-first answer is a red flag
+  here, because it has skipped the constraints that decide the outcome.
+
+answer_strategy: >-
+  State the order you will use — contract, burst shape, platform economics, cost —
+  and then apply it. For the worker, give the condition that decides between
+  Lambda and a container rather than hedging. For the API, say that the shared
+  platform is the requirement, which is why Kubernetes wins, and name what ECS
+  would cost you.
+
+expected_answer:
+  - text: >-
+      Distinguishes the four accurately: EKS is a managed Kubernetes control
+      plane, ECS an AWS-native orchestrator, Fargate a serverless compute engine
+      for both, and Lambda functions rather than containers.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Chooses Lambda for the worker if the unit of work fits inside the function
+      timeout and its dependencies fit the runtime, and otherwise chooses a
+      container on Fargate or EKS driven by queue depth.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Chooses EKS for the forty-service API because a shared service mesh, policy
+      layer and ingress are the actual requirement, and Kubernetes already
+      provides the extension points.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Names the serverless constraints concretely: bounded execution time,
+      account-level concurrency, ephemeral storage, cold starts, and connection
+      exhaustion on a relational database.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Names the Fargate constraints: no privileged containers or daemon-style
+      workloads, ephemeral storage, so anything needing a host agent or a local
+      volume belongs on EC2-backed nodes.
+    weight: 4
+    min_level: staff
+  - text: >-
+      States the cost crossover honestly: per-request pricing wins for spiky idle
+      workloads and loses to provisioned compute at sustained high utilisation.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The worker's processing time grows past the function limit on large images. What now?
+  - How does the API platform change if the organisation already runs ECS and has no Kubernetes expertise?
+  - What would make you put the stateful piece of either workload on EC2-backed nodes?
+
+common_mistakes:
+  - >-
+    Opening with a price comparison before establishing the runtime constraints.
+  - >-
+    Recommending Lambda for a workload that holds long-lived connections or needs
+    a warm in-memory state.
+  - >-
+    Choosing EKS for a single service because Kubernetes is the strategic
+    direction, and paying for the platform before needing it.
+  - >-
+    Assuming Fargate can run anything a Kubernetes pod can, including privileged
+    agents.
+
+related_questions: [kubernetes-hpa-vpa-keda-choice, aws-cost-right-sizing]
+
+wiki_refs:
+  - slug: aws-compute-selection
+    anchor: the-four-options
+    wiki_reviewed_at: "2026-10-13"
+  - slug: aws-compute-selection
+    anchor: where-the-workloads-shape-decides
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Amazon EKS User Guide: What is Amazon EKS?"
+    url: https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html
+    kind: official-docs
+  - title: "AWS Fargate for Amazon ECS"
+    url: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html
+    kind: official-docs
+  - title: "AWS Lambda Developer Guide: What is AWS Lambda?"
+    url: https://docs.aws.amazon.com/lambda/latest/dg/welcome.html
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

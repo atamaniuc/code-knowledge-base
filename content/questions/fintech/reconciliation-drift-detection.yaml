@@ -1,0 +1,112 @@
+id: 3b65c080-5b3f-469f-8442-991ec9a2aad9
+slug: reconciliation-drift-detection
+lang: en
+
+domain: fintech
+topic: operations
+subtopic: reconciliation
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+
+tech:
+  name: Reconciliation systems
+  version_range: ">=2024"
+
+question: >-
+  Finance says the platform's numbers and the provider's settlement report disagree by a
+  small amount every day, and nobody can say whether the gap is growing. Walk me through how
+  you would find out and stop it.
+
+probes: >-
+  Whether the candidate can turn a vague operational complaint into a matching problem with
+  categories and owners. The staff signal is alerting on break age and reconciliation
+  freshness, not on the total difference.
+
+answer_strategy: >-
+  Refuse the framing first: a single difference number has thrown away the information
+  needed to act, so the first step is to categorise the unmatched items. Then describe the
+  pipeline — ingest the statement idempotently, match on deterministic keys, fall back to
+  composite keys, never auto-accept a fuzzy match. Say which categories you page on and
+  which age out, and name the metrics that would catch growth. Finish with the loop that
+  eliminates a category by changing code rather than by adjusting the ledger.
+
+expected_answer:
+  - text: >-
+      Rejects the single-difference framing and decomposes the gap into matched, internal-only
+      and external-only items with a category per break.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Names the two sources of truth and their asymmetry: the internal journal is timely but
+      not evidence, the external statement is authoritative but late.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Matches on deterministic references first, then composite keys, and makes fuzzy
+      matching propose rather than auto-accept because a false match hides a real break.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Classifies breaks — timing, missing, duplicate, amount or fee, reversal, rounding —
+      because each has a different severity and resolution.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Monitors break count by category, the age of the oldest open break, and the freshness
+      of the last successful reconciliation run, since a job that did not run looks like a
+      job that found nothing.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Pages on duplicates, missing items past the expected settlement lag, and amount breaks
+      over a threshold, while timing breaks age out on their own.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Closes the loop by eliminating a break category with a code change rather than a daily
+      manual adjustment, and keeps the disposition and evidence with each break.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The provider reprocesses yesterday's statement and sends a corrected file. What does your
+    ingestion do?
+  - How do you reconcile a payment whose amount differs only by an FX spread?
+  - What is the service-level objective for an open break, and who owns it?
+
+common_mistakes:
+  - >-
+    Reporting a total difference with no categories, which makes the report unactionable.
+  - >-
+    Auto-accepting fuzzy matches on amount and date alone, which silently hides duplicates
+    and missing items.
+  - >-
+    Alerting on absolute break counts and ignoring the mismatch between settlement lag and
+    a daily batch.
+  - >-
+    Reconciling by adjusting the ledger, which automates the symptom and destroys the
+    evidence.
+
+related_questions: [derived-balances-and-ledger-invariants, auth-capture-refund-settlement, chargeback-engineering]
+
+wiki_refs:
+  - slug: reconciliation-and-drift
+    anchor: the-taxonomy-of-breaks
+    wiki_reviewed_at: "2026-10-13"
+  - slug: reconciliation-and-drift
+    anchor: detection-and-alerting
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Stripe — Receive payouts"
+    url: https://docs.stripe.com/payouts
+    kind: official-docs
+  - title: "Stripe — Disputes and chargebacks"
+    url: https://docs.stripe.com/disputes
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

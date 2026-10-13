@@ -1,0 +1,108 @@
+id: 1049b64e-83ee-499d-8fd6-8a8ff3423418
+slug: cache-write-strategy-for-money
+lang: en
+
+domain: caching
+topic: write-strategies
+subtopic: invalidation
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: Redis
+  version_range: ">=8"
+
+question: >-
+  A payments dashboard reads account summaries constantly and the table is under
+  pressure. A junior engineer proposes write-behind caching to Redis so the writes get
+  fast too. Tell me what you would actually ship, and what you would refuse.
+
+probes: >-
+  Whether the candidate chooses the write strategy from the data's recovery story rather
+  than from latency, and whether they can say no to write-behind for money. The
+  invalidation ordering is the second signal.
+
+answer_strategy: >-
+  Separate reads from writes before choosing. The read pressure is the problem, so
+  cache-aside with invalidation and a TTL solves it. Then address the proposal directly:
+  write-behind acknowledges a financial write that only exists in memory, so it is
+  refused unless the data can be reconstructed — and account balances cannot. Finish on
+  the ordering rule and on what happens when Redis is unavailable.
+
+expected_answer:
+  - text: >-
+      Chooses cache-aside with explicit invalidation on write for this workload, and
+      states the read/write ratio that makes it the right shape.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Refuses write-behind for account balances because it acknowledges a write that
+      exists only in memory; the durability window is the data-loss window.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Orders the write correctly: commit to the database first, then delete the cache
+      key, so a reader that refills cannot write back pre-write data.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Puts a TTL on every cached entry so a missed invalidation is bounded rather than
+      permanent.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Describes the failure behaviour when Redis is unavailable: the path falls back to
+      the database with a concurrency limit, rather than failing the request.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Notes that updating the cache on write is worse than deleting it, because the next
+      reader may not use the value and the write path now has two systems to keep in
+      step.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Offers write-through as the alternative if reads dominate and write latency is
+      acceptable, and names its cost: every write goes to both systems, including values
+      nobody reads.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - The dashboard may be five seconds stale. Does the design change, and how does that
+    help?
+  - A cached balance disagrees with the database. How would you have found out without a
+    user reporting it?
+  - What would make write-behind acceptable here?
+
+common_mistakes:
+  - >-
+    Accepting write-behind for financial data because Redis persistence is enabled,
+    which narrows the loss window but does not close it.
+  - >-
+    Updating the cache before committing the database transaction.
+  - >-
+    Invalidating the cache before the commit, letting a concurrent reader refill with the
+    old value and keep it forever.
+  - >-
+    Caching without a TTL, so one lost invalidation is permanent.
+
+related_questions: [redis-structure-choice, cache-stampede-mitigation]
+
+wiki_refs:
+  - slug: cache-aside-write-through-write-behind
+    anchor: choosing-a-write-strategy
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Redis — SET command (NX, EX, KEEPTTL)"
+    url: https://redis.io/docs/latest/commands/set/
+    kind: official-docs
+  - title: "Redis — Persistence"
+    url: https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

@@ -1,0 +1,106 @@
+id: 3f207895-1c20-4237-8965-a109fff6b3e6
+slug: github-actions-oidc-deployment
+lang: en
+
+domain: infra
+topic: ci-cd
+subtopic: authentication
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: GitHub Actions
+  version_range: ">=2025"
+
+question: >-
+  Your deploy workflow authenticates to AWS with a long-lived access key stored
+  as a repository secret. Walk me through replacing it with OIDC, and tell me what
+  could still go wrong after the migration.
+
+probes: >-
+  Whether the candidate understands that the security boundary is the trust
+  policy's subject condition, not the OIDC exchange itself, and whether they can
+  name the workflow and environment permissions that make the arrangement safe.
+
+answer_strategy: >-
+  Explain the exchange briefly — the job requests a token, AWS trusts the issuer,
+  the role is assumed — then spend most of the answer on scoping that role.
+  Finish with a concrete exposure, because an interviewer who asks what could go
+  wrong is checking whether you have thought about a wildcard subject or a fork
+  pull request.
+
+expected_answer:
+  - text: >-
+      Describes the mechanism: the workflow requests an OIDC token from GitHub,
+      AWS has an IAM OIDC identity provider that trusts the issuer, and the job
+      exchanges the token for temporary credentials.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Scopes the role's trust policy with a condition on the token's subject claim,
+      restricting it to a specific branch or, better, a named environment.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Identifies a wildcard subject as the residual hole, because it lets any
+      branch, tag or environment request the production role.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Sets the workflow's own permissions block down to read-only by default and
+      grants id-token write only to the job that deploys.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Pairs the environment's protection rules — required reviewers, branch
+      restrictions — with an environment-scoped subject so the credential and the
+      human gate protect the same boundary.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Scopes the role's permission policy to deployment actions rather than
+      account administration, so the exchange cannot be turned into a broader
+      compromise.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - The trust policy accepts a wildcard subject. What is the exposure, and how would you demonstrate it?
+  - A pull request from a fork triggers the workflow. What stops it from deploying?
+  - How do you rotate nothing, and still remove a compromised deployment path?
+
+common_mistakes:
+  - >-
+    Storing the access key in a secret with a rotation reminder and calling it
+    managed.
+  - >-
+    Configuring OIDC but leaving the trust policy subject unrestricted.
+  - >-
+    Granting the deploy role broad account permissions because the pipeline is
+    trusted.
+  - >-
+    Trusting a branch subject for production instead of an environment with
+    protection rules.
+
+related_questions: [aws-irsa-and-least-privilege, github-actions-release-and-rollback]
+
+wiki_refs:
+  - slug: github-actions-oidc-deployments
+    anchor: oidc-instead-of-keys
+    wiki_reviewed_at: "2026-10-13"
+  - slug: github-actions-oidc-deployments
+    anchor: the-jobs-identity
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "GitHub Docs: Configuring OpenID Connect in Amazon Web Services"
+    url: https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+    kind: official-docs
+  - title: "GitHub Docs: Using environments for deployment"
+    url: https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

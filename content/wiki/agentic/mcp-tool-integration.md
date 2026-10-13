@@ -6,7 +6,7 @@ domain: agentic
 topic: integration
 tech:
   name: Model Context Protocol
-  version_range: ">=2025-06"
+  version_range: ">=2026-07"
 levels: [senior, staff]
 summary: >-
   MCP replaces a bespoke integration per tool with one client protocol per server. The win
@@ -15,8 +15,8 @@ summary: >-
 prerequisites: []
 related: [agent-skills, agent-loop-design]
 sources:
-  - title: "Model Context Protocol — specification 2025-06-18"
-    url: https://modelcontextprotocol.io/specification/2025-06-18
+  - title: "Model Context Protocol — specification 2026-07-28"
+    url: https://modelcontextprotocol.io/specification/2026-07-28
     kind: spec
   - title: "Model Context Protocol — architecture"
     url: https://modelcontextprotocol.io/docs/concepts/architecture

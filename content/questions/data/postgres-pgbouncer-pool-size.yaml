@@ -1,0 +1,108 @@
+id: 6352cecc-4a7f-4fa0-8b66-1f1276142d02
+slug: postgres-pgbouncer-pool-size
+lang: en
+
+domain: data
+topic: connection-management
+subtopic: pooling
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: PostgreSQL
+  version_range: ">=16"
+
+question: >-
+  A Node service runs 64 pods, each opening a pool of 20 connections to PostgreSQL.
+  max_connections is 500. Traffic is growing, so the platform team adds pods — and p99
+  gets worse instead of better. Explain what is happening and how you would fix it.
+
+probes: >-
+  Whether the candidate separates pool size from concurrency and understands that the
+  queue has to be placed deliberately. The follow-on signal is knowing what transaction
+  pooling mode forbids in the application.
+
+answer_strategy: >-
+  Do the arithmetic out loud first: 64 times 20 is 1,280 connections wanted against a
+  limit of 500, and past the database's real concurrency every extra connection slows all
+  the others. Then place the pooler and pick transaction mode, and immediately name the
+  two or three things that mode forbids. Finish on measurement: wait time and utilisation,
+  not connection count.
+
+expected_answer:
+  - text: >-
+      Does the arithmetic and identifies the real problem: connections exceed what the
+      database can run concurrently, so they contend rather than add throughput.
+    weight: 5
+    min_level: senior
+  - text: >-
+      States that pool size must be derived from database capacity and query shape, not
+      from the number of application workers or pods.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Introduces PgBouncer or an equivalent pooler and explains that it decouples the
+      client connection count from the server connection count.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Chooses transaction pooling mode for this workload and names its constraints:
+      session-level advisory locks, SET session state, LISTEN/NOTIFY, and automatic
+      server-side prepared statements.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Sizes default_pool_size and max_client_conn deliberately, and says that thousands
+      of clients with tens of server connections is the intended shape.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Measures the right things: pool wait time and utilisation, not just active
+      connections, so an overloaded pool is visible before timeouts.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Notes the failure modes to avoid: a long analytics query occupying a pool slot the
+      request path needs, connection leaks, and a pooler that becomes the new single
+      point of failure.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - Which application features would break if you switched this service to transaction
+    mode today, and how would you find them?
+  - The platform runs on serverless functions that scale to zero. What changes about the
+    pooling design?
+  - How would you give a reporting workload a separate path so it cannot starve the
+    request path?
+
+common_mistakes:
+  - >-
+    Raising max_connections, which moves the queue into the database and makes p99 worse.
+  - >-
+    Setting the pool size to the number of application threads and calling it tuned.
+  - >-
+    Enabling transaction mode without checking for session-level advisory locks or a
+    driver that prepares statements automatically.
+  - >-
+    Monitoring only connection counts, so overload is invisible until requests time out.
+
+related_questions: [postgres-explain-analyze-buffers, postgres-deadlock-in-production]
+
+wiki_refs:
+  - slug: postgres-connection-pooling
+    anchor: pool-size-is-not-concurrency
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "PgBouncer — Configuration"
+    url: https://www.pgbouncer.org/config.html
+    kind: official-docs
+  - title: "PostgreSQL 18 — Connections and Authentication (max_connections)"
+    url: https://www.postgresql.org/docs/18/runtime-config-connection.html
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

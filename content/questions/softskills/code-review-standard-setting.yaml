@@ -1,0 +1,103 @@
+id: 5bc66bcc-0286-43c6-8de5-4ce99532947f
+slug: code-review-standard-setting
+lang: en
+
+domain: softskills
+topic: leadership
+subtopic: code-review
+
+tracks: [any]
+levels: [senior, staff]
+
+question: >-
+  You are reviewing a pull request from a senior engineer on another team. The code works
+  and the tests pass, but it bypasses the retry and idempotency library your team
+  standardised on. How do you handle it?
+
+probes: >-
+  Whether the candidate reviews to set a standard rather than to win an argument, and
+  whether they can distinguish a blocking defect from a preference. Also whether they
+  understand that consistency is what makes a standard real.
+
+answer_strategy: >-
+  Separate the two questions you are answering: is this change acceptable, and what does the
+  author learn. Then be concrete — say what the library guarantees that the hand-rolled path
+  does not, and whether that gap is a defect here or a preference. Mark the comment as
+  blocking or non-blocking so the author does not have to guess. If it is genuinely a
+  standard, say why it exists and offer the migration path, rather than citing the standard as
+  authority. Close on what you would do if the author disagrees and the risk is real.
+
+expected_answer:
+  - text: >-
+      Separates correctness from consistency, and says explicitly whether the missing library
+      is a blocking defect or a preference in this change.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Names what the standard actually guarantees — retries, idempotency, error taxonomy —
+      and whether bypassing it creates a real failure mode here.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Gives the reason for the standard rather than citing it as authority, so the feedback
+      transfers to the next change.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Addresses the person and the change separately, in writing, and leaves a summary of
+      what must change before merge.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Offers a path: migrate now, or record an agreed exception with a date and an owner
+      rather than a permanent silent divergence.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Accepts that a change which is correct but inconsistent may be worth merging and
+      fixing later, and does not make the reviewer the bottleneck on every stylistic point.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Escalates the disagreement about the standard itself to the team's written conventions
+      rather than resolving it in one review thread.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The author merges it anyway. What do you do?
+  - Your standard turns out to be wrong for this team's workload. How do you revise it?
+  - How do you review the work of someone whose level is higher than yours without
+    deferring?
+
+common_mistakes:
+  - >-
+    Citing the standard as an authority without explaining what it protects against.
+  - >-
+    Blocking on a stylistic preference and calling it a standard, which erodes trust in
+    review.
+  - >-
+    Approving silently to avoid conflict, so the standard becomes optional.
+  - >-
+    Making the review a personal exchange about competence rather than a comment on the
+    change.
+
+related_questions: [decision-that-failed, influencing-without-authority, saying-no-with-evidence]
+
+wiki_refs:
+  - slug: mentoring-and-code-review
+    anchor: review-as-standard-setting
+    wiki_reviewed_at: "2026-10-13"
+  - slug: mentoring-and-code-review
+    anchor: feedback-that-lands
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Google — How to do a code review"
+    url: https://google.github.io/eng-practices/review/reviewer/
+    kind: official-docs
+
+difficulty: 3
+estimated_minutes: 10
+
+review_status: draft

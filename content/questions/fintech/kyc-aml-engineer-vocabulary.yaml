@@ -1,0 +1,112 @@
+id: 420e3d31-03f2-4777-9d2d-716f73a71a0f
+slug: kyc-aml-engineer-vocabulary
+lang: en
+
+domain: fintech
+topic: compliance
+subtopic: kyc-aml
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+
+tech:
+  name: KYC and AML controls
+  version_range: ">=2024"
+
+question: >-
+  You are the engineer on a regulated payments product. A product manager asks for a verify
+  later option so customers can start sending money immediately. What questions do you ask,
+  and what does the system have to be able to do?
+
+probes: >-
+  Whether the candidate can hold a compliance conversation as an engineer: naming the
+  controls that exist, the data they require, and the retention and access consequences,
+  without pretending to be the compliance officer.
+
+answer_strategy: >-
+  Do not answer yes or no on the product question. Reframe it as risk-based: what is the
+  customer's risk rating, what limits does an unverified customer get, and who owns the
+  decision. Then describe the controls the system must support — identity verification with
+  its method and result stored, a graph of beneficial owners for legal entities, ongoing
+  monitoring rather than a one-time check, and an audit trail of every decision. Finish on
+  the engineering consequences most candidates miss: data classification, retention versus
+  deletion, and access to the audit trail itself.
+
+expected_answer:
+  - text: >-
+      Reframes the request as risk-based rather than binary: unverified customers can exist
+      with low limits, a risk rating and an owner for the decision.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Names the customer due diligence obligations in engineering terms: identify and verify
+      the customer, identify and verify beneficial owners of legal entities, understand the
+      nature and purpose of the relationship, and monitor ongoing.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Requires verification results to be stored with the method, timestamp and provider
+      reference, even when verification is delegated to a third party.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Describes screening and monitoring as repeatable and explainable: alerts must be
+      reconstructable months later, so inputs and rules are recorded.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Treats rules, thresholds and watchlists as versioned data with effective dates and an
+      audit entry, not as constants in code.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Names the retention conflict: transaction records must be kept for years while the
+      system may receive erasure requests, so identity attributes are classified separately
+      from retained records.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Recognises that the audit trail is a tamper target: access is least-privilege and
+      logged, with break-glass procedures.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The verification provider returns an inconclusive result. What does the product do, and
+    who decides?
+  - A customer asks to be deleted three years in. What can you delete and what must stay?
+  - Where does the compliance team read the ledger from, and how is that access logged?
+
+common_mistakes:
+  - >-
+    Answering the product question as a yes or no, without a risk-based policy and an owner.
+  - >-
+    Treating verification as a boolean flag without the method, timestamp and evidence.
+  - >-
+    Building monitoring rules that cannot explain why an alert fired.
+  - >-
+    Ignoring retention: defaulting to delete-on-request for records the regulation requires
+    you to keep.
+
+related_questions: [limits-and-risk-checks, derived-balances-and-ledger-invariants, cross-border-funding-flow-design]
+
+wiki_refs:
+  - slug: kyc-aml-and-audit-trails
+    anchor: kyc-who-the-customer-is
+    wiki_reviewed_at: "2026-10-13"
+  - slug: kyc-aml-and-audit-trails
+    anchor: audit-trails
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "FinCEN — Customer Due Diligence final rule"
+    url: https://www.fincen.gov/resources/statutes-and-regulations/cdd-final-rule
+    kind: official-docs
+  - title: "Stripe — Identity"
+    url: https://docs.stripe.com/identity
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

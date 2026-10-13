@@ -1,0 +1,108 @@
+id: 3884fa45-1c5f-4231-8523-7ec6d0c93f23
+slug: postgres-deadlock-in-production
+lang: en
+
+domain: data
+topic: concurrency
+subtopic: deadlocks
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: PostgreSQL
+  version_range: ">=16"
+
+question: >-
+  On-call: the logs show "deadlock detected" every few minutes, and it started when a
+  nightly bulk job was scaled up to run in parallel. Walk me through your triage in the
+  first ten minutes and the fix you would ship.
+
+probes: >-
+  Whether the candidate diagnoses a lock cycle from the database's own evidence and
+  fixes the ordering or transaction length. Raising deadlock_timeout, or adding a
+  retry and stopping there, is the answer being screened for.
+
+answer_strategy: >-
+  Separate triage from the fix. Triage: read the deadlock detail in the log, which names
+  the two statements and the rows, and look at pg_locks for what is holding what. Then
+  state the two usual causes — different lock order between two code paths, and long
+  transactions holding locks across a network call — and say which the evidence points
+  to. Close with the design fix: a deterministic order, shorter transactions, and a
+  retry that is a safety net rather than the primary answer.
+
+expected_answer:
+  - text: >-
+      Uses the database's own evidence: the deadlock detail PostgreSQL logs, which names
+      the conflicting statements, and pg_locks to see the current holders and waiters.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Explains the mechanism as a lock cycle: two transactions each hold a lock the
+      other needs, so the database aborts one after deadlock_timeout.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Identifies the likely cause as inconsistent lock ordering between two code paths
+      and fixes it by making the order deterministic, rather than by serialising all work.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Shortens transactions: no network calls, no user interaction and no batch loop
+      inside a transaction that holds row locks.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Chooses the weakest sufficient lock — comparing FOR UPDATE, FOR NO KEY UPDATE and
+      FOR SHARE — instead of escalating to a table lock or locking more rows than needed.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Treats the application retry as a bounded safety net with backoff and jitter, and
+      monitors the retry and deadlock rates as a signal rather than noise.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Notes that the parallel bulk job should be batched by a key range so two workers
+      do not contend for the same rows at all.
+    weight: 4
+    min_level: staff
+
+follow_ups:
+  - The deadlock detail shows two different tables. What does that tell you about the
+    transaction boundaries?
+  - Would you raise deadlock_timeout? What would that change and what would it not?
+  - How do you distinguish a deadlock from ordinary lock waits that look similar in
+    metrics?
+
+common_mistakes:
+  - >-
+    Raising deadlock_timeout or lowering isolation to make the messages stop, which
+    changes detection latency and not the cycle.
+  - >-
+    Adding an infinite retry loop, which turns a deadlock into a livelock under
+    sustained contention.
+  - >-
+    Locking the whole table to avoid ordering concerns, turning row contention into a
+    throughput wall.
+  - >-
+    Holding a transaction open across an HTTP call to a downstream service.
+
+related_questions: [postgres-lost-update-isolation, postgres-pgbouncer-pool-size]
+
+wiki_refs:
+  - slug: postgres-mvcc-isolation-and-locking
+    anchor: row-locks-table-locks-and-deadlocks
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "PostgreSQL 18 — Explicit Locking (Deadlocks)"
+    url: https://www.postgresql.org/docs/18/explicit-locking.html
+    kind: official-docs
+  - title: "PostgreSQL 18 — Transaction Isolation"
+    url: https://www.postgresql.org/docs/18/transaction-iso.html
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

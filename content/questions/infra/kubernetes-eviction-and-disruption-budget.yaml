@@ -1,0 +1,103 @@
+id: db5d0a9e-9384-4a2d-b15a-6367601bddba
+slug: kubernetes-eviction-and-disruption-budget
+lang: en
+
+domain: infra
+topic: kubernetes
+subtopic: eviction
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: Kubernetes
+  version_range: ">=1.34"
+
+question: >-
+  Two things are happening in the same cluster. A node drain for an upgrade will
+  not complete, and a batch service is killed every evening at peak. Walk me
+  through both, and tell me what the two have to do with each other.
+
+probes: >-
+  Whether the candidate separates voluntary from involuntary disruption and can
+  read a PodDisruptionBudget as a capacity statement rather than a safety switch.
+  The link between the two symptoms is the point of the question.
+
+answer_strategy: >-
+  Start with the taxonomy: voluntary disruption is a drain, involuntary is a node
+  under pressure or a failure, and a PDB only governs the first. Use that to
+  explain both symptoms, then give the policy — priority classes for critical
+  work, budgets sized against real capacity, and a check that a drain actually
+  can proceed.
+
+expected_answer:
+  - text: >-
+      Distinguishes voluntary disruption — drains, upgrades, descheduling — from
+      involuntary disruption such as node pressure, and states that a
+      PodDisruptionBudget only bounds the voluntary kind.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Diagnoses the stalled drain as a PDB whose minAvailable equals the replica
+      count, which can never be satisfied.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Explains that kubelet evicts under node pressure by QoS class and by usage
+      above requests, so a BestEffort batch job dies first.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Sizes the PDB against capacity rather than replica count: the surviving
+      replicas must be able to carry the traffic before one is taken away.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Uses priority classes to protect critical workloads from preemption and from
+      being the first eviction candidate.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Checks the non-pod obstructions too: pods with local storage, bare pods with
+      no controller, and DaemonSets that a drain handles differently.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - How would you drain a node that runs a single-replica stateful service with no maintenance window?
+  - What does a PDB with maxUnavailable of one do to a three-replica service at 90 percent utilisation?
+  - Should a batch job have a PDB at all?
+
+common_mistakes:
+  - >-
+    Believing the PDB also protects against node failure, which it does not.
+  - >-
+    Setting minAvailable equal to the replica count to be safe, which blocks all
+    maintenance permanently.
+  - >-
+    Removing priority classes so everything is equal, which makes the escalation
+    path a human instead of the scheduler.
+  - >-
+    Forcing a drain against a PDB without checking what the budget was protecting.
+
+related_questions: [kubernetes-requests-limits-and-qos, kubernetes-cluster-upgrade-plan]
+
+wiki_refs:
+  - slug: kubernetes-scheduling-and-eviction
+    anchor: disruption-budgets
+    wiki_reviewed_at: "2026-10-13"
+  - slug: kubernetes-scheduling-and-eviction
+    anchor: node-pressure-eviction-and-priority
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Kubernetes: Specifying a Disruption Budget"
+    url: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+    kind: official-docs
+  - title: "Kubernetes: Node-pressure eviction"
+    url: https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

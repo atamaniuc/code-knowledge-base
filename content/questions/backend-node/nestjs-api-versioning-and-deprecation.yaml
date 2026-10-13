@@ -1,0 +1,112 @@
+id: 54c68e88-05ca-4806-9f1d-aaef110f1e39
+slug: nestjs-api-versioning-and-deprecation
+lang: en
+
+domain: backend-node
+topic: api-design
+subtopic: versioning
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: NestJS
+  version_range: ">=12"
+
+question: >-
+  Your public API serves four hundred integrations. A field has to change meaning, and a
+  write endpoint needs a new required input. The team proposes standing up v2 for the whole
+  surface. What would you do instead, and how do you know when the old path is safe to
+  remove?
+probes: >-
+  Whether the candidate separates the routing mechanism from the deprecation policy, and
+  whether they can say what evidence justifies a sunset. Naming per-client telemetry rather
+  than a calendar date is the senior signal; scoping the version to the changed contract is
+  the staff one.
+answer_strategy: >-
+  Deal with the change first: it is mostly additive, so expand before you version, and
+  version only the contract that actually changes. Then cover the mechanism briefly — Nest
+  offers URI, header, media-type and custom selection — and spend the time on the part that
+  costs money: per-client usage telemetry, a dated window, and what the old path returns
+  after it. Finish on the mistake of treating v2 as the plan rather than the fallback.
+expected_answer:
+  - text: >-
+      Knows the four selection types — URI, header, media type and custom — and observes that a URI
+      version is visible in logs and dashboards while a header version is invisible until
+      someone logs it.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Prefers expand-and-contract: add the new shape alongside the old, migrate what can be
+      observed, then remove, rather than forking the whole resource model.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Explains that VERSION_NEUTRAL is for routes that genuinely do not change, not a way to
+      route a breaking change past versioning.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Requires usage telemetry per version and per client, because a sunset without it is a guess
+      about who breaks.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Versions each contract on its own schedule — HTTP, gRPC methods and message schemas are
+      different contracts with different consumers.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Sets a dated deprecation window and defines what the old version returns after it, rather
+      than leaving it alive indefinitely.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Includes error shapes, nullability and retry semantics in what the version protects, not
+      only the changed field.
+    weight: 4
+    min_level: staff
+
+follow_ups:
+  - A client integration belongs to a customer who has not replied to three emails. What now?
+  - Where would you put the version check so it is visible in the trace?
+  - How would you test that v1 clients still work during the migration?
+
+common_mistakes:
+  - >-
+          Enabling URI versioning and calling the task complete while both versions are maintained with
+          no sunset date.
+  - >-
+          Forking the entire API surface because one field changed, which doubles the maintenance for
+          no benefit.
+  - >-
+          Measuring usage per endpoint rather than per client, which cannot answer who breaks at the
+          deadline.
+  - >-
+          Changing error or pagination semantics underneath an unchanged URL.
+
+related_questions: [api-versioning-and-idempotency, nestjs-microservice-transport-choice]
+
+wiki_refs:
+  - slug: nestjs-api-versioning-and-deprecation
+    anchor: four-ways-to-select-a-version
+    wiki_reviewed_at: "2026-10-13"
+  - slug: nestjs-api-versioning-and-deprecation
+    anchor: versioning-is-not-deprecation
+    wiki_reviewed_at: "2026-10-13"
+  - slug: nestjs-api-versioning-and-deprecation
+    anchor: what-goes-in-the-deprecation-policy
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "NestJS — Versioning"
+    url: https://raw.githubusercontent.com/nestjs/docs.nestjs.com/master/content/http/versioning.md
+    kind: official-docs
+  - title: "RFC 9110 — HTTP Semantics"
+    url: https://www.rfc-editor.org/rfc/rfc9110.html
+    kind: rfc
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

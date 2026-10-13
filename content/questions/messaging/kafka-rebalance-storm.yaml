@@ -1,0 +1,113 @@
+id: 755a15b5-ab15-4bb6-bc95-3d6f8738e329
+slug: kafka-rebalance-storm
+lang: en
+
+domain: messaging
+topic: consumers
+subtopic: rebalancing
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: Apache Kafka
+  version_range: ">=4.0"
+
+question: >-
+  A consumer group's lag keeps climbing and the logs show partitions being revoked and
+  reassigned every few minutes. Triage it. And while you are there: this cluster runs
+  Kafka 4.3, so are these consumers using the new rebalance protocol or the old one?
+
+probes: >-
+  Whether the candidate recognises the rebalance feedback loop and the poll-interval
+  mechanics, and whether they know the new protocol is GA but not the client default.
+  The second question is a currency check.
+
+answer_strategy: >-
+  Triage first: a consumer exceeding max.poll.interval.ms is evicted, its partitions move
+  and slow the others, which evicts another — a feedback loop. Fix the processing time
+  inside the poll loop first, because that is the actual cause. Then answer the protocol
+  question precisely: the new protocol is production-ready since 4.0 and computed
+  server-side and incrementally, but the consumer's group.protocol default is still
+  classic, so the answer is "probably the old one" until you check the config.
+
+expected_answer:
+  - text: >-
+      Identifies the rebalance storm as a feedback loop: a slow consumer is evicted, its
+      partitions load the remaining consumers, and another is evicted.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Names max.poll.interval.ms as the usual trigger and explains that a consumer whose
+      work exceeds it is removed from the group even though it is alive.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Fixes the cause rather than the symptom: move long synchronous work out of the poll
+      loop, reduce the batch fetched per poll, and increase the poll interval only
+      deliberately.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Describes the new consumer rebalance protocol: assignment computed server-side by
+      the coordinator, incremental changes with no global synchronization barrier, GA
+      since Kafka 4.0.
+    weight: 4
+    min_level: staff
+  - text: >-
+      States that the consumer config group.protocol defaults to classic in Kafka 4.3,
+      so a 4.x cluster does not imply the new protocol is in use.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Plans the migration as a deliberate per-group restart, because a group with members
+      on mixed protocols is a group in transition.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Reviews the commit strategy: committing after the work rather than before, and
+      accepting that at-least-once means duplicates across a rebalance.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Notes that some classic settings such as session.timeout.ms and
+      heartbeat.interval.ms do not apply under the new protocol, so carrying them over
+      unchanged is misleading.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - How would you measure rebalance time before and after switching protocols?
+  - The consumer is doing a large join per record. Where would you move that work?
+  - What happens to in-flight work when a partition is revoked under the cooperative
+    protocol versus the eager one?
+
+common_mistakes:
+  - >-
+    Restarting consumers to clear the loop, which triggers a rebalance and makes it worse.
+  - >-
+    Raising max.poll.interval.ms without reducing processing time, which converts the
+    storm into a long stall.
+  - >-
+    Claiming the group already uses the new protocol because the broker is 4.x.
+  - >-
+    Committing offsets before the work is complete, trading duplicates for message loss.
+
+related_questions: [kafka-partition-key-design, kafka-kraft-operations]
+
+wiki_refs:
+  - slug: kafka-consumer-groups-and-rebalancing
+    anchor: why-the-classic-protocol-is-expensive
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Apache Kafka 4.3 — Consumer Rebalance Protocol"
+    url: https://kafka.apache.org/43/operations/consumer-rebalance-protocol/
+    kind: official-docs
+  - title: "Apache Kafka 4.3 — Consumer and Share Consumer Configs"
+    url: https://kafka.apache.org/43/configuration/consumer-configs/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

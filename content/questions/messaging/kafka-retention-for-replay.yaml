@@ -1,0 +1,114 @@
+id: bc9bfd2e-c3e5-4cdc-947c-20e5cd8443ae
+slug: kafka-retention-for-replay
+lang: en
+
+domain: messaging
+topic: storage
+subtopic: retention
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: Apache Kafka
+  version_range: ">=4.0"
+
+question: >-
+  A new analytics team wants to replay ninety days of order events. The topic is on the
+  default delete policy with seven-day retention, and the brokers are nearing seventy
+  percent disk. Walk me through the options and what you would recommend.
+
+probes: >-
+  Whether the candidate treats retention as a promise about recoverability rather than a
+  disk setting, and whether they know tiered storage changes the local-versus-total
+  retention split. Bumping retention.ms without doing the disk arithmetic is the answer
+  being screened out.
+
+answer_strategy: >-
+  Start by naming the constraint: events already deleted cannot be replayed, so the
+  question is partly about the past and partly about the future. Give the options in
+  order of cost — a one-off backfill from a warehouse, a separate archive topic written
+  by a sink, and increased retention — and use tiered storage to separate what stays on
+  brokers from what is kept long-term. Finish with the promise to write next to the
+  topic: the maximum consumer downtime the retention actually supports.
+
+expected_answer:
+  - text: >-
+      States that retention.ms is the maximum consumer downtime the topic can tolerate,
+      so the analytics requirement is a retention change, not just a cost question.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Separates the historical ninety days, which needs a backfill from an existing copy
+      if one exists, from the go-forward need, which retention configuration can serve.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Recommends tiered storage for long retention and describes the split between
+      local.retention and total retention, so brokers keep days while the topic keeps
+      months.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Names the requirement that a RemoteStorageManager implementation is provided and
+      that the remote store becomes part of the availability story for old reads.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Notes that compaction is not the tool for an event stream, because it retains only
+      the latest value per key and deliberately drops history.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Does the disk arithmetic for retention.bytes and replication, or proposes a
+      separate topic or sink so the transactional cluster is not the archive.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Considers the replay itself as a load event: a consumer reading from the beginning
+      competes with live traffic, so it should be rate-limited or run against a replica.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Mentions delete.retention.ms when tombstones matter, so a slow consumer cannot
+      resurrect deleted keys.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - How would you have discovered that seven days was too short before the analytics team
+    asked?
+  - The cluster cannot add remote storage this quarter. What do you tell the analytics
+    team?
+  - A consumer is down for eight days on a seven-day topic. What are its options?
+
+common_mistakes:
+  - >-
+    Raising retention.ms without checking disk headroom and replication, then hitting a
+    full-broker incident.
+  - >-
+    Compact the topic to "keep the data", which drops everything except the latest value
+    per key.
+  - >-
+    Assuming a compacted topic is replayable as a history of events.
+  - >-
+    Forgetting that the replay consumer itself is a new load on the cluster.
+
+related_questions: [kafka-partition-key-design, kafka-node-client-choice-2026]
+
+wiki_refs:
+  - slug: kafka-retention-compaction-and-tiered-storage
+    anchor: delete-compact-or-both
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Apache Kafka 4.3 — Topic Configs (cleanup.policy, retention)"
+    url: https://kafka.apache.org/43/configuration/topic-configs/
+    kind: official-docs
+  - title: "Apache Kafka 4.3 — Tiered Storage"
+    url: https://kafka.apache.org/43/operations/tiered-storage/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

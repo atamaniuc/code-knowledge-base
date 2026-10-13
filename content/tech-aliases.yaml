@@ -91,6 +91,18 @@ technologies:
   - canonical: OpenTelemetry
     domain: observability
     aliases: [otel, open telemetry]
+  - canonical: Hono
+    domain: backend-node
+    aliases: [hono.js, honojs]
+  - canonical: Helm
+    domain: infra
+    aliases: [helm charts, helm chart]
+  - canonical: Grafana
+    domain: observability
+    aliases: [grafana dashboards, loki, tempo]
+  - canonical: Temporal
+    domain: messaging
+    aliases: [temporal.io, temporal workflows]
   - canonical: Model Context Protocol
     domain: agentic
     aliases: [mcp servers, mcp server, mcp]

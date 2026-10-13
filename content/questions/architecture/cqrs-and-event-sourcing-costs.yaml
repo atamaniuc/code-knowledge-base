@@ -1,0 +1,118 @@
+id: 3cd95157-0d44-4df6-b92a-dda81ebaa033
+slug: cqrs-and-event-sourcing-costs
+lang: en
+
+domain: architecture
+topic: design
+subtopic: event-sourcing
+
+tracks: [backend, fullstack]
+levels: [staff]
+
+tech:
+  name: Event-driven architecture
+  version_range: ">=2024"
+
+question: >-
+  A team proposes event sourcing for an internal admin application because the auditors want a
+  full history of every change. What do you recommend, and if they proceed, what are they
+  signing up for?
+probes: >-
+  Whether the candidate separates the audit requirement from the event-sourcing pattern, and
+  whether they can price the commitment rather than describe its benefits. The staff signal is
+  naming the projection lifecycle and the permanent schema obligation.
+answer_strategy: >-
+  Take the requirement seriously and separate it from the proposed solution: a full history is
+  achievable with an append-only audit table or change-data-capture, which is a fraction of the
+  cost. Then, if they still want event sourcing, price it honestly: event schemas that must be
+  readable forever, projections that are production systems, replay and snapshotting, and a
+  read model that is eventually consistent. Finish by naming the cases where the cost is
+  justified.
+expected_answer:
+  - text: >-
+      Separates CQRS from event sourcing: CQRS is a split of write and read models and does not
+      require events as the source of truth or a second datastore.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Offers the cheaper way to satisfy the audit requirement — an append-only audit table or a
+      change-data-capture stream — and says what it does not buy.
+    weight: 5
+    min_level: staff
+  - text: >-
+      States that event schemas become a permanent compatibility obligation, with upcasting and
+      versioning for every event ever written.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Treats projections as production systems: lag metrics, idempotent handlers, a documented
+      rebuild procedure, and a way to add a new projection over years of history.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Mentions snapshotting and replay time for aggregates with long event histories, and the
+      consistency questions snapshots introduce.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Handles the read-side UX: eventual consistency, read-your-writes for the session that wrote,
+      and what the user sees inside the window.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Names when it does pay: audit is a business requirement, temporal queries are needed, or
+      several projections over the same history are genuinely valuable.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Recognises the failure mode of a team building an event-sourced write side with a
+      synchronous read side, keeping all the cost and none of the benefit.
+    weight: 2
+    min_level: staff
+
+follow_ups:
+  - The auditors only need the last seven years. Does that change the recommendation?
+  - How would you add a new projection over three years of history without downtime?
+  - An event was written with a bug and produced wrong state. How do you correct history?
+
+common_mistakes:
+  - >-
+    Adopting event sourcing for a CRUD application whose events are really row diffs.
+  - >-
+    Assuming CQRS requires a separate database and a message broker on day one.
+  - >-
+    Building the read model and shipping it without a lag metric or a rebuild procedure.
+  - >-
+    Treating an event as a database row whose schema can be changed when convenient.
+
+related_questions: [ddd-aggregate-design, consistency-models-business-tolerance]
+
+wiki_refs:
+  - slug: cqrs-and-event-sourcing-costs
+    anchor: cqrs-is-a-model-split-not-a-database-mandate
+    wiki_reviewed_at: "2026-10-13"
+  - slug: cqrs-and-event-sourcing-costs
+    anchor: event-sourcing-is-a-different-commitment
+    wiki_reviewed_at: "2026-10-13"
+  - slug: cqrs-and-event-sourcing-costs
+    anchor: the-pragmatic-middle
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Martin Fowler — CQRS"
+    url: https://martinfowler.com/bliki/CQRS.html
+    kind: article
+  - title: "Pattern: Command Query Responsibility Segregation (CQRS)"
+    url: https://microservices.io/patterns/data/cqrs.html
+    kind: article
+  - title: "Pattern: Event sourcing"
+    url: https://microservices.io/patterns/data/event-sourcing.html
+    kind: article
+  - title: "Pattern: Transactional outbox"
+    url: https://microservices.io/patterns/data/transactional-outbox.html
+    kind: article
+
+difficulty: 5
+estimated_minutes: 13
+
+review_status: draft

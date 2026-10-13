@@ -6,7 +6,7 @@ domain: caching
 topic: invalidation
 tech:
   name: Redis
-  version_range: ">=6"
+  version_range: ">=8"
 levels: [middle, senior, staff]
 summary: >-
   A cache stampede is the load spike that hits the origin when many concurrent

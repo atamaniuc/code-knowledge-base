@@ -11,7 +11,7 @@ levels: [staff]
 
 tech:
   name: Apache Kafka
-  version_range: ">=3.6"
+  version_range: ">=4.0"
 
 question: >-
   A funding request walks through risk checks, a payment provider, a ledger write and a

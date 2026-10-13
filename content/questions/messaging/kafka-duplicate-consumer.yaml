@@ -11,7 +11,7 @@ levels: [senior, staff]
 
 tech:
   name: Apache Kafka
-  version_range: ">=3.6"
+  version_range: ">=4.0"
 
 question: >-
   A consumer processed the same event twice after a rebalance and a customer was charged

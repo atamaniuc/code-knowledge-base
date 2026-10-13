@@ -1,0 +1,112 @@
+id: 20d916e9-6cc1-45bf-bce1-eb079d05f79f
+slug: chargeback-engineering
+lang: en
+
+domain: fintech
+topic: payments
+subtopic: disputes
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+
+tech:
+  name: Stripe API
+  version_range: ">=2024"
+
+question: >-
+  Six weeks after a successful payment, a chargeback arrives and the money is already gone
+  from the balance before anyone told you. What has to exist in the system, and what does
+  this change about your ledger and your data model?
+
+probes: >-
+  Whether the candidate understands that a dispute is an asynchronous, network-driven
+  reversal with fees, not a refund, and whether they design evidence retention for the
+  dispute window rather than for convenience.
+
+answer_strategy: >-
+  Start with the mechanism: the cardholder's issuer raises the dispute on the network and the
+  payment is reversed immediately, along with network fees, so the platform learns about it
+  after the money moved. Then answer the two questions — evidence and accounting. Evidence
+  means receiving, delivery proof and the authentication result are retained for the dispute
+  window, and it means the money is not the only thing that must survive. Accounting means a
+  chargeback is its own ledger event with its own fees, not a refund, and the reversal must
+  be applied idempotently because the events arrive asynchronously and out of order.
+
+expected_answer:
+  - text: >-
+      Explains the dispute flow: the issuer raises it on the card network, the payment is
+      reversed immediately, and network dispute fees are taken as well.
+    weight: 5
+    min_level: senior
+  - text: >-
+      States that a chargeback is not a refund and must post as its own event with its own
+      fees, so the ledger and the reporting stay correct.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Retains the evidence needed to respond — receipt, delivery or service proof, IP or
+      device data, the authentication result — for as long as the dispute window lasts.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Handles dispute events idempotently, including evidence submission and the outcome
+      reversal, because the webhooks are asynchronous and may be redelivered.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Monitors the dispute rate as a first-class product metric, because networks operate
+      monitoring programmes that penalise excessive disputes.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Tells the customer what happened and why, including that the reversal is not
+      necessarily permanent, and routes the case to a support workflow with an owner.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Recognises that the money is debited from the platform's balance, so the platform
+      carries the risk between the reversal and the outcome, and prices or reserves for it.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The evidence you need is a delivery photo that lives in a third-party system with a
+    ninety-day retention. What now?
+  - How do you reconcile the dispute reversal against the original payment?
+  - What would you change to reduce disputes rather than to win them?
+
+common_mistakes:
+  - >-
+    Modelling a chargeback as a refund, which hides the network fees and loses the
+    distinction in reporting.
+  - >-
+    Keeping the evidence only as long as the product needs it, rather than as long as the
+    dispute window does.
+  - >-
+    Applying dispute events directly from the webhook without idempotency or ordering
+    tolerance.
+  - >-
+    Treating the dispute rate as a support metric rather than a monitored risk.
+
+related_questions: [auth-capture-refund-settlement, reconciliation-drift-detection, derived-balances-and-ledger-invariants]
+
+wiki_refs:
+  - slug: payment-lifecycle
+    anchor: chargebacks-and-disputes
+    wiki_reviewed_at: "2026-10-13"
+  - slug: payment-lifecycle
+    anchor: settlement-and-payout
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Stripe — Disputes and chargebacks"
+    url: https://docs.stripe.com/disputes
+    kind: official-docs
+  - title: "Stripe — Advanced error handling"
+    url: https://docs.stripe.com/error-low-level
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

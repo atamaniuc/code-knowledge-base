@@ -1,0 +1,102 @@
+id: 415a3569-151a-4e8c-abd7-468331e0a232
+slug: kubernetes-statefulset-ordering-and-recovery
+lang: en
+
+domain: infra
+topic: kubernetes
+subtopic: workloads
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: Kubernetes
+  version_range: ">=1.34"
+
+question: >-
+  A StatefulSet has run for a year. One replica is stuck in CrashLoopBackOff and
+  the team cannot scale the set up or down. Walk me through what is happening and
+  how you recover.
+
+probes: >-
+  Whether the candidate understands that StatefulSet ordering is a failure domain,
+  not a nicety, and whether they can separate the pod from its persistent volume
+  claim before touching anything. Deleting the wrong object here destroys data.
+
+answer_strategy: >-
+  Explain the blocking mechanism first — ordered management means an unhealthy
+  ordinal stops the ones after it — then walk the diagnosis. Be explicit that the
+  fix is to repair or delete the pod, never the PVC, and say what you would check
+  about replication before forcing a quorum member. Finish with what you would
+  change so the next stuck replica is visible earlier.
+
+expected_answer:
+  - text: >-
+      Explains that StatefulSet pods are managed in ordinal order by default, so a
+      pod that never becomes ready blocks the next ordinal and every scale
+      operation.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Investigates the specific ordinal — its events, previous container logs and
+      volume attachment — rather than restarting the whole set.
+    weight: 4
+    min_level: senior
+  - text: >-
+      States that a PersistentVolumeClaim created from volumeClaimTemplates is not
+      deleted when the pod goes away, and that deleting the PVC is data loss, not
+      cleanup.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Knows podManagementPolicy: Parallel exists and explains the trade: it removes
+      the blocking but gives up ordered startup, so it is only safe when ordering
+      is genuinely unnecessary.
+    weight: 3
+    min_level: staff
+  - text: >-
+      For a quorum member, checks whether the survivor set can make progress before
+      deleting or forcing anything, because a forced restart can cost availability
+      rather than restore it.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Names the monitoring gap: a stuck ordinal should alert on the workload's
+      readiness or on the controller's progress, not wait for a human to notice.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The stuck replica holds a volume another replica needs. How does that change your recovery?
+  - Scale-down left three PVCs behind. What is your policy for them?
+  - Would you use a StatefulSet for a distributed cache that can lose any node?
+
+common_mistakes:
+  - >-
+    Deleting the PVC to clear the stuck pod, which is the one action that turns an
+    availability incident into a data incident.
+  - >-
+    Scaling the StatefulSet to zero and back to force a restart without checking
+    what volume and quorum state that leaves.
+  - >-
+    Setting podManagementPolicy to Parallel as a default because it makes rollouts
+    faster.
+  - >-
+    Treating the CrashLoopBackOff as a pod problem when the real cause is a volume
+    attachment or a failed peer.
+
+related_questions: [kubernetes-workload-object-choice, kubernetes-eviction-and-disruption-budget]
+
+wiki_refs:
+  - slug: kubernetes-workload-objects
+    anchor: stable-identity-statefulset
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Kubernetes: StatefulSets"
+    url: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

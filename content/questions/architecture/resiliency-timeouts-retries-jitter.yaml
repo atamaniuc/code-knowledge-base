@@ -1,0 +1,121 @@
+id: de862e61-69f6-4237-a552-7f4ee95d216a
+slug: resiliency-timeouts-retries-jitter
+lang: en
+
+domain: architecture
+topic: distributed-systems
+subtopic: resilience
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: Distributed systems
+  version_range: ">=2024"
+
+question: >-
+  A dependency's p99 goes from 50 ms to 5 s. Your service's latency collapses and the
+  connection pool fills up within a minute. What do you put in place, and in what order?
+probes: >-
+  Whether the candidate starts with deadlines rather than retries, and whether they understand
+  that retries without jitter and a budget make the incident worse. Bulkheads and shedding are
+  the staff-level layer.
+answer_strategy: >-
+  Order matters here, so give it explicitly: a deadline on every outbound call first, then
+  bounded jittered retries only where the operation is idempotent, then a breaker to fail fast,
+  then bulkheads so one dependency cannot take the whole process, and finally shedding when the
+  system is genuinely over capacity. Say how you derive the deadline from the request budget and
+  finish on the metrics that show each layer working.
+expected_answer:
+  - text: >-
+      Puts a deadline on every outbound call, shorter than the caller's remaining budget, and
+      propagates the remaining time down the chain.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Derives the timeout from the request's SLO rather than picking a round number, and notes
+      that a default of thirty seconds is effectively no timeout.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Retries only idempotent operations, with exponential backoff and jitter, bounded attempts
+      and a retry budget as a fraction of traffic.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Adds a circuit breaker that fails fast after a failure threshold and probes in a half-open
+      state, and states that it is not a substitute for a timeout.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Isolates resources with bulkheads — separate pools and concurrency limits per dependency —
+      so the slow dependency cannot consume every slot.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Sheds load by criticality when genuinely over capacity, failing the least important traffic
+      fast with a retry signal instead of timing everyone out.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Retries at one layer only, because retries at three layers multiply into twenty-seven
+      attempts against a struggling dependency.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Names the signals: deadline-exceeded rate, pool saturation, breaker state, and retry
+      volume as a share of traffic.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The dependency is a payment provider and the call is not idempotent. Now what?
+  - How do you pick the failure threshold for the breaker without making it flap?
+  - What does the caller see while the breaker is open?
+
+common_mistakes:
+  - >-
+    Adding retries first, which increases load on a dependency that is already failing.
+  - >-
+    Retrying without jitter, so every client retries in lockstep and the recovery spike is
+    synchronised.
+  - >-
+    Installing a circuit breaker without a timeout, so the failing call is still waited on.
+  - >-
+    Sharing one connection pool across unrelated dependencies, so one slow one starves the
+    healthy calls.
+
+related_questions: [rate-limiting-and-load-shedding, consistency-models-business-tolerance]
+
+wiki_refs:
+  - slug: resiliency-timeouts-retries-and-bulkheads
+    anchor: timeouts-come-first
+    wiki_reviewed_at: "2026-10-13"
+  - slug: resiliency-timeouts-retries-and-bulkheads
+    anchor: retries-done-carefully
+    wiki_reviewed_at: "2026-10-13"
+  - slug: resiliency-timeouts-retries-and-bulkheads
+    anchor: bulkheads
+    wiki_reviewed_at: "2026-10-13"
+  - slug: resiliency-timeouts-retries-and-bulkheads
+    anchor: load-shedding-as-the-last-line
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "gRPC — Deadlines"
+    url: https://grpc.io/docs/guides/deadlines/
+    kind: official-docs
+  - title: "AWS Architecture Blog — Exponential backoff and jitter"
+    url: https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
+    kind: article
+  - title: "Google SRE Book — Handling overload"
+    url: https://sre.google/sre-book/handling-overload/
+    kind: book
+  - title: "RFC 9110 — HTTP Semantics"
+    url: https://www.rfc-editor.org/rfc/rfc9110.html
+    kind: rfc
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

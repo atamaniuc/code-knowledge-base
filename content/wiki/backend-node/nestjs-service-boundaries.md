@@ -6,7 +6,7 @@ domain: backend-node
 topic: architecture
 tech:
   name: NestJS
-  version_range: ">=11"
+  version_range: ">=12"
 levels: [senior, staff]
 summary: >-
   A NestJS module is a compile-time boundary, not a deployment boundary. The two are

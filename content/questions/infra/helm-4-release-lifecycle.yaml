@@ -1,0 +1,104 @@
+id: 5543b7e8-1815-46a7-b301-f9c1f732935e
+slug: helm-4-release-lifecycle
+lang: en
+
+domain: infra
+topic: kubernetes
+subtopic: helm
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: Helm
+  version_range: ">=4.0"
+
+question: >-
+  You inherit a service deployed with a Helm 3 release. The chart reports a
+  successful deployment while the application is crash-looping, and a previous
+  upgrade is stuck in a failed state. Walk me through what you change, including
+  the move to Helm 4 and what a rollback actually restores.
+
+probes: >-
+  Whether the candidate knows that Helm's success signal is resource readiness,
+  not application health, and whether they can separate the release record from
+  the running system. The version question is a currency check.
+
+answer_strategy: >-
+  Start with why the green deploy was possible — Helm waits on resource status,
+  not on the process inside — because that reframes the whole problem. Then cover
+  the failed release state and the rollback semantics, and finish with the Helm 4
+  migration and what it changes. Do not turn this into a Helm tutorial; the
+  interviewer wants the operational gaps.
+
+expected_answer:
+  - text: >-
+      Explains that a successful release means the resources reached readiness,
+      not that the application works, and that a post-deploy smoke test is what
+      closes that gap.
+    weight: 5
+    min_level: senior
+  - text: >-
+      States that Helm 3 is in its support tail — bug fixes ended in July 2026 and
+      security fixes end in November 2026 — so Helm 4 is the line to be on.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Names at least two Helm 4 changes that matter operationally, such as
+      server-side apply, the redesigned plugin system, content-based caching, or
+      kstatus-based resource watching.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Describes rollback as restoring a prior revision of manifests, and is
+      explicit that it does not restore data or undo a migration.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Reviews rendered output before upgrading — helm template or a diff plugin —
+      rather than approving templates nobody has seen.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Bounds the release history with maxHistory, because revisions are stored in
+      the cluster and an unbounded history is a slow leak.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - A chart fix changes only a ConfigMap. Do you bump chart version, appVersion, or both?
+  - Helm applied a manifest that another controller also writes. What does server-side apply change?
+  - When would you move the whole lifecycle to a GitOps controller and keep Helm as a renderer?
+
+common_mistakes:
+  - >-
+    Treating a successful helm upgrade as evidence the service works.
+  - >-
+    Recommending Helm 3 as the stable choice in late 2026.
+  - >-
+    Assuming rollback restores the database or undoes a migration.
+  - >-
+    Keeping the entire release history forever because rollback might be needed
+    some day.
+
+related_questions: [github-actions-release-and-rollback, container-image-build-and-supply-chain]
+
+wiki_refs:
+  - slug: helm-charts-and-releases
+    anchor: helm-4-changes-the-engine
+    wiki_reviewed_at: "2026-10-13"
+  - slug: helm-charts-and-releases
+    anchor: release-lifecycle
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Helm 4 Released"
+    url: https://helm.sh/blog/helm-4-released/
+    kind: release-notes
+  - title: "Helm: Charts"
+    url: https://helm.sh/docs/topics/charts/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

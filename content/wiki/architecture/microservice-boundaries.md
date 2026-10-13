@@ -13,7 +13,7 @@ summary: >-
   that split by technical layer get a distributed monolith; the ones that split by the
   invariants that must change together get services they can deploy on their own.
 prerequisites: []
-related: [nestjs-service-boundaries, outbox-idempotency-and-sagas]
+related: [nestjs-service-boundaries, consistency-models-and-business-tolerance]
 sources:
   - title: "Pattern: Database per service"
     url: https://microservices.io/patterns/data/database-per-service.html

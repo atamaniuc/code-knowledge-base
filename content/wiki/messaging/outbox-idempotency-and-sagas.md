@@ -6,7 +6,7 @@ domain: messaging
 topic: consistency
 tech:
   name: Apache Kafka
-  version_range: ">=3.6"
+  version_range: ">=4.0"
 levels: [senior, staff]
 summary: >-
   A service that commits to its database and then publishes to a broker is writing to two

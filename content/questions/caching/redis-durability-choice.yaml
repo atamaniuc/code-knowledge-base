@@ -1,0 +1,113 @@
+id: af457762-2e13-4252-8352-a37de3d6117b
+slug: redis-durability-choice
+lang: en
+
+domain: caching
+topic: operations
+subtopic: durability
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: Redis
+  version_range: ">=8"
+
+question: >-
+  A team wants to move two things into Redis and delete the database tables: the session
+  store, and the table of idempotency keys that stops duplicate payments. Which do you
+  allow, and what would you configure for each?
+
+probes: >-
+  Whether the candidate reasons from the recovery story of each dataset rather than from
+  "Redis has persistence now". The idempotency-key decision is the one that separates
+  senior from staff.
+
+answer_strategy: >-
+  Answer the direct question immediately: sessions yes, idempotency keys only with a
+  story for the loss window. Then give the numbers — AOF with appendfsync everysec can
+  lose up to a second, replication is asynchronous by default, and a failover is not a
+  zero-loss event. Close with the constraint that makes the idempotency case safe: a
+  unique constraint in the durable store, or a design that survives a key reappearing
+  after it was lost.
+
+expected_answer:
+  - text: >-
+      Allows the session store to move because a lost session is a rebuildable logout,
+      and states that as the criterion rather than "Redis is fast".
+    weight: 4
+    min_level: senior
+  - text: >-
+      States the AOF durability dial: appendfsync everysec may lose up to a second of
+      writes, always is far slower, and no leaves the loss window unbounded.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Notes that replication is asynchronous by default and that a failover can lose the
+      most recent writes, so a replica is not a durability mechanism.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Refuses to make the idempotency-key table the only copy unless the payment path
+      also enforces uniqueness in the durable store, because losing the key means a
+      duplicate payment.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Describes the recovery requirement for the key: if it can be lost and later
+      re-created, the deduplication must come from the database or from the provider's
+      own idempotency key, not from Redis alone.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Mentions WAIT or a synchronous acknowledgement as a partial mitigation, and says
+      honestly that it shrinks the window rather than closing it.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Raises the cluster constraint if the workload needs more than one node: multi-key
+      operations and Lua must stay within one hash slot.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - The idempotency key has a 24-hour TTL. What happens to a retry that arrives after 25
+    hours?
+  - How would you verify, before the migration, that a Redis failover does not lose an
+    acknowledged write?
+  - What do you monitor to know the durability configuration is still what you think it
+    is?
+
+common_mistakes:
+  - >-
+    Saying Redis is durable because RDB and AOF are enabled, without naming the loss
+    window.
+  - >-
+    Treating the replica as a backup and skipping a tested restore.
+  - >-
+    Moving idempotency keys to Redis to save a database round trip, then shipping a
+    duplicate-payment bug.
+  - >-
+    Ignoring the cluster limitations until multi-key operations fail in production.
+
+related_questions: [cache-write-strategy-for-money, redis-eviction-policy]
+
+wiki_refs:
+  - slug: redis-persistence-replication-and-cluster
+    anchor: fsync-policy-is-the-durability-dial
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Redis — Persistence"
+    url: https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/
+    kind: official-docs
+  - title: "Redis — Replication"
+    url: https://redis.io/docs/latest/operate/oss_and_stack/management/replication/
+    kind: official-docs
+  - title: "Redis — Cluster specification"
+    url: https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

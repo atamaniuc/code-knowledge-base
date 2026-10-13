@@ -1,0 +1,113 @@
+id: ac14e21d-0520-4f19-856c-1a510ddc2cc9
+slug: nodejs-event-loop-blocking-tail-latency
+lang: en
+
+domain: backend-node
+topic: runtime
+subtopic: event-loop
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: Node.js
+  version_range: ">=24"
+
+question: >-
+  You are on call: the p99 of a Node API went from 120 ms to 2.5 s overnight, CPU is at
+  15 percent and the database is healthy. Walk me through how you find the cause and what
+  you would change.
+probes: >-
+  Whether the candidate reasons about the event loop as a shared resource or reaches for the
+  usual candidates — scale out, more retries, a bigger instance. The tell is whether they
+  ask for event-loop lag before they ask for anything else, and whether they separate a
+  blocked loop from a saturated threadpool.
+answer_strategy: >-
+  Do not open with a fix. Open by naming the two mechanisms that produce this shape — the
+  loop is held by synchronous work, or an asynchronous path is queueing — and then say what
+  you would measure: an event-loop lag histogram on the process, and the duration
+  distribution of each outbound dependency call. Only after that, give the remedy for the
+  mechanism you found, and finish on prevention: a lag metric with an alert, because the
+  incident was found by users.
+expected_answer:
+  - text: >-
+      Names the event loop as a per-process shared resource and explains why p99 moves while
+      p50 and CPU average stay healthy: a long synchronous task delays every callback queued
+      behind it.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Asks for event-loop lag measurement (perf_hooks, monitorEventLoopDelay, a lag histogram)
+      rather than CPU or memory, and says what a flat histogram would rule out.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Distinguishes loop blocking from libuv threadpool saturation and gives a way to tell them
+      apart: with a blocked loop, timers fire late; with a saturated pool, the loop is idle and
+      individual fs, DNS or crypto callbacks are late.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Enumerates realistic blocking work on the request path: parsing a large JSON body,
+      catastrophic backtracking in a regex, synchronous logging or hashing, a large sort, a
+      synchronous fs call.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Proposes moving CPU work off the loop — a worker pool, a queue, or an incremental and
+      bounded implementation — rather than tuning V8 flags.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Adds prevention: lag as an SLO signal with an alert, and a review rule that synchronous
+      work on the request path is a defect rather than a style preference.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Notes that replicas bound the blast radius and buy time but do not fix an algorithmic
+      block, so the change is a mitigation, not the answer.
+    weight: 2
+    min_level: staff
+
+follow_ups:
+  - How would you set a numeric threshold for the lag alert rather than picking a round number?
+  - The blocking call is in a shared library you do not own. What are your options?
+  - How does this failure look different from a memory leak or a slow database?
+
+common_mistakes:
+  - >-
+          Scaling out replicas first, which spreads the same synchronous work across more processes and
+          hides the cause.
+  - >-
+          Blaming the database without measuring it, because latency is the symptom the database is
+          usually blamed for.
+  - >-
+          Raising UV_THREADPOOL_SIZE before knowing which mechanism is at fault.
+  - >-
+          Tuning garbage collection when the lag histogram would have pointed at a synchronous task.
+
+related_questions: [nodejs-libuv-threadpool-starvation, nodejs-memory-leak-hunt]
+
+wiki_refs:
+  - slug: nodejs-event-loop-and-latency
+    anchor: blocking-is-a-latency-bug-not-a-throughput-bug
+    wiki_reviewed_at: "2026-10-13"
+  - slug: nodejs-event-loop-and-latency
+    anchor: telling-the-two-apart
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Node.js — Do not block the event loop (or the worker pool)"
+    url: https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop
+    kind: official-docs
+  - title: "Node.js — The event loop, timers, and process.nextTick()"
+    url: https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick
+    kind: official-docs
+  - title: "Node.js — perf_hooks"
+    url: https://nodejs.org/api/perf_hooks.html
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

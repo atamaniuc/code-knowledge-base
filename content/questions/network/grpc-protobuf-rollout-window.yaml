@@ -1,0 +1,106 @@
+id: 1f725ca7-df60-45af-a2cb-0cca42658800
+slug: grpc-protobuf-rollout-window
+lang: en
+
+domain: network
+topic: api-design
+subtopic: grpc
+
+tracks: [backend]
+levels: [senior, staff]
+
+tech:
+  name: gRPC
+  version_range: ">=1.60"
+
+question: >-
+  Two internal services talk over gRPC. You must rename a field and add a piece of data the
+  server now requires in the request. The client fleet rolls out over a week. What does the
+  contract let you do, and what breaks anyway?
+probes: >-
+  Whether the candidate knows the wire format well enough to reason about compatibility rather
+  than trusting a version number, and whether they plan the skew window instead of the schema
+  change. proto3 having no required fields is the detail that most answers miss.
+answer_strategy: >-
+  Separate three layers: what protobuf guarantees, what the API means, and what the deployment
+  does. Field numbers are the wire contract and names are only in generated code; proto3 has
+  no required fields, so requirement moves to validation; and the rollout means both versions
+  run at once, which forces a two-step deploy. Finish with the telemetry that tells you the
+  old path is unused.
+expected_answer:
+  - text: >-
+      States that field numbers identify fields on the wire and names do not, so a rename is
+      wire-compatible and source-breaking at the same time.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Knows proto3 has no required fields, so a new mandatory input is additive in the schema
+      and the requirement has to be enforced by server-side validation with a documented error.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Adds the new field with a new number rather than changing an existing field's number or
+      type, and reserves numbers of removed fields.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Plans the skew window explicitly: teach the server to accept old and new, deploy the
+      clients, then retire the old path in a later release.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Mentions that unknown fields are preserved by default, and does not treat that as a
+      substitute for the two-step deploy.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Adds per-client version telemetry, because a protobuf change cannot be verified from the
+      schema alone.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Notes that a deadline propagates and surfaces as DEADLINE_EXCEEDED, so a client that gives
+      up does not imply the server stopped working.
+    weight: 2
+    min_level: staff
+
+follow_ups:
+  - What happens if someone reuses a retired field number?
+  - The new data is genuinely required for correctness. Where does the error surface, and what does the caller see?
+  - How would you run this change if the caller were a mobile app updating over months?
+
+common_mistakes:
+  - >-
+    Assuming a version bump makes the change safe when the wire format is what decides.
+  - >-
+    Marking the field optional in the schema and treating it as optional in the handler.
+  - >-
+    Regenerating both sides in one release and ignoring the instances that deploy second.
+  - >-
+    Deleting a field number without reserving it, so a future field silently reuses it.
+
+related_questions: [api-versioning-and-idempotency, nestjs-microservice-transport-choice]
+
+wiki_refs:
+  - slug: grpc-protobuf-evolution
+    anchor: the-wire-format-is-the-contract
+    wiki_reviewed_at: "2026-10-13"
+  - slug: grpc-protobuf-evolution
+    anchor: proto3-cardinality-and-the-missing-required
+    wiki_reviewed_at: "2026-10-13"
+  - slug: grpc-protobuf-evolution
+    anchor: the-rollout-window-is-the-real-problem
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Protocol Buffers — Language guide (proto3)"
+    url: https://protobuf.dev/programming-guides/proto3/
+    kind: official-docs
+  - title: "gRPC — Deadlines"
+    url: https://grpc.io/docs/guides/deadlines/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

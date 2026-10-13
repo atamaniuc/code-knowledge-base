@@ -1,0 +1,110 @@
+id: bc030338-a6f0-4756-8219-78cbd2ba0575
+slug: nodejs-esm-cjs-and-type-stripping-migration
+lang: en
+
+domain: backend-node
+topic: runtime
+subtopic: modules
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: Node.js
+  version_range: ">=24"
+
+question: >-
+  Half the packages in your monorepo are CommonJS, half are ES modules, one application is
+  still on an older Node line, and someone proposes deleting the build step and running
+  TypeScript files directly with node. Walk me through what you would actually do.
+probes: >-
+  Whether the candidate understands that module format is a package boundary decision, not
+  a syntax preference, and that type stripping removes a transform without removing the type
+  checker. The dual-package hazard and the release-line decision are the follow-up signals.
+answer_strategy: >-
+  Separate the three questions that are being conflated: which module system each package
+  uses, how the boundary between them behaves, and whether the build step can go. Take the
+  module question first and say why one format per package matters; then the interop edges;
+  then type stripping, where the point is that the compiler still runs but no longer emits.
+  Finish on the release line, because that is the decision with the longest shadow.
+expected_answer:
+  - text: >-
+      Treats module format as a per-package boundary decided by the type field and file
+      extensions, and argues for one format per package rather than mixed files.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Knows require(esm) interop exists, which makes a gradual migration realistic without a
+      loader chain.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Names the dual-package hazard: a dependency loaded as both formats produces two
+      instances, two caches and two singletons.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Lists the interop details that bite: __dirname and require are absent in ESM, CommonJS
+      default interop, and top-level await moving a failure from first request to startup.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Explains type stripping correctly: Node erases types, does not check them, and only
+      erasable syntax is allowed — enums, namespaces with runtime code and parameter
+      properties are not.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Keeps a separate type check in CI, ideally with erasableSyntaxOnly so the compiler
+      rejects syntax Node cannot strip.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Makes the release line explicit: Node 24 is the LTS target and Node 26 is Current and
+      enters LTS in October 2026, so production pins one line deliberately.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - A dependency is only published as CommonJS and is stateful. What is your risk?
+  - How do you prove in CI that nobody reintroduced a non-erasable construct?
+  - When would you keep the build step anyway?
+
+common_mistakes:
+  - >-
+          Running .ts directly and believing the types were checked.
+  - >-
+          Adding a loader chain to paper over an interop problem that a package boundary would remove.
+  - >-
+          Loading the same stateful dependency in two formats and losing a singleton.
+  - >-
+          Moving production to a Current release because it has newer syntax.
+
+related_questions: [nodejs-memory-leak-hunt, nodejs-stream-backpressure-upload]
+
+wiki_refs:
+  - slug: nodejs-esm-cjs-and-type-stripping
+    anchor: the-interop-edges-that-still-bite
+    wiki_reviewed_at: "2026-10-13"
+  - slug: nodejs-esm-cjs-and-type-stripping
+    anchor: type-stripping
+    wiki_reviewed_at: "2026-10-13"
+  - slug: nodejs-esm-cjs-and-type-stripping
+    anchor: release-lines-in-2026
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Node.js — TypeScript (type stripping)"
+    url: https://nodejs.org/api/typescript.html
+    kind: official-docs
+  - title: "Node.js — Modules: ECMAScript modules"
+    url: https://nodejs.org/api/esm.html
+    kind: official-docs
+  - title: "Node.js — Previous releases and LTS schedule"
+    url: https://nodejs.org/en/about/previous-releases
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

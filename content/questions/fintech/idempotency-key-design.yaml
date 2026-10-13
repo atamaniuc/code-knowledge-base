@@ -1,0 +1,113 @@
+id: 454b3527-b591-485c-8bbf-0c5db8a4f62a
+slug: idempotency-key-design
+lang: en
+
+domain: fintech
+topic: reliability
+subtopic: idempotency
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+
+tech:
+  name: Payment APIs
+  version_range: ">=2024"
+
+question: >-
+  Two services both need to charge the same customer through the same payment provider, and
+  the network is flaky. Design the idempotency. Tell me what the key is scoped to, where the
+  guarantee is enforced, and how long it lives.
+
+probes: >-
+  Whether the candidate knows that idempotency is an effect-level property and that the key
+  record and the effect must commit atomically. The trap is describing lookup-and-return
+  without saying where the atomicity lives.
+
+answer_strategy: >-
+  State the property first: you cannot make the network reliable, so the operation is made
+  repeatable, and the identity of the operation is a client-generated key. Then be precise
+  about the three things interviewers check — the key is scoped to the caller, the parameter
+  fingerprint catches key reuse, and the key row commits in the same transaction as the
+  effect. Close on the window and the ambiguous timeout, because money needs a longer
+  window than a default 24 hours and a retry in flight needs to wait, not race.
+
+expected_answer:
+  - text: >-
+      Frames idempotency as a property of the effect, not the transport, and has the client
+      generate a high-entropy key per intent.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Stores the key together with the response and returns the stored response on a
+      repeat, rather than executing again.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Enforces the key row and the money movement in the same transaction, so neither can
+      commit without the other; a unique constraint decides the race.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Scopes the key to the caller so two clients cannot collide, and records a fingerprint
+      of the request parameters so a reused key with different arguments fails loudly.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Sizes key retention from the retry horizon of the client rather than a default, and
+      says what happens at the edge when a key has been pruned.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Handles the ambiguous timeout: a second attempt with the same key waits or returns
+      the in-progress state instead of starting a parallel execution.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Applies the same discipline one layer down, to message consumers and outbound calls,
+      and treats reconciliation as the backstop that detects what idempotency missed.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The provider's API is not itself idempotent. What now?
+  - Who is allowed to choose the key, and what stops a client from reusing one key for every
+    request?
+  - How does the key table behave under a hot partition when ten thousand retries arrive at
+    once?
+
+common_mistakes:
+  - >-
+    Describing a check-then-insert without the transaction, which loses the race under
+    concurrency.
+  - >-
+    Deriving the key from the request body, so two genuinely different charges collide, or
+    from a timestamp, so retries never match.
+  - >-
+    Putting personal data such as an email address in the key, where it is stored and
+    logged.
+  - >-
+    Treating a 24-hour default as the guarantee for a payout batch that is retried on
+    Monday.
+
+related_questions: [kafka-duplicate-consumer, outbox-saga-funding-flow, auth-capture-refund-settlement]
+
+wiki_refs:
+  - slug: idempotency-and-once-only-effects
+    anchor: idempotency-keys
+    wiki_reviewed_at: "2026-10-13"
+  - slug: idempotency-and-once-only-effects
+    anchor: where-the-guarantee-has-to-live
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Stripe — Idempotent requests"
+    url: https://docs.stripe.com/api/idempotent_requests
+    kind: official-docs
+  - title: "Stripe — Advanced error handling"
+    url: https://docs.stripe.com/error-low-level
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

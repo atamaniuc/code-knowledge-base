@@ -1,0 +1,111 @@
+id: 64714379-2196-4086-aaa6-6e055d930efe
+slug: tracing-sampling-policy
+lang: en
+
+domain: observability
+topic: tracing
+subtopic: sampling
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: OpenTelemetry Collector
+  version_range: ">=0.162"
+
+question: >-
+  Keeping every trace is unsustainable, and sampling one percent means you never
+  see the incident you need. Walk me through the sampling design you would
+  actually ship.
+
+probes: >-
+  Whether the candidate frames sampling as selection rather than as a rate, and
+  whether they know where head and tail decisions can be made and what each
+  costs.
+
+answer_strategy: >-
+  Contrast the two decision points first — before the trace is known and after —
+  because that distinction explains every trade-off that follows. Then give the
+  policy as selection criteria, and finish with the operational constraint that
+  the decision must be consistent across the trace.
+
+expected_answer:
+  - text: >-
+      Explains head sampling as a cheap decision made at the start of the trace
+      and propagated, and its weakness that rare errors are discarded at the same
+      rate as boring requests.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Explains tail sampling as a decision made after the trace completes, at a
+      collector that can see all spans, which is what makes keeping every error
+      and every slow trace possible.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Names tail sampling's cost: spans must be buffered until the trace is
+      complete, so the collector needs memory, capacity and a decision timeout.
+    weight: 5
+    min_level: staff
+  - text: >-
+      States the policy as selection criteria — keep all errors, keep traces over
+      a latency threshold, keep a low percentage of successes for baseline — not
+      as a percentage alone.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Keeps the decision consistent across a trace, because mixing per-service
+      head decisions with a gateway tail decision produces partial traces.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Uses adaptive sampling to keep volume predictable under a traffic spike
+      while preserving rare events.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Judges the policy by whether the queries people run return answers, not by
+      the sampling rate.
+    weight: 4
+    min_level: staff
+
+follow_ups:
+  - A trace is interesting only because of a span deep in the tree. How does tail sampling decide?
+  - What happens to your sampled data when traffic triples overnight?
+  - How would you debug a problem that no retained trace covers?
+
+common_mistakes:
+  - >-
+    Treating the sampling percentage as the design, without deciding what is
+    selected.
+  - >-
+    Running tail sampling in per-node agents, where no instance has the whole
+    trace.
+  - >-
+    Enabling tail sampling without sizing the buffer, so the collector drops
+    traces under load.
+  - >-
+    Making a fresh sampling decision in every service, which leaves holes in the
+    trace tree.
+
+related_questions: [opentelemetry-collector-topology, incident-command-and-communication]
+
+wiki_refs:
+  - slug: tracing-and-sampling
+    anchor: head-and-tail-sampling
+    wiki_reviewed_at: "2026-10-13"
+  - slug: tracing-and-sampling
+    anchor: choosing-a-policy
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "OpenTelemetry: Sampling"
+    url: https://opentelemetry.io/docs/concepts/sampling/
+    kind: official-docs
+  - title: "OpenTelemetry: Collector"
+    url: https://opentelemetry.io/docs/collector/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

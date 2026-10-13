@@ -1,0 +1,113 @@
+id: f3c5ac5b-7ac7-4bc0-a5d0-bd8f49bb82cb
+slug: consistency-models-business-tolerance
+lang: en
+
+domain: architecture
+topic: distributed-systems
+subtopic: consistency
+
+tracks: [backend, fullstack]
+levels: [staff]
+
+tech:
+  name: Distributed systems
+  version_range: ">=2024"
+
+question: >-
+  The product owner wants a search across orders, invoices and shipments that reflects a
+  change immediately. The data lives in three services. What do you build, and what do you
+  tell them?
+probes: >-
+  Whether the candidate can refuse an impossible requirement without refusing the need, and
+  whether they translate a consistency model into what a user actually sees. Naming the window
+  and its detection is the staff signal.
+answer_strategy: >-
+  Separate the two kinds of requirement: the invariants inside each service stay strongly
+  consistent, while the search index is a derived read model and can lag. Then say what
+  immediate means to the user — the session that made the change must see it — and give the
+  mechanism: read-your-writes, an outbox and idempotent projections, a lag metric, and a
+  reconciliation job. Finish by stating the window you are promising in seconds and how you
+  would detect when it is exceeded.
+expected_answer:
+  - text: >-
+      Separates the invariants that need strong consistency — money, uniqueness, reservations —
+      from the derived read model, which can be eventually consistent.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Chooses read-your-writes for the session that performed the write, and describes a
+      mechanism: route to the primary, or wait on a version token the projection exposes.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Builds the projection with an outbox and idempotent, deduplicated consumers so events are
+      neither lost nor applied twice.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Instruments projection lag and alerts on it, and runs reconciliation that repairs drift
+      rather than assuming it will not happen.
+    weight: 5
+    min_level: staff
+  - text: >-
+      States what the business loses in the window and what the user sees inside it — a stale
+      result, a processing state, or a wait — rather than presenting eventual consistency as free.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Explains the trade the product is making: stronger guarantees cost latency and availability,
+      so the choice is a business decision with a number attached.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Rejects a distributed transaction across the three services for a search feature as the
+      wrong tool for a derived read model.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The projection is four hours behind during a backfill. What does the product see?
+  - How would you answer the same question for a balance shown on a dashboard?
+  - What test proves the window is being met?
+
+common_mistakes:
+  - >-
+    Reading from a replica while claiming strong consistency, then discovering the lost update in
+    production.
+  - >-
+    Making every write wait synchronously for all three services, which turns one outage into
+    three.
+  - >-
+    Shipping the projection with no lag metric, so nobody knows it is hours behind until the
+    product owner notices.
+  - >-
+    Treating eventual consistency as a licence to skip reconciliation and drift repair.
+
+related_questions: [cqrs-and-event-sourcing-costs, should-we-split-into-microservices]
+
+wiki_refs:
+  - slug: consistency-models-and-business-tolerance
+    anchor: choose-by-invariant-not-by-preference
+    wiki_reviewed_at: "2026-10-13"
+  - slug: consistency-models-and-business-tolerance
+    anchor: eventual-consistency-is-a-product-decision
+    wiki_reviewed_at: "2026-10-13"
+  - slug: consistency-models-and-business-tolerance
+    anchor: mechanisms-worth-naming
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Jepsen — Consistency models"
+    url: https://jepsen.io/consistency
+    kind: article
+  - title: "Pattern: Transactional outbox"
+    url: https://microservices.io/patterns/data/transactional-outbox.html
+    kind: article
+  - title: "Pattern: Saga"
+    url: https://microservices.io/patterns/data/saga.html
+    kind: article
+
+difficulty: 5
+estimated_minutes: 13
+
+review_status: draft

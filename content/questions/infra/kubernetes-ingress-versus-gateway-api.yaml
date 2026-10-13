@@ -1,0 +1,107 @@
+id: 26f442bf-3987-4336-b0b2-c0051bf3813b
+slug: kubernetes-ingress-versus-gateway-api
+lang: en
+
+domain: infra
+topic: kubernetes
+subtopic: networking
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: Kubernetes
+  version_range: ">=1.34"
+
+question: >-
+  Two teams must share one load balancer. The platform team owns the address and
+  the TLS certificates, and application teams own their own routes. Which API do
+  you reach for, and what does that change about who may create what?
+
+probes: >-
+  Whether the candidate treats Ingress as a specification with an implementation
+  rather than a built-in feature, and whether they can articulate Gateway API as
+  an ownership model rather than a newer YAML shape.
+
+answer_strategy: >-
+  Name the real requirement first: two different trust boundaries over one address.
+  Then compare the two APIs against that requirement rather than feature by
+  feature. Spend the last third on the caveat that Gateway API depends on the
+  controller's supported version, because that is the part a platform engineer
+  learns the hard way.
+
+expected_answer:
+  - text: >-
+      States that Ingress is only a routing specification and does nothing
+      without an Ingress controller that implements it.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Names the Ingress limitation that matters here: portable configuration is
+      host and path only, and everything else lives in controller-specific
+      annotations.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Describes the Gateway API role split — GatewayClass for the infrastructure
+      provider, Gateway for the cluster operator, and Routes owned by the
+      application team.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Uses ReferenceGrant to explain why an application cannot silently route to a
+      Service in a namespace it does not own.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Knows that Gateway API v1.5, released in February 2026, promoted ListenerSet,
+      TLSRoute, the HTTPRoute CORS filter, client certificate validation,
+      certificate selection and ReferenceGrant to the Standard channel.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Adds the dependency caveat: the feature set is a property of the installed
+      controller's version as much as of the API, so a migration plan includes the
+      controller upgrade.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - How would you migrate an existing Ingress without dropping traffic?
+  - Where does service-to-service traffic fit — does Gateway API answer that?
+  - What permissions does an application team need to attach a route to a shared Gateway?
+
+common_mistakes:
+  - >-
+    Treating Ingress as a built-in feature that works without a controller.
+  - >-
+    Assuming Gateway API is just a renamed Ingress and that existing manifests port
+    directly.
+  - >-
+    Ignoring the controller version and planning the migration around the API
+    version alone.
+  - >-
+    Giving every application team permission to edit the shared Gateway, which
+    recreates the ownership problem the API was designed to solve.
+
+related_questions: [kubernetes-rbac-least-privilege, kubernetes-cluster-upgrade-plan]
+
+wiki_refs:
+  - slug: kubernetes-ingress-and-gateway-api
+    anchor: gateway-api
+    wiki_reviewed_at: "2026-10-13"
+  - slug: kubernetes-ingress-and-gateway-api
+    anchor: choosing
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Kubernetes: Gateway API"
+    url: https://kubernetes.io/docs/concepts/services-networking/gateway/
+    kind: official-docs
+  - title: "Gateway API v1.5: Moving features to Stable"
+    url: https://kubernetes.io/blog/2026/04/21/gateway-api-v1-5/
+    kind: release-notes
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

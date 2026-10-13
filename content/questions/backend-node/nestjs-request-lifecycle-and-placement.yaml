@@ -1,0 +1,106 @@
+id: 67ca1816-b098-43a6-bee1-f6f6dcfea149
+slug: nestjs-request-lifecycle-and-placement
+lang: en
+
+domain: backend-node
+topic: framework
+subtopic: lifecycle
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: NestJS
+  version_range: ">=12"
+
+question: >-
+  A request hits a Nest route. Walk me through what runs, in order. Then tell me where you
+  would put authentication, request validation, and the rule that decides whether an order
+  may be cancelled.
+probes: >-
+  Whether the candidate knows the documented order and, more importantly, whether they choose
+  a component by its responsibility. Putting a business rule in a guard or interceptor is
+  the failure this question is designed to expose.
+answer_strategy: >-
+  Give the order first and keep it crisp — middleware, guards, interceptors on the way in,
+  pipes, the handler, interceptors on the way out, exception filters. Then place the three
+  things and justify each by what it can access and what it can be tested with. The pricing
+  or cancellation rule is the important one: say it belongs in a provider the handler calls,
+  so it can be unit tested and can participate in the transaction.
+expected_answer:
+  - text: >-
+      Recites the order correctly: middleware, then guards, then interceptors before the
+      handler, then pipes, then the handler, then interceptors after, with exception filters
+      catching what is thrown.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Adds that global components run before controller-level, which run before route-level,
+      within each stage.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Places authentication and authorization in a guard, because it can see the handler
+      through the ExecutionContext.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Places input validation and transformation in a pipe, and notes that a guard runs
+      before pipes, so rejected requests are not validated first.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Places the cancellation rule in a domain provider the handler calls, so it is testable
+      without HTTP and can run inside the transaction.
+    weight: 5
+    min_level: staff
+  - text: >-
+      States that an exception skips the rest of the lifecycle and goes straight to the
+      filter, and that catching it inside the handler means the filter never runs.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Notes that a globally registered component applies to routes that do not exist yet,
+      which is right for authentication and wrong for domain semantics.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - Where would you put a retry for an idempotent downstream read, and what breaks if it is global?
+  - The interceptor returns 200 after catching an exception. What does that do to clients?
+  - How do you test the ordering itself?
+
+common_mistakes:
+  - >-
+          Putting the authorization decision in a pipe or the validation in a guard, so the fixed
+          ordering silently produces the wrong behaviour.
+  - >-
+          Keeping a business rule in an interceptor because it wraps every request, which makes it
+          untestable and applicable to health checks.
+  - >-
+          Catching an exception in an interceptor and returning a success response.
+  - >-
+          Assuming exception filters run for exceptions caught inside the handler.
+
+related_questions: [nestjs-request-scoped-provider-cost, nestjs-testing-strategy]
+
+wiki_refs:
+  - slug: nestjs-request-lifecycle-and-scopes
+    anchor: the-request-lifecycle-order
+    wiki_reviewed_at: "2026-10-13"
+  - slug: nestjs-request-lifecycle-and-scopes
+    anchor: where-business-logic-must-not-live
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "NestJS — Request lifecycle"
+    url: https://raw.githubusercontent.com/nestjs/docs.nestjs.com/master/content/faq/request-lifecycle.md
+    kind: official-docs
+  - title: "NestJS — Provider scopes"
+    url: https://raw.githubusercontent.com/nestjs/docs.nestjs.com/master/content/fundamentals/provider-scopes.md
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 9
+
+review_status: draft

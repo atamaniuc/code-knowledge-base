@@ -1,0 +1,103 @@
+id: dc1105f4-e14f-4efa-928b-1c1b53e93332
+slug: aws-irsa-and-least-privilege
+lang: en
+
+domain: infra
+topic: aws
+subtopic: iam
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: AWS
+  version_range: ">=2024"
+
+question: >-
+  A pod running on EKS needs read access to one S3 prefix. Walk me through how
+  you grant it, and how you would verify the pod cannot do anything else.
+
+probes: >-
+  Whether the candidate knows the federation mechanism and where the real
+  security boundary sits — in the trust policy's subject condition — and whether
+  verification is part of their answer or a separate afterthought.
+
+answer_strategy: >-
+  Give the mechanism in three sentences — OIDC provider, role with a scoped trust
+  policy, annotated service account — then spend the rest of the answer on the
+  boundary and the verification. The interviewer is listening for whether you
+  know that an unscoped trust policy makes the permission policy irrelevant.
+
+expected_answer:
+  - text: >-
+      Rejects static credentials in the pod and uses IAM roles for service
+      accounts: the cluster's OIDC provider, an IAM role, and a ServiceAccount
+      annotated with the role ARN.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Scopes the trust policy with a condition on the token subject so only the
+      specific namespace and service account can assume the role.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Scopes the permission policy to the specific actions on the specific bucket
+      and prefix rather than a wildcard resource.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Adds conditions where they are meaningful — a source VPC endpoint, TLS
+      enforcement, a required external ID — and notes that an unused condition is
+      decoration.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Verifies with evidence rather than review: an authorization check, CloudTrail
+      or the policy simulator, and IAM Access Analyzer findings.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Places the grant inside organisational ceilings — a permissions boundary and
+      service control policies — so one over-broad policy cannot exceed the
+      intended maximum.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - Another team copies the annotation into their own pod. What stops them?
+  - How would you generate this policy from observed activity instead of guessing?
+  - What is the confused deputy problem, and where does it apply to a role like this?
+
+common_mistakes:
+  - >-
+    Issuing an access key and putting it in a Kubernetes secret.
+  - >-
+    Trusting the OIDC provider without a subject condition, which lets any pod in
+    the cluster assume the role.
+  - >-
+    Granting s3:GetObject on all resources because the prefix is inconvenient to
+    express.
+  - >-
+    Reviewing the permission policy and never checking the trust policy.
+
+related_questions: [kubernetes-rbac-least-privilege, github-actions-oidc-deployment]
+
+wiki_refs:
+  - slug: aws-iam-least-privilege
+    anchor: roles-for-pods
+    wiki_reviewed_at: "2026-10-13"
+  - slug: aws-iam-least-privilege
+    anchor: least-privilege-in-practice
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Amazon EKS: IAM roles for service accounts"
+    url: https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
+    kind: official-docs
+  - title: "AWS Lambda: Defining function permissions with an execution role"
+    url: https://docs.aws.amazon.com/lambda/latest/dg/lambda-intro-execution-role.html
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

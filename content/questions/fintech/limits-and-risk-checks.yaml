@@ -1,0 +1,110 @@
+id: f4fc004a-b35d-47c9-ba93-2f42f23a23e7
+slug: limits-and-risk-checks
+lang: en
+
+domain: fintech
+topic: risk
+subtopic: limits
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+
+tech:
+  name: Payment risk controls
+  version_range: ">=2024"
+
+question: >-
+  A customer asks to raise their daily transfer limit so a large payment can go out today.
+  Walk me through what the system must do, and tell me how a request like this fails safely.
+
+probes: >-
+  Whether the candidate knows that a limit enforced against a stale cache is not a limit,
+  and whether they decide fail-open versus fail-closed deliberately rather than by accident.
+  Also whether every decision leaves evidence.
+
+answer_strategy: >-
+  Separate the operational request from the control. The system needs an authoritative
+  counter, an atomic reservation for the movement, and a record of who approved the change
+  and why. Then walk the check layers in order — eligibility, hard limits, velocity and
+  pattern, screening, manual review — and say which are absolute and which are signals that
+  raise friction. Finish on failure behaviour and the audit trail, because those are the two
+  things an interviewer probes after the happy path.
+
+expected_answer:
+  - text: >-
+      Enforces limits where the authoritative counter lives, with the counter updated or
+      reserved in the same transaction as the movement.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Treats a limit checked against a stale cache as not a limit, and says why concurrent
+      requests defeat a read-then-write check.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Orders the checks from cheap and absolute to expensive and probabilistic: eligibility,
+      hard limits, velocity and pattern, screening, then manual review with an owner and an
+      SLA.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Decides fail-open or fail-closed per product explicitly, arguing that a small payment
+      and a large one should not get the same default when the risk service is down.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Records every limit decision and override in an append-only log with the rule version,
+      inputs, actor and timestamp, joinable to the ledger entry.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Requires approval for a limit change with an approver, a reason and an expiry, rather
+      than an unbounded permanent bump.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Names the escape hatch for cases the rules cannot decide and the danger of a review
+      queue nobody watches.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - The limit is per corridor and the corridor counter is in a different service. How do you
+    keep it atomic?
+  - A pattern rule fires and blocks a legitimate high-value customer. How do you tune it
+    without weakening the control?
+  - What does the customer see while a payment sits in review?
+
+common_mistakes:
+  - >-
+    Checking the limit in the request handler against a cached value and treating that as
+    enforcement.
+  - >-
+    Making one fail-open or fail-closed decision for all payment sizes.
+  - >-
+    Raising a limit without an approver, a reason or an expiry.
+  - >-
+    Logging the decision as a boolean and losing the inputs needed to explain or tune it.
+
+related_questions: [kyc-aml-engineer-vocabulary, idempotency-key-design, reconciliation-drift-detection]
+
+wiki_refs:
+  - slug: limits-risk-and-trade-finance
+    anchor: limits-are-a-control-not-a-feature
+    wiki_reviewed_at: "2026-10-13"
+  - slug: limits-risk-and-trade-finance
+    anchor: audit-trails-as-a-data-model
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Stripe — Receive payouts"
+    url: https://docs.stripe.com/payouts
+    kind: official-docs
+  - title: "Stripe — Disputes and chargebacks"
+    url: https://docs.stripe.com/disputes
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

@@ -1,0 +1,119 @@
+id: 25649f52-ddce-462a-8001-30ed3d3fa6f4
+slug: kafka-producer-durability
+lang: en
+
+domain: messaging
+topic: delivery
+subtopic: durability
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: Apache Kafka
+  version_range: ">=4.0"
+
+question: >-
+  A payment-events publisher runs with acks=1 and retries enabled. After a broker
+  restart we lost some events and a consumer saw two events for one account out of
+  order. Walk me through how you would make the publisher durable, and tell me what
+  exactly-once would and would not cover.
+
+probes: >-
+  Whether the candidate pairs acks with min.insync.replicas instead of treating acks
+  alone as durability, and whether they connect retries to reordering. The boundary of
+  transactions is the staff-level part.
+
+answer_strategy: >-
+  Fix the two symptoms separately: durability is acks=all plus min.insync.replicas on the
+  topic, and reordering under retry is what the idempotent producer removes. Then give
+  the ordering constraint between in-flight requests and idempotence. For exactly-once,
+  be precise — transactions cover Kafka-to-Kafka, and the database write is still the
+  outbox problem — because that boundary is where answers usually overreach.
+
+expected_answer:
+  - text: >-
+      Changes to acks=all and states that it is only durability together with
+      min.insync.replicas above one on the topic, with a replication factor of at least
+      three.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Enables idempotence, explaining that it deduplicates a retry by producer id and
+      sequence number and also preserves ordering when a retry follows a later batch.
+    weight: 5
+    min_level: senior
+  - text: >-
+      States the interaction with in-flight requests: more than one in-flight request
+      with idempotence disabled can reorder records, and idempotence bounds that.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Sets delivery.timeout.ms above request.timeout.ms plus linger, so the producer does
+      not give up before its own retries can finish.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Describes transactions as atomic writes across topics plus consumer offsets, with
+      read_committed consumers so aborted records are not read.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Draws the boundary: transactions do not make a database write and a produce atomic,
+      so the dual write still needs an outbox or a unique constraint on the consumer
+      side.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Says that exactly-once is processing built on at-least-once delivery plus
+      idempotent effects, and names how the non-Kafka step deduplicates.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Monitors under-replicated partitions and in-sync replica counts, because
+      min.insync.replicas turns an unhealthy cluster into produce errors that must be
+      visible.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - With min.insync.replicas=2 and one broker down, what does the producer see and what
+    should the application do?
+  - Where would you put the idempotency key for the payment provider, and why not in the
+    Kafka offset?
+  - Does enabling transactions slow the consumer? Explain.
+
+common_mistakes:
+  - >-
+    Setting acks=all and considering durability solved while min.insync.replicas is still
+    one.
+  - >-
+    Turning retries off to fix reordering, which trades duplicates for lost events.
+  - >-
+    Assuming a Kafka transaction covers the database insert, then shipping a dual-write
+    bug.
+  - >-
+    Leaving the consumer at the default read_uncommitted while producers use
+    transactions.
+
+related_questions: [kafka-duplicate-consumer, kafka-poison-message-dlq]
+
+wiki_refs:
+  - slug: kafka-producer-delivery-semantics
+    anchor: acks
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Apache Kafka 4.3 — Producer Configs"
+    url: https://kafka.apache.org/43/configuration/producer-configs/
+    kind: official-docs
+  - title: "Apache Kafka 4.3 — Topic Configs (min.insync.replicas)"
+    url: https://kafka.apache.org/43/configuration/topic-configs/
+    kind: official-docs
+  - title: "Apache Kafka 4.3 — Design (message delivery semantics)"
+    url: https://kafka.apache.org/43/design/design/
+    kind: official-docs
+
+difficulty: 5
+estimated_minutes: 14
+
+review_status: draft

@@ -1,0 +1,117 @@
+id: 6f05ff4b-a5a7-4589-ade7-6f14b810f9aa
+slug: rag-long-context-fine-tuning-choice
+lang: en
+
+domain: agentic
+topic: architecture
+subtopic: knowledge-and-behaviour
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+
+tech:
+  name: LLM systems
+  version_range: ">=2024"
+
+question: >-
+  A product wants an assistant that answers questions about each customer's contract
+  history, in the company's exact format, at about ten thousand requests a day. The team
+  proposes fine-tuning a model on the contracts. Evaluate that.
+
+probes: >-
+  Whether the candidate separates knowledge from behaviour, and whether they can price each
+  option by freshness, maintenance and failure mode. The trap is treating retrieval, a long
+  window and fine-tuning as three ways to do one thing.
+
+answer_strategy: >-
+  Split the requirement in the first sentence: the contract history is knowledge that
+  changes per customer, and the exact format is behaviour. That split makes the answer
+  obvious — retrieval for the facts, and a much cheaper mechanism than fine-tuning for the
+  format. Then price the alternatives honestly, including where a long window genuinely
+  wins and the one narrow case where fine-tuning is defensible. Finish with the maintenance
+  story, because the interviewer is listening for what you are willing to keep paying.
+
+expected_answer:
+  - text: >-
+      Separates knowledge from behaviour: per-customer contract history is knowledge and
+      cannot be trained into weights at ten thousand requests a day, while format is
+      behaviour.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Proposes retrieval over the contracts with citations, so a correction is a record
+      update rather than a training run, and the answer can be verified against its source.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Handles the format requirement with prompting or structured output first, and explains
+      that a schema constrains the shape without changing the model.
+    weight: 4
+    min_level: senior
+  - text: >-
+      States where fine-tuning does win: a narrow, high-volume, stable task where a smaller
+      model must match a larger one, or where the prompt has become a container of
+      instructions followed inconsistently.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Names the fine-tuning maintenance cost: training data, a reproducible pipeline,
+      re-training when the base model moves, and evaluation against the base model.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Explains why a long context window is a parameter rather than a strategy: capacity is
+      not reliable use, cost and latency grow with length, and the middle of a long input is
+      the least attended region.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Gives a decision order — strong model baseline, then retrieval, then long context,
+      then fine-tuning — with an evaluation at each step.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The contracts are long, and retrieval keeps missing the clause that matters. What now?
+  - They want the assistant in German and the model is already strong in German. Does that
+    change your answer?
+  - What would make you revisit fine-tuning in a year?
+
+common_mistakes:
+  - >-
+    Proposing fine-tuning as a way to teach the model facts that change per customer.
+  - >-
+    Choosing a million-token window per request and ignoring cost, latency and attention
+    over length.
+  - >-
+    Treating a formatting requirement as a reason to train, when a schema or a prompt
+    handles it.
+  - >-
+    Forgetting the maintenance object that fine-tuning creates, and pricing only the first
+    training run.
+
+related_questions: [long-context-versus-rag, rag-topk-regression, rag-evaluation-strategy]
+
+wiki_refs:
+  - slug: rag-long-context-fine-tuning
+    anchor: what-fine-tuning-actually-changes
+    wiki_reviewed_at: "2026-10-13"
+  - slug: rag-long-context-fine-tuning
+    anchor: the-decision-order
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "RAGAS: Automated Evaluation of Retrieval Augmented Generation"
+    url: https://arxiv.org/abs/2309.15217
+    kind: paper
+  - title: "Lost in the Middle: How Language Models Use Long Contexts"
+    url: https://arxiv.org/abs/2307.03172
+    kind: paper
+  - title: "LoRA: Low-Rank Adaptation of Large Language Models"
+    url: https://arxiv.org/abs/2106.09685
+    kind: paper
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

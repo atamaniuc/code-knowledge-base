@@ -1,0 +1,106 @@
+id: a3cc8bc7-f926-4196-bc79-fd43b0a6253b
+slug: opentelemetry-collector-topology
+lang: en
+
+domain: observability
+topic: opentelemetry
+subtopic: collector
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: OpenTelemetry Collector
+  version_range: ">=0.162"
+
+question: >-
+  You are designing telemetry collection for a two-hundred-node cluster that must
+  send to two backends. Walk me through the topology, and tell me what breaks
+  first when it goes wrong.
+
+probes: >-
+  Whether the candidate knows why a gateway tier exists at all — credentials and
+  tail sampling — and whether they treat the collector as a production service on
+  the hot path rather than as a sidecar convenience.
+
+answer_strategy: >-
+  Give the topology as a reason, not a diagram: agents close to the data, a
+  gateway for the things that need all the data in one place. Then make the
+  collector's own reliability the second half of the answer, because a telemetry
+  outage during an incident is the failure that matters.
+
+expected_answer:
+  - text: >-
+      Runs a per-node agent, typically as a DaemonSet, for host metrics and first
+      stage batching, so applications send to a local endpoint.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Runs a gateway pool for what cannot be done per node: centralised backend
+      credentials, fan-out to two backends, and tail sampling.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Describes a pipeline per signal — receivers, processors such as batching and
+      memory limiting, and retrying exporters — rather than treating the collector
+      as one opaque process.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Explains that tail sampling requires buffering all spans of a trace until
+      it completes, which is why it belongs at the gateway tier with memory and a
+      decision timeout.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Treats the collector as a production dependency: monitor it, capacity-plan
+      it, and make sure an application does not block when the endpoint is
+      unavailable.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Rejects a single gateway instance as a correlated failure and sizes the pool
+      for the loss of one member.
+    weight: 4
+    min_level: staff
+
+follow_ups:
+  - How would you migrate backends without redeploying every application?
+  - Where would you redact a sensitive attribute so it never leaves the cluster?
+  - The collector is dropping data under load. What do you change first?
+
+common_mistakes:
+  - >-
+    Sending every service straight to the backend and then adding the collector
+    for a single vendor change, without a reason that justifies the hop.
+  - >-
+    Running tail sampling in the per-node agent, where no instance sees the whole
+    trace.
+  - >-
+    Running one collector replica for the cluster and discovering it is a single
+    point of failure during an incident.
+  - >-
+    Forgetting that the collector needs its own metrics and capacity plan because
+    it sits on the telemetry hot path.
+
+related_questions: [tracing-sampling-policy, promql-cardinality-blowup]
+
+wiki_refs:
+  - slug: opentelemetry-collector-and-conventions
+    anchor: deployment-topologies
+    wiki_reviewed_at: "2026-10-13"
+  - slug: opentelemetry-collector-and-conventions
+    anchor: the-collector-pipeline
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "OpenTelemetry: Collector"
+    url: https://opentelemetry.io/docs/collector/
+    kind: official-docs
+  - title: "OpenTelemetry: Sampling"
+    url: https://opentelemetry.io/docs/concepts/sampling/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

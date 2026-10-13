@@ -1,0 +1,118 @@
+id: 7f67c291-6694-4b3a-86dc-1cec98eeef04
+slug: mcp-trust-boundary-and-scopes
+lang: en
+
+domain: agentic
+topic: integration
+subtopic: mcp
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+
+tech:
+  name: Model Context Protocol
+  version_range: ">=2026-07"
+
+question: >-
+  You are reviewing a proposal to connect three third-party MCP servers to the company's
+  coding agent. One can open pull requests, one can read the production incident database,
+  and one is an unknown vendor's documentation server. Walk me through the review.
+
+probes: >-
+  Whether the candidate treats a connected server as untrusted code holding a credential,
+  rather than as a library to be installed. Also whether they know the current revision is
+  stateless, so the review cannot rely on session-scoped trust, and whether they can say
+  no to a server rather than only list mitigations.
+
+answer_strategy: >-
+  Open by naming what changed: MCP is stateless in 2026-07-28, so every request carries its
+  own version, capabilities and credential, and there is no connection to establish trust
+  on. Then take the three servers one at a time, because the answer is not uniform: the
+  pull-request server needs least privilege and human confirmation, the incident server
+  needs read scoping and a data classification argument, and the vendor server needs to
+  justify existing at all. Close on the credential model and the rollback, since that is
+  what turns a review into an engineering control.
+
+expected_answer:
+  - text: >-
+      States that 2026-07-28 removed the initialize handshake and protocol sessions, so
+      version, capabilities and authorization travel per request and trust is not
+      connection-scoped.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Treats server-supplied tool names, descriptions and schemas as untrusted content the
+      model reads, making tool poisoning and indirect injection the primary threat.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Scopes credentials per server, per user and per operation, refuses to pass a client's
+      token through to a downstream API, and names the confused deputy problem.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Requires human confirmation for destructive or irreversible tools and says the prompt
+      must show the real arguments, not a model-written summary.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Applies least privilege per server: the pull-request server gets repository-scoped
+      permission, the incident server read-only access with a data-classification argument.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Refuses or defers the unknown vendor server until it has a security review, a pinned
+      version and a revocation path, rather than connecting it to see what it can do.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Names the operational controls: an inventory of which servers an agent may reach,
+      per-call audit logging of arguments and results, and a way to disable one server.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The one server you approved is compromised next month and returns poisoned tool
+    descriptions. What limits the damage before anyone notices?
+  - How does the review change if the agent runs with a long-lived service account rather
+    than a per-user token?
+  - What evidence would convince you that a server is safe enough to connect?
+
+common_mistakes:
+  - >-
+    Assuming the protocol provides authentication or trust, when it standardises the shape
+    of the conversation and leaves the trust model to the implementer.
+  - >-
+    Reviewing the server's implementation and not the content it will inject into the
+    model's context.
+  - >-
+    Giving one credential to several servers because it is simpler to operate.
+  - >-
+    Answering with a list of mitigations and never saying which server should not be
+    connected.
+
+related_questions: [mcp-versus-bespoke-tools, prompt-injection-defence, agent-skills-context-economy]
+
+wiki_refs:
+  - slug: mcp-trust-boundary
+    anchor: the-trust-boundary
+    wiki_reviewed_at: "2026-10-13"
+  - slug: mcp-trust-boundary
+    anchor: authorization
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Model Context Protocol — specification 2026-07-28"
+    url: https://modelcontextprotocol.io/specification/2026-07-28
+    kind: spec
+  - title: "MCP — Security best practices"
+    url: https://modelcontextprotocol.io/specification/2026-07-28/basic/security_best_practices
+    kind: spec
+  - title: "MCP — Authorization"
+    url: https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization
+    kind: spec
+
+difficulty: 5
+estimated_minutes: 12
+
+review_status: draft

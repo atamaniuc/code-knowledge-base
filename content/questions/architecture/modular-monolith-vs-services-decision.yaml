@@ -1,0 +1,109 @@
+id: e84efb20-dd65-4672-9b47-68a9ffe98bb1
+slug: modular-monolith-vs-services-decision
+lang: en
+
+domain: architecture
+topic: distributed-systems
+subtopic: boundaries
+
+tracks: [backend, fullstack]
+levels: [staff]
+
+tech:
+  name: Microservices
+  version_range: ">=2024"
+
+question: >-
+  Your modular monolith has clean module boundaries and one database. A new team wants to
+  extract the billing module into its own service so it can release independently. What
+  conditions would make you agree, and how would you run the extraction?
+probes: >-
+  Whether the candidate treats a split as an organisational trade with a precondition rather
+  than as a maturity step, and whether they can describe the migration mechanics and the
+  dual-write window. The decision rule is the senior signal; the outbox and cutover are the
+  staff one.
+answer_strategy: >-
+  Give the conditions first, as a checklist, because that is the answer: separate teams with a
+  real release-cadence conflict, a different scaling profile, a data-isolation requirement, and
+  a boundary that already holds with no shared tables. Then price what the split costs, and
+  only then describe the migration: extract the cleanest data first, strangle it, and make the
+  dual-write window safe with an outbox and idempotent consumers.
+expected_answer:
+  - text: >-
+      States the precondition that a module boundary must already hold: the module owns its data,
+      exposes an interface, and no other module reads its tables.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Names the organisational conditions: independent release cadence, a genuinely different
+      scaling profile, a data-isolation or regulatory requirement.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Prices the split concretely: network calls where function calls were, partial failure as the
+      normal case, two transactions instead of one, per-service deploy and observability.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Chooses the first extraction by data cleanliness, so the first migration builds the template,
+      and argues against a big-bang split.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Names the dual-write window as the risky step and proposes an outbox with a relay rather
+      than a distributed transaction.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Says which calls stay synchronous and which become events, and can justify both from the
+      user-visible flow.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Sets a falsifiable review point — a metric or an incident class that would show the split
+      was wrong — rather than declaring it permanent.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - Billing and invoicing both need the same customer record after the split. What now?
+  - How do you keep the old and new billing paths consistent during the cutover?
+  - Six months later, what evidence would make you merge it back?
+
+common_mistakes:
+  - >-
+    Agreeing because independent release is a stated goal, without pricing what it costs this
+    organisation.
+  - >-
+    Extracting the module with the messiest data first, so the first migration becomes the
+    cautionary tale.
+  - >-
+    Replacing the transaction with a chain of synchronous calls and calling it a service.
+  - >-
+    Keeping one shared database between the two services and calling it phase one forever.
+
+related_questions: [should-we-split-into-microservices, nestjs-microservice-boundaries]
+
+wiki_refs:
+  - slug: modular-monolith-vs-services
+    anchor: a-decision-rule
+    wiki_reviewed_at: "2026-10-13"
+  - slug: modular-monolith-vs-services
+    anchor: migrating-an-established-monolith
+    wiki_reviewed_at: "2026-10-13"
+  - slug: modular-monolith-vs-services
+    anchor: what-a-module-boundary-has-to-be
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Pattern: Database per service"
+    url: https://microservices.io/patterns/data/database-per-service.html
+    kind: article
+  - title: "Pattern: Transactional outbox"
+    url: https://microservices.io/patterns/data/transactional-outbox.html
+    kind: article
+
+difficulty: 5
+estimated_minutes: 12
+
+review_status: draft

@@ -1,0 +1,118 @@
+id: 767410c2-90eb-4328-8356-2f8f6269af04
+slug: rate-limiting-and-load-shedding
+lang: en
+
+domain: network
+topic: resilience
+subtopic: overload
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: HTTP APIs
+  version_range: ">=2022"
+
+question: >-
+  One tenant's batch job saturates your service every night and everyone else's requests
+  time out. The team proposes a per-IP rate limit. What do you actually do?
+probes: >-
+  Whether the candidate separates rate limits from concurrency limits and reaches for
+  backpressure and shedding by criticality. A per-IP limit is the plausible wrong answer this
+  question is built around.
+answer_strategy: >-
+  Start with what is actually being protected: the shared resource behind the service, usually
+  a connection pool or the worker's event loop. A rate limit per IP does not bound concurrency
+  and does not distinguish the tenant. Then give the layered answer — per-tenant limits, a
+  concurrency limit at the dependency, bounded queues, 429 with Retry-After, and shedding by
+  criticality — and finish on the client side, because the batch job is a retry storm waiting
+  to happen.
+expected_answer:
+  - text: >-
+      Separates rate limits from concurrency limits and identifies the saturated shared resource
+      (connection pool, worker, downstream) as what must be bounded.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Rejects a per-IP limit for authenticated traffic, since the tenant is the unit that should
+      be limited and one IP can front many clients.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Applies a per-tenant quota and a concurrency limit at the dependency, so the batch job
+      queues rather than consuming every slot.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Returns 429 with Retry-After, and exposes the quota policy so a well-behaved client can
+      avoid being throttled.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Sheds by criticality under genuine overload — health checks and the control plane keep
+      working, the least critical traffic fails fast rather than slowly.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Uses bounded queues with a rejection policy, since an unbounded queue converts a latency
+      problem into memory growth.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Addresses the client side: exponential backoff with jitter and a retry budget, because the
+      batch job's retries are part of the load.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Chooses the algorithm deliberately — token bucket for burst tolerance, sliding window to
+      avoid boundary bursts — and says what accuracy costs in shared state.
+    weight: 2
+    min_level: senior
+
+follow_ups:
+  - The tenant pays for the batch job. How does the answer change?
+  - Where do you put the limit — gateway or service — and what does each choice cost?
+  - How do you avoid the limit store becoming the new single point of failure?
+
+common_mistakes:
+  - >-
+    Rate limiting by IP and throttling an office full of legitimate users while the noisy job
+    keeps running.
+  - >-
+    Adding an unbounded queue to smooth the spike, which is memory growth with a schedule.
+  - >-
+    Returning 429 without Retry-After, so clients retry immediately and amplify the load.
+  - >-
+    Retrying at several layers, which multiplies requests exactly when the dependency is weakest.
+
+related_questions: [graphql-cost-limits-and-persisted-queries, api-versioning-and-idempotency]
+
+wiki_refs:
+  - slug: rate-limiting-and-backpressure
+    anchor: rate-limits-and-concurrency-limits-are-different-tools
+    wiki_reviewed_at: "2026-10-13"
+  - slug: rate-limiting-and-backpressure
+    anchor: telling-clients-the-truth
+    wiki_reviewed_at: "2026-10-13"
+  - slug: rate-limiting-and-backpressure
+    anchor: backpressure-and-load-shedding
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "RFC 9110 — HTTP Semantics"
+    url: https://www.rfc-editor.org/rfc/rfc9110.html
+    kind: rfc
+  - title: "RateLimit header fields for HTTP (IETF draft)"
+    url: https://datatracker.ietf.org/doc/draft-ietf-httpapi-ratelimit-headers/
+    kind: spec
+  - title: "Google SRE Book — Handling overload"
+    url: https://sre.google/sre-book/handling-overload/
+    kind: book
+  - title: "AWS Architecture Blog — Exponential backoff and jitter"
+    url: https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
+    kind: article
+
+difficulty: 5
+estimated_minutes: 12
+
+review_status: draft

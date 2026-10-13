@@ -1,0 +1,110 @@
+id: 749d6a1a-a78b-40d0-a25c-c836ad2ae71b
+slug: redis-lock-redlock-argument
+lang: en
+
+domain: caching
+topic: coordination
+subtopic: locks
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: Redis
+  version_range: ">=8"
+
+question: >-
+  Two workers must never process the same payout request at the same time. A teammate
+  proposes Redlock across three Redis masters so the lock survives a node failure. What
+  do you do?
+
+probes: >-
+  Whether the candidate asks what the lock is protecting before choosing an algorithm,
+  and whether they can state the Redlock critique without turning it into a Redis
+  argument. Reaching for the database's own constraint instead of a lock is the staff
+  answer.
+
+answer_strategy: >-
+  Start by asking whether this is an efficiency lock or a correctness lock, because that
+  decision answers the rest. For a payout it is correctness, so a lock without fencing is
+  not enough on its own. Then give the basic protocol — SET NX EX with a token and
+  compare-and-delete — as the floor, and the critique of Redlock in two parts: it assumes
+  bounded pauses and clock drift, and it issues no fencing token the resource can check.
+  Close with what you would ship: a conditional update or unique constraint that makes
+  the double payout impossible regardless of the lock.
+
+expected_answer:
+  - text: >-
+      Separates efficiency locks from correctness locks and classifies this one as
+      correctness, which changes the acceptable failure modes.
+    weight: 5
+    min_level: senior
+  - text: >-
+      States the minimum correct protocol: a single atomic acquire with SET NX EX and a
+      unique token, release by comparing the token rather than a bare DEL.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Sizes the lease above the p99 critical section, renews it if work can run long, and
+      says that a lease expiring mid-work produces two holders.
+    weight: 4
+    min_level: senior
+  - text: >-
+      States the Redlock critique: it assumes bounded process pauses and bounded clock
+      drift, while the failure it is meant to handle is a process delayed past its lease.
+    weight: 5
+    min_level: staff
+  - text: >-
+      States the second half of the critique: no fencing token, so the guarded resource
+      cannot reject a stale holder's write even if the lock service could identify it.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Proposes the safer construction: enforce the invariant in the database with a
+      unique constraint on the payout key or a conditional update, so correctness does
+      not depend on the lock at all.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Allows a Redis lock for the efficiency case — avoiding duplicate work — and says
+      explicitly that occasional double execution is acceptable there.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - The payout provider supports an idempotency key. Does that remove the need for a lock
+    entirely?
+  - A worker pauses for 40 seconds under GC while holding a 30-second lease. What does
+    the system do?
+  - Would etcd or ZooKeeper change your answer, and why?
+
+common_mistakes:
+  - >-
+    Debating Redlock's node count without asking what the lock is protecting.
+  - >-
+    Releasing the lock with an unconditional DEL.
+  - >-
+    A lease with no TTL, or one longer than the process's recovery time, so a crashed
+    worker blocks the resource indefinitely.
+  - >-
+    Treating a Redis lock as a substitute for a uniqueness constraint on the data it
+    protects.
+
+related_questions: [redis-rate-limiter-design, postgres-lost-update-isolation]
+
+wiki_refs:
+  - slug: redis-distributed-locks
+    anchor: the-redlock-argument
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Redis — SET command (NX, EX)"
+    url: https://redis.io/docs/latest/commands/set/
+    kind: official-docs
+  - title: "How to do distributed locking"
+    url: https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html
+    kind: article
+
+difficulty: 5
+estimated_minutes: 15
+
+review_status: draft

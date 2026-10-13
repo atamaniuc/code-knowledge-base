@@ -1,0 +1,112 @@
+id: c5b879f8-5b38-4d37-a500-4ea0638a1756
+slug: kafka-partition-key-design
+lang: en
+
+domain: messaging
+topic: partitioning
+subtopic: keys
+
+tracks: [backend, fullstack]
+levels: [middle, senior, staff]
+tech:
+  name: Apache Kafka
+  version_range: ">=4.0"
+
+question: >-
+  An orders topic has 24 partitions. Consumers keep per-account state, and they are
+  seeing events out of order; separately, one tenant generates about 40% of the traffic
+  and its partition's lag never clears. Design the key and the partition count.
+
+probes: >-
+  Whether the candidate connects ordering to the partition and the key, and recognises
+  skew as a partitioning problem rather than a broker problem. The trade between
+  spreading a hot key and preserving its order is the staff-level part.
+
+answer_strategy: >-
+  Fix the stated bug first: no ordering guarantee spans partitions, so the key must be
+  the entity whose events must not reorder. Then handle the skew, and be explicit that
+  spreading one hot tenant across shards means either accepting per-shard order or
+  introducing an ordering step downstream. Finish on the partition count as an estimate
+  from measured per-partition throughput, plus the fact that increasing it remaps keys.
+
+expected_answer:
+  - text: >-
+      States that Kafka orders within a partition only, so keying by the entity that must
+      not be reordered — the account or the order — is the fix for the out-of-order
+      symptom.
+    weight: 5
+    min_level: middle
+  - text: >-
+      Identifies the anti-patterns: no key means no ordering, and a per-event unique key
+      distributes evenly while ordering nothing.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Diagnoses the skewed partition as a hot key and proposes a composite key that
+      spreads the tenant across a fixed number of shards.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Explains the cost of composite keys: writes for one tenant are now spread, so any
+      cross-shard ordering or aggregation must be solved downstream.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Derives the partition count from measured per-partition throughput with headroom,
+      rather than accepting a default or a blog-post number.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Notes that partition count can only increase, and that increasing it changes the
+      key-to-partition mapping, so keys already in flight can be reordered.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Monitors per-partition lag rather than topic-wide lag, because averaging hides the
+      exact skew that caused the incident.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Adds that even correct keying leaves duplicates possible across a rebalance, so
+      the consumer must still be idempotent.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - Two topics must be joined per account. What has to be true about their partitioning?
+  - Once you shard the hot tenant, how does the downstream service reconstruct per-tenant
+    order if it needs it?
+  - The consumer is idle for a week. What does that do to its position on a delete-policy
+    topic?
+
+common_mistakes:
+  - >-
+    Blaming the broker for ordering while producing with no key or a unique key.
+  - >-
+    Reaching for one partition to get global ordering, which caps throughput at one
+    consumer.
+  - >-
+    Splitting the hot tenant without noticing that per-account ordering is now spread
+    across shards.
+  - >-
+    Watching topic-wide lag, which stays healthy while one partition falls hours behind.
+
+related_questions: [kafka-retention-for-replay, kafka-rebalance-storm]
+
+wiki_refs:
+  - slug: kafka-partitioning-and-ordering
+    anchor: key-choice
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Apache Kafka 4.3 — Design"
+    url: https://kafka.apache.org/43/design/design/
+    kind: official-docs
+  - title: "Apache Kafka 4.3 — Consumer and Share Consumer Configs"
+    url: https://kafka.apache.org/43/configuration/consumer-configs/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

@@ -1,0 +1,111 @@
+id: b5d11351-bc32-439c-9e1e-efddcdf5a8ba
+slug: context-budget-and-progressive-disclosure
+lang: en
+
+domain: agentic
+topic: context-engineering
+subtopic: context-budget
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+
+tech:
+  name: Agent harness
+  version_range: ">=2025"
+
+question: >-
+  Your coding agent's system prompt and tool schemas now take forty thousand tokens before
+  the user has typed anything, and answer quality is falling while cost rises. Walk me
+  through how you fix it.
+
+probes: >-
+  Whether the candidate reasons about context as a budget that must be spent deliberately,
+  and whether they know the vocabulary — window, budget, compaction, progressive
+  disclosure, skill, subagent. The trap is answering with prompt-editing advice when the
+  problem is information architecture.
+
+answer_strategy: >-
+  Do not start trimming sentences. Start by measuring: which components consume the budget,
+  and what does each buy in task success. Then attack structure, not wording — move
+  sometimes-relevant procedure out of the system prompt into a skill that loads on
+  selection, keep the stable prefix stable for prompt caching, and push large evidence into
+  a subagent that returns a conclusion. Say what changes when the window is exhausted
+  mid-task, because that is the part teams have not designed.
+
+expected_answer:
+  - text: >-
+      Measures the budget before changing it: token accounting per component, and the task
+      outcome each component contributes.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Explains that a larger window does not fix quality, because accuracy degrades with
+      length and is worst for material in the middle of a long input.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Moves sometimes-relevant procedure out of the system prompt into a skill that loads
+      on selection — the description is always present, the body on demand.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Keeps the prompt prefix stable so prompt caching hits, and orders context with the
+      stable material first and the volatile material after.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Uses a subagent for context isolation: large noisy work happens elsewhere and only
+      the conclusion enters the parent context.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Plans compaction: what is summarised (decisions, constraints, the plan) and what
+      durable state lives outside the conversation so the run can resume.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Measures the change on a task suite and reports cost per successful task, not cost
+      per call.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - A skill's description is the only thing always loaded. How do you test that the model
+    loads it when it should?
+  - The prompt cache misses on every request. What in the ordering caused that?
+  - What happens when the window is exhausted in the middle of a migration task?
+
+common_mistakes:
+  - >-
+    Rewriting the prompt to be shorter without measuring which components consume the
+    budget or what they contribute.
+  - >-
+    Buying a larger window and treating the problem as solved.
+  - >-
+    Implementing progressive disclosure as a folder structure while the full content is
+    still injected on every request.
+  - >-
+    Letting the conversation be the only memory, so compaction or a restart loses the plan.
+
+related_questions: [agent-skills-context-economy, multi-agent-versus-more-tools, latency-versus-cost]
+
+wiki_refs:
+  - slug: harness-context-engineering
+    anchor: context-is-a-budget-not-a-bucket
+    wiki_reviewed_at: "2026-10-13"
+  - slug: harness-context-engineering
+    anchor: progressive-disclosure
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Anthropic — Equipping agents for the real world with Agent Skills"
+    url: https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills
+    kind: article
+  - title: "Lost in the Middle: How Language Models Use Long Contexts"
+    url: https://arxiv.org/abs/2307.03172
+    kind: paper
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

@@ -1,0 +1,105 @@
+id: 6dd08cf1-f78f-43e8-aa5f-bcc2af14892e
+slug: incident-command-and-communication
+lang: en
+
+domain: observability
+topic: sre
+subtopic: incident-response
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+tech:
+  name: SRE practices
+  version_range: ">=2024"
+
+question: >-
+  You are the on-call engineer and a major incident starts. Walk me through the
+  first fifteen minutes.
+
+probes: >-
+  Whether the candidate separates coordination from debugging, communicates
+  before understanding, and mitigates before diagnosing. The pressure is the test;
+  a candidate who starts reading logs first has answered the wrong question.
+
+answer_strategy: >-
+  Narrate it as decisions, not as a checklist. Declare, assign, communicate,
+  mitigate — in that order — and say why each comes before the next. The
+  interviewer is listening for whether you can run the response while other
+  people fix the system.
+
+expected_answer:
+  - text: >-
+      Declares the incident and sets a severity rather than quietly starting to
+      debug, because the declaration is what starts the process.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Assigns roles explicitly — an incident commander and a communications lead,
+      even if that means handing off the debugging.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Sends a short first update with impact and a next-update time before
+      understanding the cause, on a regular cadence rather than one long
+      explanation later.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Prioritises mitigation over root cause — roll back, flip the flag, fail
+      over, shed load — and uses the release pipeline that makes rollback fast.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Keeps a timeline from evidence — alerts, deploy logs, traces — rather than
+      reconstructing it from memory afterwards.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Escalates and pulls in help early instead of protecting the incident,
+      including a backup on-call for a long incident.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Ends with a verification window rather than declaring victory when the
+      change is applied, and states what would make the team re-declare.
+    weight: 4
+    min_level: staff
+
+follow_ups:
+  - The commander is the only person who understands the system. What do you do?
+  - A stakeholder demands a root cause during the outage. How do you respond?
+  - The rollback is also broken. What is your next move?
+
+common_mistakes:
+  - >-
+    Starting with log analysis and letting the coordination happen accidentally.
+  - >-
+    Waiting for a diagnosis before telling anyone there is a problem.
+  - >-
+    Fixing forward under pressure when a rollback is available.
+  - >-
+    Declaring the incident over when the change is applied rather than when the
+    signal has recovered.
+
+related_questions: [postmortem-action-items, alert-noise-reduction]
+
+wiki_refs:
+  - slug: incident-response-and-postmortems
+    anchor: roles-during-an-incident
+    wiki_reviewed_at: "2026-10-13"
+  - slug: incident-response-and-postmortems
+    anchor: communicate-before-you-understand
+    wiki_reviewed_at: "2026-10-13"
+  - slug: incident-response-and-postmortems
+    anchor: mitigate-before-you-fix
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Site Reliability Engineering: Managing Incidents"
+    url: https://sre.google/sre-book/managing-incidents/
+    kind: book
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

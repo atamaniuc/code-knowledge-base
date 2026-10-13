@@ -1,0 +1,116 @@
+id: 9801d408-f7fc-4888-bb3f-a5075a766f12
+slug: nestjs-microservice-transport-choice
+lang: en
+
+domain: backend-node
+topic: architecture
+subtopic: transport
+
+tracks: [backend]
+levels: [senior, staff]
+
+tech:
+  name: NestJS
+  version_range: ">=12"
+
+question: >-
+  You are extracting an invoicing capability from a Nest monolith. The team wants gRPC for
+  everything because Nest supports it in the same codebase. There are two flows: a
+  synchronous quote lookup used to render a page, and an invoice-finalized notification that
+  billing and analytics both consume. What do you choose for each, and what has to be
+  designed rather than configured?
+probes: >-
+  Whether the candidate picks a transport from delivery semantics rather than convenience, and
+  whether they know the framework supplies none of the guarantees the flows need. The
+  distinction between a message pattern and an event pattern is the core signal.
+answer_strategy: >-
+  Start by sorting the two flows: one needs an answer to the caller and has one consumer;
+  the other has no reply, several consumers, and must survive a restart. That gives gRPC for
+  the quote and a broker for the event. Then spend the rest of the answer on what Nest does
+  not provide — idempotency, ordering, retries, the atomic publish — because that is where
+  the design actually lives.
+expected_answer:
+  - text: >-
+      Distinguishes request-response message patterns from one-way event patterns, including the
+      fact that an event handler's failure is not visible to the caller.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Chooses gRPC for the controlled both-ends request-response call and a broker for the
+      event with multiple consumers.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Justifies the broker by durability, fan-out and decoupling, not by framework support.
+    weight: 4
+    min_level: staff
+  - text: >-
+      States that idempotency, ordering, retries and deduplication are application design, and
+      names the dedupe store or idempotency key the consumer needs.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Handles the atomic publish: an outbox with a relay rather than publishing inside or after
+      the database transaction.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Plans for version skew during the rollout: additive payloads and consumers that tolerate
+      fields they do not know.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Mentions the hybrid process as the migration path, and the shared-resource risk when a
+      consumer and an HTTP server live in one process.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Requires a retry limit and a dead-letter destination that a human actually watches.
+    weight: 2
+    min_level: senior
+
+follow_ups:
+  - Billing is down for two hours. What happens to the invoice-finalized events?
+  - A message is delivered twice. Where is the duplicate caught?
+  - How do you know which client versions are still calling the gRPC method?
+
+common_mistakes:
+  - >-
+          Choosing a transport because the framework makes it a one-line change, then discovering the
+          delivery guarantee is at-most-once.
+  - >-
+          Treating an event handler like a synchronous call and expecting the producer to see errors.
+  - >-
+          Publishing to the broker inside the database transaction, or after commit with no outbox.
+  - >-
+          Running the consumer and the HTTP server in one process without separating their pools or
+          resource limits.
+
+related_questions: [nestjs-request-lifecycle-and-placement, nestjs-api-versioning-and-deprecation]
+
+wiki_refs:
+  - slug: nestjs-microservice-transports
+    anchor: choosing-by-semantics
+    wiki_reviewed_at: "2026-10-13"
+  - slug: nestjs-microservice-transports
+    anchor: message-patterns-versus-event-patterns
+    wiki_reviewed_at: "2026-10-13"
+  - slug: nestjs-microservice-transports
+    anchor: what-the-framework-will-not-do
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "NestJS — Microservices"
+    url: https://raw.githubusercontent.com/nestjs/docs.nestjs.com/master/content/microservices/basics.md
+    kind: official-docs
+  - title: "NestJS — gRPC transport"
+    url: https://raw.githubusercontent.com/nestjs/docs.nestjs.com/master/content/microservices/grpc.md
+    kind: official-docs
+  - title: "Pattern: Database per service"
+    url: https://microservices.io/patterns/data/database-per-service.html
+    kind: article
+
+difficulty: 5
+estimated_minutes: 13
+
+review_status: draft

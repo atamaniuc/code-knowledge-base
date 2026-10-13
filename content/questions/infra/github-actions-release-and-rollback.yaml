@@ -1,0 +1,109 @@
+id: 919f9422-5aa3-4e3d-825a-e1ba8c4bc00e
+slug: github-actions-release-and-rollback
+lang: en
+
+domain: infra
+topic: ci-cd
+subtopic: delivery
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: GitHub Actions
+  version_range: ">=2025"
+
+question: >-
+  Walk me through the pipeline from merge to production for a containerised
+  service, including how rollback works and why you would not rebuild the image
+  for production.
+
+probes: >-
+  Whether the candidate keeps one artifact identity through the environments and
+  treats rollback as a deployment action rather than a build action. The database
+  migration constraint is where senior answers separate from staff ones.
+
+answer_strategy: >-
+  Describe the path in stages — build, promote, gate, deploy — and make the
+  artifact identity explicit, because that is what the question is testing. Then
+  give rollback as a redeploy of a known-good digest, and finish with the schema
+  constraint that makes it possible.
+
+expected_answer:
+  - text: >-
+      Builds the image once, tags it with an immutable version or digest, and
+      promotes that same artifact through each environment.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Rejects rebuilding for production, because a rebuild resolves dependencies
+      again and produces a different artifact that has never been tested.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Gates production with an environment that carries protection rules —
+      required reviewers or a wait timer — and deploys from a trunk-based main
+      branch.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Keeps branches short and ships incomplete work behind feature flags rather
+      than on a long-lived branch.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Defines rollback as redeploying the previous digest, with a feature-flag
+      flip as the faster option when one feature is at fault.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Keeps database migrations backward compatible — expand and contract across
+      releases — so the previous application version can still run against the new
+      schema.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Adds progressive delivery — canary or blue-green — so a bad release is
+      exposed to a small share of traffic before it is everywhere.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The rollback also needs to reverse a data migration. How do you handle that?
+  - Where does the environment gate sit if the deploy job runs on a self-hosted runner?
+  - How do you stop three pushes in a row from deploying three stale versions?
+
+common_mistakes:
+  - >-
+    Rebuilding the image per environment and calling it a promotion.
+  - >-
+    Treating rollback as re-running the pipeline, which produces a new artifact
+    and a new risk.
+  - >-
+    Shipping schema changes that the previous version cannot read, which makes
+    rollback impossible at the worst moment.
+  - >-
+    Putting the human approval after the build instead of before the deploy, so
+    what was approved is not what is deployed.
+
+related_questions: [helm-4-release-lifecycle, container-image-build-and-supply-chain]
+
+wiki_refs:
+  - slug: github-actions-oidc-deployments
+    anchor: trunk-based-release-and-rollback
+    wiki_reviewed_at: "2026-10-13"
+  - slug: github-actions-oidc-deployments
+    anchor: environments-and-protection
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "GitHub Docs: Using environments for deployment"
+    url: https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment
+    kind: official-docs
+  - title: "GitHub Docs: Caching dependencies to speed up workflows"
+    url: https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

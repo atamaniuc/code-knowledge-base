@@ -1,0 +1,120 @@
+id: 510edeaa-2f00-4b83-80a8-917ba899c813
+slug: container-image-build-and-supply-chain
+lang: en
+
+domain: infra
+topic: containers
+subtopic: images
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: Docker
+  version_range: ">=24"
+
+question: >-
+  Your production images are 1.2 GB, take fifteen minutes to build, and contain a
+  shell and a package manager. Walk me through the redesign, and tell me how you
+  would prove to a security reviewer what is inside the image.
+
+probes: >-
+  Whether the candidate connects image structure to three separate outcomes —
+  build speed, attack surface and verifiability — instead of answering only the
+  size complaint. Supply chain is the half most candidates skip.
+
+answer_strategy: >-
+  Split the answer into the three problems the question contains: cache the build,
+  shrink the surface, and prove provenance. Give the layer-ordering rule first
+  because it is the cheapest win, then the multi-stage and minimal-base design,
+  then finish on SBOM, signing and verification. Keep the Dockerfile detail brief;
+  the interviewer is testing judgement.
+
+expected_answer:
+  - text: >-
+      Fixes the cache before anything else: copy the dependency manifest and
+      install first, copy application source last, so a source change does not
+      invalidate the expensive layer.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Uses a multi-stage build so compilers, package managers and source stay in
+      the build stage and only the artifact reaches the runtime image.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Chooses a minimal runtime base — distroless or scratch for a static binary —
+      and states that losing the shell is a security benefit as well as a size
+      one.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Names BuildKit capabilities that matter: exported and imported layer cache,
+      secret mounts so build secrets are not baked into layers, and multi-platform
+      builds for arm64 and amd64.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Produces an SBOM and scans it, so a new CVE can be answered by querying
+      which deployed images contain the package rather than by rebuilding
+      everything.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Signs the image digest with a workload identity and verifies at admission,
+      and references provenance or SLSA levels as the statement of how it was
+      built.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Pins the base image by digest rather than by tag, because a tag is mutable
+      and the build is otherwise not reproducible.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - A build secret was copied into a layer and deleted in a later instruction. Is it gone?
+  - Alpine and distroless are both small. How do you choose, and what breaks?
+  - Where would you run the arm64 build without paying for emulation on every job?
+
+common_mistakes:
+  - >-
+    Squashing to one layer to reduce size, which destroys the cache granularity
+    that made the build fast.
+  - >-
+    Deleting a secret in a later layer and believing it is removed from the image.
+  - >-
+    Reporting a clean vulnerability scan as proof the image is secure.
+  - >-
+    Using a mutable tag for the base image and calling the build reproducible.
+
+related_questions: [github-actions-oidc-deployment, helm-4-release-lifecycle]
+
+wiki_refs:
+  - slug: container-images-and-supply-chain
+    anchor: multi-stage-builds
+    wiki_reviewed_at: "2026-10-13"
+  - slug: container-images-and-supply-chain
+    anchor: layers-and-caching
+    wiki_reviewed_at: "2026-10-13"
+  - slug: container-images-and-supply-chain
+    anchor: supply-chain
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Docker: Multi-stage builds"
+    url: https://docs.docker.com/build/building/multi-stage/
+    kind: official-docs
+  - title: "GoogleContainerTools/distroless"
+    url: https://github.com/GoogleContainerTools/distroless
+    kind: official-docs
+  - title: "Sigstore: Quickstart with Cosign"
+    url: https://docs.sigstore.dev/quickstart/quickstart-cosign/
+    kind: official-docs
+  - title: "SLSA v1.0 levels"
+    url: https://slsa.dev/spec/v1.0/levels
+    kind: spec
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

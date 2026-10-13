@@ -1,0 +1,114 @@
+id: e5bce300-e442-4e21-83e4-daa848212e12
+slug: replaying-an-agent-run
+lang: en
+
+domain: agentic
+topic: operations
+subtopic: debugging
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+
+tech:
+  name: OpenTelemetry
+  version_range: ">=1.9"
+
+question: >-
+  A customer reports that the support agent refunded the wrong order three weeks ago. You
+  have the trace. What has to be in it to reconstruct what happened, and how do you turn
+  this into a regression test?
+
+probes: >-
+  Whether the candidate thinks in runs rather than requests, and whether they understand
+  the difference between reading a trace and replaying one. The staff signal is naming what
+  makes replay inexact — model versioning, tool results that depend on the world — and
+  asserting on the trajectory instead of on exact text.
+
+answer_strategy: >-
+  Open by defining the unit: an agent failure is a sequence, so the trace is a tree of
+  steps and not a log of requests. List what each step must record — the exact context the
+  model saw, model id and parameters, tool arguments and full results, token counts, and
+  the stop reason. Then separate replay from reading: replay means the recorded inputs can
+  be injected at the boundary so the loop runs again with tool calls stubbed. Finish with
+  the honest limit and the assertions that survive it.
+
+expected_answer:
+  - text: >-
+      Treats the unit of debugging as the run and the trace as a tree: a parent span for
+      the run, child spans per model call and per tool call.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Requires the full tool result — including errors — plus the arguments, because the
+      wrong refund came from a model reading a result, not from a request failing.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Records the exact model id, decoding parameters and the context the model received,
+      so the step can be reproduced rather than guessed.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Distinguishes reading a trace from replaying a run, and makes tool results injectable
+      so recorded results replace live calls.
+    weight: 5
+    min_level: staff
+  - text: >-
+      States why replay is never exact — sampling, deprecated model versions, tool results
+      that depend on a changed world — and pins model versions and stores tool results with
+      the run.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Asserts on trajectory properties: the goal was reached, no forbidden tool was called,
+      the refund matched the order under discussion, the step count stayed in budget.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Treats the run store as regulated data: prompts, documents and tool arguments contain
+      customer data and often credentials, so retention and redaction are part of the
+      design.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The model provider deprecated the model version two weeks after the incident. What does
+    your regression test assert now?
+  - The refund tool is not idempotent. What changes about replaying this run?
+  - How do you decide what is redacted at record time versus restricted at read time?
+
+common_mistakes:
+  - >-
+    Recording the final answer and calling it replay, when the inputs a step consumed are
+    what a replay needs.
+  - >-
+    Logging the messages but not the tool results, which removes the evidence of what the
+    model reacted to.
+  - >-
+    Assuming a low temperature makes a run reproducible.
+  - >-
+    Writing a golden-file comparison against exact output text, which fails on every
+    harmless rephrasing and passes a plausible wrong trajectory.
+
+related_questions: [multi-agent-versus-more-tools, agent-trajectory-evaluation, agent-loop-stop-conditions]
+
+wiki_refs:
+  - slug: agent-tracing-and-replay
+    anchor: what-a-trace-has-to-contain
+    wiki_reviewed_at: "2026-10-13"
+  - slug: agent-tracing-and-replay
+    anchor: replay-means-recording-the-inputs-not-the-answer
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "OpenTelemetry — Generative AI semantic conventions"
+    url: https://opentelemetry.io/docs/specs/semconv/gen-ai/
+    kind: official-docs
+  - title: "OpenTelemetry — GenAI semantic conventions for MCP"
+    url: https://opentelemetry.io/docs/specs/semconv/gen-ai/mcp/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

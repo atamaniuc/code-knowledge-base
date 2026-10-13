@@ -1,0 +1,110 @@
+id: 65ad4cd0-3fa1-4f1d-89d2-e423aad9a381
+slug: postgres-zero-downtime-migration
+lang: en
+
+domain: data
+topic: migrations
+subtopic: zero-downtime
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: PostgreSQL
+  version_range: ">=16"
+
+question: >-
+  You need to add a NOT NULL column with a backfilled value to a 400-million-row table,
+  and rename another column, with no downtime and no deploy freeze. Walk me through the
+  plan step by step, including how you roll it back.
+
+probes: >-
+  Whether the candidate thinks in separately deployable steps with a rollback for each,
+  and whether they know which operations take which lock. A plan that does the whole
+  thing in one migration is the answer being screened for.
+
+answer_strategy: >-
+  Frame the answer as expand, migrate, contract before any SQL. Then walk the column
+  through its states — nullable, backfilled in batches, constraint added NOT VALID,
+  validated, then set NOT NULL — and say what each step does to locking. Treat the rename
+  as the same pattern with a view or a dual-write, because a rename is a breaking change
+  for the old code. Finish on rollback: every step reversible except a destructive
+  contract released too early.
+
+expected_answer:
+  - text: >-
+      Structures the work as expand, migrate, contract, with each step separately
+      deployable and old and new application versions running against the same schema.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Adds the column as nullable or with a non-volatile default, avoiding a table
+      rewrite, and keeps it nullable until the backfill is complete.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Backfills in bounded batches, on a key, with the job resumable and its progress
+      observable, rather than one UPDATE over the whole table.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Uses NOT VALID plus VALIDATE CONSTRAINT and then SET NOT NULL, instead of setting
+      the constraint under a long ACCESS EXCLUSIVE lock.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Uses CREATE INDEX CONCURRENTLY for any index, and knows it cannot run inside a
+      transaction block and can leave an invalid index that must be dropped and retried.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Handles the rename without breaking old code: expand to the new column, dual-write,
+      migrate readers, then drop the old one.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Sets lock_timeout and statement_timeout on the migration connection with a retry,
+      so the migration waits for a quiet moment instead of blocking the table.
+    weight: 4
+    min_level: staff
+  - text: >-
+      States the rollback for each step and refuses to combine the expand and the
+      destructive contract in one release.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The backfill is 60% done and you need to roll back the application deploy. What breaks?
+  - How do you know the migration is safe to run during business hours?
+  - What changes if the column is on a table with a foreign key from another service?
+
+common_mistakes:
+  - >-
+    Running ALTER TABLE ... ADD COLUMN NOT NULL DEFAULT on a volatile default and
+    expecting it to be metadata-only.
+  - >-
+    A single UPDATE over the whole table, holding locks and writing enough WAL to
+    saturate replication.
+  - >-
+    Creating the index without CONCURRENTLY, blocking writes for the duration.
+  - >-
+    Shipping the column drop in the same release as the rename, leaving no path back.
+
+related_questions: [postgres-partition-or-not, postgres-normalisation-trade-offs]
+
+wiki_refs:
+  - slug: postgres-zero-downtime-migrations
+    anchor: expand-migrate-contract
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "PostgreSQL 18 — ALTER TABLE"
+    url: https://www.postgresql.org/docs/18/sql-altertable.html
+    kind: official-docs
+  - title: "PostgreSQL 18 — CREATE INDEX (CONCURRENTLY)"
+    url: https://www.postgresql.org/docs/18/sql-createindex.html
+    kind: official-docs
+
+difficulty: 5
+estimated_minutes: 15
+
+review_status: draft

@@ -1,0 +1,99 @@
+id: f944e445-62e5-49e7-a438-ca6870c13fb9
+slug: kubernetes-multi-tenancy-isolation
+lang: en
+
+domain: infra
+topic: kubernetes
+subtopic: security
+
+tracks: [backend, any]
+levels: [staff]
+tech:
+  name: Kubernetes
+  version_range: ">=1.34"
+
+question: >-
+  A customer asks whether their workloads can share a cluster with another
+  customer's. Walk me through how you answer, and tell me what would change your
+  answer.
+
+probes: >-
+  Whether the candidate can distinguish a management boundary from a security
+  boundary and is willing to name the cost of real isolation. The trap is
+  answering yes after listing namespaces, RBAC and quotas as if that were
+  sufficient.
+
+answer_strategy: >-
+  Answer with a question about threat model — are the tenants cooperating
+  internal teams or mutually hostile customers — because the whole design follows
+  from it. Then give the two models and be explicit that namespaces are not an
+  isolation boundary. Finish with the honest cost of hard isolation, which is a
+  fleet of clusters to manage.
+
+expected_answer:
+  - text: >-
+      Separates soft tenancy, where tenants are trusted internal teams, from hard
+      tenancy, where an attacker is assumed to be inside a tenant.
+    weight: 5
+    min_level: staff
+  - text: >-
+      States plainly that namespaces, RBAC and quotas are a management and
+      fairness boundary, not a security boundary.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Names the shared surfaces that break isolation: the kubelet and node,
+      cluster-scoped resources, the container runtime, and the CNI.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Identifies cluster-scoped escapes — creating a CRD or an admission webhook,
+      consuming PersistentVolumes — as the recurring leak in a namespaced design.
+    weight: 4
+    min_level: staff
+  - text: >-
+      For hard isolation, proposes separate clusters or dedicated node pools with
+      taints, a sandboxed runtime, and default-deny network policy.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Names the cost honestly: fleet management of upgrades, add-ons and policy
+      becomes the platform work, and that is the real trade for isolation.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - Which Kubernetes objects would you forbid a tenant from creating, and why?
+  - What does NetworkPolicy not protect against inside a shared cluster?
+  - How would you price the difference between soft and hard isolation to the business?
+
+common_mistakes:
+  - >-
+    Answering yes on the strength of namespaces and RBAC alone.
+  - >-
+    Forgetting that controllers, CRDs and webhooks are cluster-scoped.
+  - >-
+    Assuming a network policy is a security boundary when the runtime is shared.
+  - >-
+    Presenting separate clusters as free, and then discovering the fleet-level cost
+    during the first upgrade.
+
+related_questions: [kubernetes-rbac-least-privilege, kubernetes-operator-build-or-buy]
+
+wiki_refs:
+  - slug: kubernetes-rbac-and-multi-tenancy
+    anchor: tenancy-models
+    wiki_reviewed_at: "2026-10-13"
+  - slug: kubernetes-rbac-and-multi-tenancy
+    anchor: hard-isolation
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Kubernetes: Multi-tenancy"
+    url: https://kubernetes.io/docs/concepts/security/multi-tenancy/
+    kind: official-docs
+
+difficulty: 5
+estimated_minutes: 12
+
+review_status: draft

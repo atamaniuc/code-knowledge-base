@@ -1,0 +1,109 @@
+id: 3351cb16-0e65-4a02-af80-7a488e63e1e0
+slug: hexagonal-testability-and-failure-modes
+lang: en
+
+domain: architecture
+topic: design
+subtopic: hexagonal
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: Hexagonal architecture
+  version_range: ">=2024"
+
+question: >-
+  A team says they follow hexagonal architecture. In their code a controller calls a service
+  which calls a repository; the domain entities are ORM classes, and there is an interface for
+  every dependency. How do you tell whether it is actually hexagonal, and what would you
+  change?
+probes: >-
+  Whether the candidate can evaluate the pattern by what it buys rather than by its folder
+  names, and whether they spot the two failure modes in the prompt: ORM entities in the core
+  and interfaces that mirror the persistence layer.
+answer_strategy: >-
+  State the test first: can the domain be exercised without a database, a broker or a
+  framework, and can the infrastructure be replaced at the boundary? Then judge the prompt
+  against that test, name the two concrete leaks, and propose the smallest change that makes
+  the boundary real. Finish on when not to do this at all, which is the judgement the question
+  is really after.
+expected_answer:
+  - text: >-
+      Defines the pattern by its dependency rule and its test: dependencies point inward, and the
+      core has no framework, ORM or transport imports.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Identifies ORM entities in the domain as the leak that makes the boundary nominal — the core
+      cannot be tested or evolved without the database.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Identifies interfaces that mirror the ORM as the second leak: a repository with one method
+      per query is an ORM in another folder, not a port.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Proposes ports that express domain operations — load an aggregate, find by a business key,
+      publish an event — rather than SQL-shaped methods.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Names what it buys concretely: domain tests without infrastructure, swappable persistence,
+      a transport change that does not touch the domain.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Warns against layers that only map: a DTO plus a mapper plus a service for every call is a
+      tax rather than a design.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Says when it is not worth it — a thin CRUD API over one database where direct calls are
+      honest and shorter.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - How would you prove in CI that the domain has no infrastructure imports?
+  - Where does a transaction belong if only the domain is tested in isolation?
+  - How does this interact with a framework that injects providers into your classes?
+
+common_mistakes:
+  - >-
+    Judging the architecture by the folder layout and finding it correct because the directories
+    exist.
+  - >-
+    Wrapping every dependency in an interface and calling that the boundary, while the types
+    that cross it come from the ORM.
+  - >-
+    Keeping the domain clean on paper while controllers reach into repositories directly.
+  - >-
+    Applying the full structure to a service whose only logic is a database call.
+
+related_questions: [ddd-aggregate-design, should-we-split-into-microservices]
+
+wiki_refs:
+  - slug: hexagonal-ports-and-adapters
+    anchor: the-shape
+    wiki_reviewed_at: "2026-10-13"
+  - slug: hexagonal-ports-and-adapters
+    anchor: where-it-goes-wrong
+    wiki_reviewed_at: "2026-10-13"
+  - slug: hexagonal-ports-and-adapters
+    anchor: when-it-pays
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Alistair Cockburn — Hexagonal architecture (Ports & Adapters)"
+    url: https://alistair.cockburn.us/hexagonal-architecture/
+    kind: article
+  - title: "NestJS — Modules"
+    url: https://raw.githubusercontent.com/nestjs/docs.nestjs.com/master/content/modules.md
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

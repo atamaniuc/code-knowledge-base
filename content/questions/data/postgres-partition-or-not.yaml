@@ -1,0 +1,108 @@
+id: 94e05323-0224-422d-9425-ecf05e48da63
+slug: postgres-partition-or-not
+lang: en
+
+domain: data
+topic: partitioning
+subtopic: retention
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: PostgreSQL
+  version_range: ">=16"
+
+question: >-
+  The events table has two billion rows, the retention policy says "keep two years", and
+  the product owner has asked for partitioning because a blog post said it makes queries
+  fast. Tell me whether you partition it, on what, and what breaks.
+
+probes: >-
+  Whether the candidate grounds partitioning in retention and maintenance rather than in
+  performance folklore, and whether they know the unique-constraint and pruning
+  constraints before agreeing. Refusing with a reason is a valid and often better answer.
+
+answer_strategy: >-
+  Open by naming what partitioning is for in this case: dropping old data as a metadata
+  operation and isolating maintenance, not making reads faster. Then commit to a scheme
+  and immediately name the two costs — the partition key joins every unique key, and every
+  query must carry a prunable predicate. If the queries are genuinely ad-hoc and nobody
+  deletes data, say you would not partition and say why.
+
+expected_answer:
+  - text: >-
+      Justifies partitioning by the retention story and maintenance isolation, not by
+      query speed, and says out loud that a table with no deletes does not need it.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Chooses range partitioning on the time column, matched to the retention unit, and
+      argues for monthly over daily to keep the relation count sane.
+    weight: 4
+    min_level: senior
+  - text: >-
+      States that a unique or primary key on a partitioned table must include the
+      partition key, and traces the consequence for foreign keys that reference it.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Requires the partition lifecycle to be automated: create the next range before it
+      is needed, detach or drop past the horizon, and alert if creation fails.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Explains that pruning only happens when the query filters on the partition key
+      with a constant or a run-time value, and that a function-wrapped predicate or a
+      type mismatch defeats it.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Weighs the operational cost: more relations, more locks and catalog entries, more
+      planning time, per-partition indexes, and a default partition that is hard to
+      detach later.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Keeps the hot recent data separate so vacuum and analyze can be tuned on it without
+      touching cold partitions.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - A query filters by tenant and a time range. What does the plan look like, and when
+    does it stop pruning?
+  - What happens on the first of the month if the partition-creation job fails?
+  - When would you choose hash partitioning or list partitioning instead?
+
+common_mistakes:
+  - >-
+    Partitioning to make queries fast while every query is an ad-hoc aggregate that
+    cannot prune.
+  - >-
+    Declaring a primary key on the id column only, which fails at DDL time or forces the
+    key to include the partition key later under pressure.
+  - >-
+    Partitioning by day with years of retention, ending up with thousands of relations
+    and slow planning.
+  - >-
+    Using a default partition as the retention mechanism, so no data is ever dropped.
+
+related_questions: [postgres-ledger-read-model, postgres-zero-downtime-migration]
+
+wiki_refs:
+  - slug: postgres-partitioning-and-retention
+    anchor: when-partitioning-earns-its-keep
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "PostgreSQL 18 — Table Partitioning"
+    url: https://www.postgresql.org/docs/18/ddl-partitioning.html
+    kind: official-docs
+  - title: "PostgreSQL 18 — ALTER TABLE (DETACH PARTITION)"
+    url: https://www.postgresql.org/docs/18/sql-altertable.html
+    kind: official-docs
+
+difficulty: 5
+estimated_minutes: 15
+
+review_status: draft

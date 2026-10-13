@@ -1,0 +1,107 @@
+id: 118dda5d-ccaa-4847-81bc-4a971448a72d
+slug: nodejs-worker-threads-vs-cluster
+lang: en
+
+domain: backend-node
+topic: runtime
+subtopic: concurrency
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: Node.js
+  version_range: ">=24"
+
+question: >-
+  An image-resizing endpoint pins one core and makes every other request on that process
+  slow. A colleague proposes running the service under cluster mode. Tell me where that
+  helps, where it does not, and what you would do instead.
+probes: >-
+  Whether the candidate chooses a concurrency primitive from the workload type rather than
+  from familiarity: worker threads for CPU-bound JavaScript, processes for isolation and
+  whole-process scaling, and neither for I/O. Also whether they price the shared-nothing
+  consequences.
+answer_strategy: >-
+  Separate the CPU-bound work from the API before choosing anything, because the fix differs
+  depending on whether the work can stay in the process. Say what cluster actually is — N
+  processes, N heaps, a shared listening port — and what worker threads are, then pick: a
+  bounded worker pool for the resize, or its own deployable if the scaling profile differs.
+  Finish on what has to be instrumented and on the state that stops being shared.
+expected_answer:
+  - text: >-
+      Classifies the work as CPU-bound and states that worker threads are for CPU-intensive
+      JavaScript while the built-in async I/O already beats moving I/O to a worker.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Describes cluster as several processes with independent loops and heaps and a shared
+      listening port, distributed round-robin on platforms other than Windows.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Says what cluster buys — more cores, crash isolation, per-process memory limits — and what
+      it costs: duplicated caches, no shared state, N times the base memory.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Designs a worker pool: long-lived workers, a size derived from the cores the container may
+      actually use, and a bounded queue with a timeout.
+    weight: 4
+    min_level: senior
+  - text: >-
+      States that workers do not share objects — structured clone or transfer — and that a
+      SharedArrayBuffer is the real shared-memory path.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Raises the option of extracting the CPU-heavy capability into its own deployable, since
+      its scaling profile is nothing like the API's.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Names the metrics that decide whether it worked: per-process event-loop lag, worker queue
+      depth and wait time, RSS per worker.
+    weight: 2
+    min_level: staff
+
+follow_ups:
+  - The container is limited to two CPUs but the host has 32. What worker count do you configure?
+  - A worker runs out of memory. How does that affect the API process?
+  - Why not spawn a worker per request?
+
+common_mistakes:
+  - >-
+          Reaching for cluster for an I/O-bound service, where the loop already handles concurrency.
+  - >-
+          Spawning a worker per request and paying more in startup and serialization than the work costs.
+  - >-
+          Deriving worker counts from the host core count while the container CPU limit is lower.
+  - >-
+          Assuming an in-process cache is shared once cluster mode is enabled.
+
+related_questions: [nodejs-event-loop-blocking-tail-latency, nodejs-libuv-threadpool-starvation]
+
+wiki_refs:
+  - slug: nodejs-worker-threads-and-cluster
+    anchor: choosing-between-them
+    wiki_reviewed_at: "2026-10-13"
+  - slug: nodejs-worker-threads-and-cluster
+    anchor: what-workers-do-not-share
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Node.js — worker_threads"
+    url: https://nodejs.org/api/worker_threads.html
+    kind: official-docs
+  - title: "Node.js — cluster"
+    url: https://nodejs.org/api/cluster.html
+    kind: official-docs
+  - title: "Node.js — Do not block the event loop (or the worker pool)"
+    url: https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

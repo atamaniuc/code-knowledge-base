@@ -1,0 +1,102 @@
+id: f3d1c69b-d663-4758-b503-8d90efdb1150
+slug: postgres-normalisation-trade-offs
+lang: en
+
+domain: data
+topic: schema-design
+subtopic: denormalisation
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: PostgreSQL
+  version_range: ">=16"
+
+question: >-
+  You inherit an orders service where each order row carries a copied customer_email,
+  shipping_address and total, all written at order creation. The new lead wants them
+  normalised away. Walk me through what you would keep and what you would remove.
+
+probes: >-
+  Whether the candidate separates a value frozen at write time from a mirrored current
+  value. Saying "normalise it" is a reflex; the answer being tested is which duplication
+  is a historical fact, which is a cache, and who owns the staleness of each.
+
+answer_strategy: >-
+  Start by drawing the line between history and cache, because that framing makes every
+  later answer sound deliberate. A shipping address on an order is the address the order
+  shipped to; a customer_email on an account is current contact data. Then go through the
+  three columns one at a time and give a verdict with a reason. Finish on drift detection
+  and the migration path, since removing a column from a live table is the part that
+  turns an opinion into an incident.
+
+expected_answer:
+  - text: >-
+      Separates values frozen at write time, which are legitimate denormalisation, from
+      values that mirror current state, which are a cache with a staleness owner.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Gives a per-column verdict rather than a blanket rule, and states what query or
+      write each duplicated column serves.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Requires a reconciliation or drift check for any column kept as a cache, not just a
+      promise to update it everywhere.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Notes that the total is an invariant the database can enforce, and prefers a
+      constraint or a derived value over a stored number nobody checks.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Plans the change as expand-migrate-contract, so old and new application versions
+      can run against the same table during the deploy.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Considers the write path cost: every extra indexed column is a tax on a
+      write-heavy table, and every stored derived value is a second thing to maintain.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - The customer legally changes their name. Which of these columns must change, and which
+    must not?
+  - How would you detect that a cached column has drifted from the rows it summarises?
+  - Would a jsonb column with the same values be better or worse here, and why?
+
+common_mistakes:
+  - >-
+    Answering "normalise all of it" without noticing that the shipping address on the
+    order is the historical fact, not stale data.
+  - >-
+    Keeping a cached column and describing the update as "we update it in the same
+    transaction", with no reconciliation and no alert when that fails.
+  - >-
+    Dropping a column in the same release as the expand, leaving no rollback path.
+  - >-
+    Treating a stored total as source of truth while the line items say something
+    different.
+
+related_questions: [postgres-ledger-read-model, postgres-logical-replication-read-model]
+
+wiki_refs:
+  - slug: postgres-schema-design-and-normalisation
+    anchor: where-denormalisation-pays
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "PostgreSQL 18 — Constraints"
+    url: https://www.postgresql.org/docs/18/ddl-constraints.html
+    kind: official-docs
+  - title: "PostgreSQL 18 — ALTER TABLE"
+    url: https://www.postgresql.org/docs/18/sql-altertable.html
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

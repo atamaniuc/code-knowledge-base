@@ -1,0 +1,104 @@
+id: f1a1d567-d24b-42df-982d-c6ff36471357
+slug: nodejs-stream-backpressure-upload
+lang: en
+
+domain: backend-node
+topic: runtime
+subtopic: streams
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: Node.js
+  version_range: ">=24"
+
+question: >-
+  A customer uploads a 4 GB CSV that you validate and forward to object storage. The
+  first version reads it into memory and the pods get OOM-killed. Walk me through the
+  version that works.
+probes: >-
+  Whether the candidate treats backpressure as a contract rather than a stream option, and
+  whether they can keep memory bounded while transforming. The strong answer also covers
+  the failure paths: client disconnect, invalid rows, and a partial upload.
+answer_strategy: >-
+  State the invariant first: memory must be a function of the buffer sizes, not of the input
+  size. Then draw the pipeline — request body, CSV parser, validation, transform, upload —
+  and say where pressure is applied and how errors propagate. Finish on the cases usually
+  skipped: a client that disappears halfway, invalid rows, and cleanup of the partial object.
+expected_answer:
+  - text: >-
+      Streams the body instead of buffering it, and enforces the size limit in the parser rather
+      than checking after the buffer exists.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Explains the mechanism: a writable has a high-water mark, write() returns false at the
+      mark, and the producer waits for drain.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Uses pipeline() or async iteration rather than pipe(), so errors propagate and every stage
+      is torn down on failure.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Keeps pressure through every stage and identifies the slowest stage as the one that
+      determines memory, including a compression or checksum stage.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Handles the client disconnect path: abort the pipeline, stop reading, and clean up or
+      resume the partial upload.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Measures buffered amounts and external memory, not only the V8 heap, because Buffers live
+      outside it.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Returns a structured error for invalid rows rather than accumulating them, and says what
+      the client can do about it.
+    weight: 2
+    min_level: senior
+
+follow_ups:
+  - One stage is object mode and buffers a thousand objects. What changes?
+  - How would you make the upload resumable?
+  - What does a proxy or load balancer in front of you do to streaming uploads?
+
+common_mistakes:
+  - >-
+          Raising the heap limit so the 4 GB upload fits, which converts an OOM kill into a slower OOM
+          kill.
+  - >-
+          Setting an enormous high-water mark to improve throughput, which is buffering with extra
+          steps.
+  - >-
+          Using pipe() and assuming an upstream error reaches the response.
+  - >-
+          Trusting the Content-Length header as the size limit and validating after the body is read.
+
+related_questions: [nodejs-memory-leak-hunt, nodejs-event-loop-blocking-tail-latency]
+
+wiki_refs:
+  - slug: nodejs-streams-and-backpressure
+    anchor: pressure-in-one-sentence
+    wiki_reviewed_at: "2026-10-13"
+  - slug: nodejs-streams-and-backpressure
+    anchor: where-applications-actually-break
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Node.js — Stream"
+    url: https://nodejs.org/api/stream.html
+    kind: official-docs
+  - title: "Node.js — Backpressuring in streams"
+    url: https://nodejs.org/en/learn/modules/backpressuring-in-streams
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

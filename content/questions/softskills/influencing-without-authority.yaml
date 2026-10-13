@@ -1,0 +1,105 @@
+id: 72a1d7cd-e29d-41c3-9727-ee469f8118f4
+slug: influencing-without-authority
+lang: en
+
+domain: softskills
+topic: influence
+subtopic: migration
+
+tracks: [any]
+levels: [senior, staff, head]
+
+question: >-
+  You need three teams to migrate off a shared library you are about to deprecate. None of
+  them report to you, and one of them is on a deadline. How do you get it done?
+
+probes: >-
+  Whether the candidate influences through evidence, a migration path and visible progress,
+  rather than through escalation. Also whether they plan to finish the removal rather than
+  declaring victory at ninety percent migrated.
+
+answer_strategy: >-
+  Start by finding the actual users, and say how: instrument the old surface, because asking
+  teams who depends on it produces wrong answers. Then make it cheap to agree — a
+  compatibility layer, a codemod, a written before-and-after, and support for the teams doing
+  the work. Make the cost visible and falling with a dashboard by team, and publish the
+  timeline with an exceptions process that has an owner. Finish on the deletion, with a date
+  and an owner, because the long tail is where migrations go to die.
+
+expected_answer:
+  - text: >-
+      Finds the real dependents by instrumenting the old surface rather than asking, and
+      treats that inventory as the basis of the plan.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Provides a migration path, not a deadline: a compatibility layer or codemod, a
+      documented before-and-after, and hands-on support for the teams doing the work.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Makes progress visible and comparable with a dashboard of remaining callers by team,
+      creating shared facts and peer pressure without escalation.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Publishes a timeline and an exception process with a named owner and a time box, so the
+      deadline team has a legitimate path instead of becoming an adversary.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Coalesces support before the decision meeting — the affected teams and their managers —
+      so the meeting ratifies rather than debates.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Plans the deletion of the old library with an owner and a date, rather than stopping
+      when the last visible caller migrates.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Treats the migration as a project with a written plan and trade-offs, because a poorly
+      executed deprecation costs more than the thing it removes.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - One team's deadline slips by a quarter. Does the deprecation slip, and who decides?
+  - A caller you did not know about shows up in production the day you plan to delete. What
+    does your process do?
+  - How do you avoid becoming the permanent owner of everyone's migration work?
+
+common_mistakes:
+  - >-
+    Announcing a deadline without a migration path, which turns the plan into a conflict.
+  - >-
+    Relying on a wiki page and a broadcast message instead of instrumenting and reaching the
+    actual users.
+  - >-
+    Escalating to management as the first move, spending influence that the project will
+    need later.
+  - >-
+    Declaring the migration done when the old code is still deployed to serve the long tail.
+
+related_questions: [saying-no-with-evidence, leading-an-incident, cross-border-funding-flow-design]
+
+wiki_refs:
+  - slug: influencing-saying-no-and-migration
+    anchor: driving-a-migration-across-teams
+    wiki_reviewed_at: "2026-10-13"
+  - slug: influencing-saying-no-and-migration
+    anchor: the-problem-without-authority
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Software Engineering at Google — Deprecation"
+    url: https://abseil.io/resources/swe-book/html/ch15.html
+    kind: book
+  - title: "Site Reliability Engineering — Managing Incidents"
+    url: https://sre.google/sre-book/managing-incidents/
+    kind: book
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

@@ -1,0 +1,110 @@
+id: 93cb686e-701d-4204-9a77-5b83d252d219
+slug: postmortem-action-items
+lang: en
+
+domain: observability
+topic: sre
+subtopic: postmortems
+
+tracks: [backend, fullstack, any]
+levels: [staff]
+tech:
+  name: SRE practices
+  version_range: ">=2024"
+
+question: >-
+  Write the postmortem for an incident caused by a bad configuration deploy. What
+  goes in the document, and more importantly, what comes out of it?
+
+probes: >-
+  Whether the candidate treats blamelessness as a data-quality requirement rather
+  than a courtesy, and whether the action items close the detection and mitigation
+  gaps rather than listing preventive promises.
+
+answer_strategy: >-
+  Give the document structure quickly and spend the time on the reasoning: why
+  blamelessness produces better data, why contributing factors beat a single root
+  cause, and why detection actions usually matter more than prevention. Finish
+  with a small number of tracked, checkable items.
+
+expected_answer:
+  - text: >-
+      Treats blamelessness as the condition for accurate information, because a
+      document that can be used to punish someone will omit the action that
+      triggered the incident.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Records impact in user terms and in error-budget terms, not only as an
+      internal duration.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Builds a timestamped timeline from evidence — deploy logs, alerts, traces,
+      chat — rather than from memory, which tends to assign causes to the wrong
+      moments.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Writes contributing factors that combine a change, a latent weakness and a
+      detection gap, instead of forcing one root cause.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Produces a small number of action items with owners and dates, each
+      checkable as a test, a canary or an alert with a runbook.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Classifies actions by the gap they close — prevention, detection,
+      mitigation, process — and prioritises detection and mitigation when the same
+      cause could recur in another form.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Tracks the items like any other work and closes the loop, because a list
+      that is never executed teaches the organisation that postmortems are
+      theatre.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The config was deployed by a person following an approved process. How does that change the document?
+  - How do you write a blameless postmortem when the same mistake has happened three times?
+  - What would you do if the action items keep slipping?
+
+common_mistakes:
+  - >-
+    Writing a single root cause and stopping, which hides the latent weakness and
+    the detection gap.
+  - >-
+    Naming a person as the cause, which guarantees the next timeline is
+    incomplete.
+  - >-
+    Producing twenty vague improvements that nobody owns.
+  - >-
+    Skipping the detection question, so the next incident is discovered by a
+    customer again.
+
+related_questions: [incident-command-and-communication, alert-noise-reduction]
+
+wiki_refs:
+  - slug: incident-response-and-postmortems
+    anchor: the-blameless-postmortem
+    wiki_reviewed_at: "2026-10-13"
+  - slug: incident-response-and-postmortems
+    anchor: action-items
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Site Reliability Engineering: Postmortem Culture"
+    url: https://sre.google/sre-book/postmortem-culture/
+    kind: book
+  - title: "Site Reliability Engineering: Managing Incidents"
+    url: https://sre.google/sre-book/managing-incidents/
+    kind: book
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

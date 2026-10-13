@@ -1,0 +1,105 @@
+id: 6a7bc9a0-f675-4eb2-b79a-a9c8fed9c9f5
+slug: kubernetes-requests-limits-and-qos
+lang: en
+
+domain: infra
+topic: kubernetes
+subtopic: scheduling
+
+tracks: [backend, fullstack, any]
+levels: [middle, senior]
+tech:
+  name: Kubernetes
+  version_range: ">=1.34"
+
+question: >-
+  A service is being OOM-killed under load while the node reports plenty of spare
+  CPU. Walk me through the requests and limits you would set, and explain why CPU
+  behaves differently from memory.
+
+probes: >-
+  Whether the candidate knows that requests are read by the scheduler and limits
+  by the kernel, and that CPU is compressible while memory is not. The symptom
+  described is the setup, and candidates who reach for a bigger node first have
+  not understood it.
+
+answer_strategy: >-
+  Separate the two halves immediately: request versus limit, then CPU versus
+  memory. That single asymmetry explains the symptom, and saying it plainly is
+  what the interviewer is listening for. Then give the sizing method — observed
+  working set for memory, p95 for CPU — and finish on QoS, because that is what
+  determines the eviction order when the node itself is under pressure.
+
+expected_answer:
+  - text: >-
+      Distinguishes the request, which the scheduler uses to place the pod, from
+      the limit, which the kernel enforces at runtime.
+    weight: 5
+    min_level: middle
+  - text: >-
+      States that CPU is compressible, so an over-limit container is throttled,
+      while memory is not, so an over-limit container is OOM-killed.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Sets the memory request from the observed working set and the limit above the
+      worst acceptable working set, rather than from a round number chosen for
+      safety.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Names the QoS classes — Guaranteed when requests equal limits for every
+      container, Burstable otherwise, BestEffort when nothing is set — and their
+      eviction order.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Warns that lowballing requests to pack more pods onto a node is a bet that
+      the pods will not peak together, and the node enforces the bet.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Checks whether the kill is the node evicting under pressure or the container
+      exceeding its own limit, because the two have different fixes.
+    weight: 4
+    min_level: staff
+
+follow_ups:
+  - Would you set a memory limit at all, or only a request? Defend either choice.
+  - How would you find the real working set of a service whose traffic varies by an order of magnitude?
+  - The service is throttled at peak. What do you change first, the limit or the replica count?
+
+common_mistakes:
+  - >-
+    Naming a QoS class as a performance tier rather than an eviction priority.
+  - >-
+    Setting requests equal to limits everywhere to guarantee QoS without checking
+    what that does to scheduling density.
+  - >-
+    Raising the memory limit to stop the kills without asking whether the
+    application leaks.
+  - >-
+    Treating a restart as a CPU problem when the container was throttled.
+
+related_questions: [kubernetes-eviction-and-disruption-budget, kubernetes-hpa-vpa-keda-choice]
+
+wiki_refs:
+  - slug: kubernetes-scheduling-and-eviction
+    anchor: requests-are-for-the-scheduler-limits-are-for-the-kernel
+    wiki_reviewed_at: "2026-10-13"
+  - slug: kubernetes-scheduling-and-eviction
+    anchor: qos-classes
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Kubernetes: Pod Quality of Service Classes"
+    url: https://kubernetes.io/docs/concepts/workloads/pods/pod-qos/
+    kind: official-docs
+  - title: "Kubernetes: Node-pressure eviction"
+    url: https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 9
+
+review_status: draft

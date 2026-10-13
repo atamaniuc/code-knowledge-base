@@ -1,0 +1,108 @@
+id: b7b6132f-d0c0-4ff5-b374-c7e67196f7dc
+slug: derived-balances-and-ledger-invariants
+lang: en
+
+domain: fintech
+topic: accounting
+subtopic: ledger
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+
+tech:
+  name: Payment ledger
+  version_range: ">=2024"
+
+question: >-
+  You are on the payments team. Support asks why a customer's wallet shows 42.10 while the
+  statement shows 40.10. The service stores a balance column and updates it on every event.
+  What do you tell support, and what do you change?
+
+probes: >-
+  Whether the candidate recognises a derived value masquerading as state, and whether they
+  can describe a ledger as an append-only journal with invariants. The staff signal is
+  proposing recovery by recomputation rather than by editing the wrong number.
+
+answer_strategy: >-
+  Open with the diagnosis, not the fix: there are two sources of truth, so the first task is
+  to establish which one is right, and the stored balance has no evidence behind it. Then
+  describe the model you would move to — a journal of balanced entries, balances as queries,
+  snapshots as rebuildable caches. Say explicitly that you do not correct the balance; you
+  correct the journal with a compensating entry, or you rebuild from it. Finish with the
+  invariants enforced in storage, because that is what makes the answer credible.
+
+expected_answer:
+  - text: >-
+      Identifies the root problem as two sources of truth: a mutable balance and an event
+      history that can disagree, with no way to prove which is correct.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Describes the ledger as an append-only journal of entries whose postings sum to zero
+      per currency, with balances derived from it.
+    weight: 5
+    min_level: senior
+  - text: >-
+      States the invariants and where they are enforced: balanced entries, immutability,
+      stable ordering, and every posting traceable to a business event.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Stores amounts as integers in the currency's minor unit with the currency attached,
+      and refuses floating point for money.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Rebuilds or snapshots rather than patches: a snapshot is a cache with provenance that
+      can be discarded and recomputed from the journal.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Corrects history with a compensating entry that names the error, never by editing or
+      deleting the original.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Adds reconciliation against the provider's statement, because an internally balanced
+      ledger still proves nothing about the outside world.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - Rebuilding the balance from a billion postings is too slow for the read path. What do
+    you do?
+  - A currency in your system has no minor unit. How does the schema handle that?
+  - How do you prove to an auditor that no entry was ever modified?
+
+common_mistakes:
+  - >-
+    Correcting the stored balance with an UPDATE and considering the incident closed.
+  - >-
+    Storing money as a float or a decimal string without a defined currency exponent.
+  - >-
+    Treating the ledger as audit logging, so the balance remains the source of truth.
+  - >-
+    Adding a rebuild job but leaving the balance writable by application code.
+
+related_questions: [postgres-ledger-read-model, auth-capture-refund-settlement, reconciliation-drift-detection]
+
+wiki_refs:
+  - slug: double-entry-ledgers
+    anchor: why-a-balance-is-a-query
+    wiki_reviewed_at: "2026-10-13"
+  - slug: double-entry-ledgers
+    anchor: invariants
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Accounting for Computer Scientists"
+    url: https://martin.kleppmann.com/2011/03/07/accounting-for-computer-scientists.html
+    kind: article
+  - title: "Stripe — Receive payouts"
+    url: https://docs.stripe.com/payouts
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

@@ -1,0 +1,105 @@
+id: 12347837-a7f3-44c2-a8f7-3b844bbabc94
+slug: saying-no-with-evidence
+lang: en
+
+domain: softskills
+topic: influence
+subtopic: prioritisation
+
+tracks: [any]
+levels: [senior, staff, head]
+
+question: >-
+  A product director asks for a feature you believe will make the system unreliable, and it
+  is already promised to a customer. How do you say no?
+
+probes: >-
+  Whether the candidate treats a refusal as a negotiation with evidence rather than an
+  escalation, and whether they separate the goal from the proposed solution.
+
+answer_strategy: >-
+  Refuse the framing that says no is a binary. Open by naming what the requester actually
+  needs and the cost of the proposal in units they already track — engineering weeks,
+  deferred work, incident burden, error budget burn. Offer the smallest version that
+  delivers the outcome, and say what you would need to make the full version safe. State
+  your decision and your escalation path openly, and commit to it once the call is made.
+  Whatever you do, do not end with a vague concern and no numbers.
+
+expected_answer:
+  - text: >-
+      Brings evidence rather than opinion: measured error budget burn, incident history,
+      support trends, or the engineering weeks and what they displace.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Frames the cost as an opportunity cost — what would not get done — because a refusal
+      without an alternative is easily overruled.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Separates the requester's goal from the proposed solution and offers the smallest
+      version that achieves the goal.
+    weight: 5
+    min_level: staff
+  - text: >-
+      States explicitly what would make the full request safe — a limit, a kill switch, a
+      staged rollout, a follow-up investment — so the answer is conditional rather than
+      obstructive.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Uses the written document — options, trade-offs, recommendation — so asynchronous
+      stakeholders see the same reasoning as the requester.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Says how the decision will be made and by whom, and commits to the outcome if they
+      lose, while keeping the evidence that informs the next decision.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Accepts that being wrong is possible and changes position visibly when the evidence
+      changes, which is what keeps a previous no credible.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - They escalate to your manager and the feature is approved. What do you do next?
+  - The customer is the largest account. Does that change your answer, and how do you say
+    so honestly?
+  - You turn out to be wrong and it ships cleanly. What do you say?
+
+common_mistakes:
+  - >-
+    Saying no on principle with no numbers, which makes the objection easy to dismiss.
+  - >-
+    Escalating before trying to resolve it with the requester, which spends influence it
+    will need later.
+  - >-
+    Refusing the whole request when a bounded version would have satisfied the customer.
+  - >-
+    Agreeing in the meeting and then warning about it privately, which is the worst of both
+    outcomes.
+
+related_questions: [decision-that-failed, influencing-without-authority, leading-an-incident]
+
+wiki_refs:
+  - slug: influencing-saying-no-and-migration
+    anchor: saying-no-with-evidence
+    wiki_reviewed_at: "2026-10-13"
+  - slug: influencing-saying-no-and-migration
+    anchor: the-problem-without-authority
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Software Engineering at Google — Deprecation"
+    url: https://abseil.io/resources/swe-book/html/ch15.html
+    kind: book
+  - title: "Google — How to do a code review"
+    url: https://google.github.io/eng-practices/review/reviewer/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

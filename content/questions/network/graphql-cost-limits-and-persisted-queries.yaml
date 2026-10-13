@@ -1,0 +1,103 @@
+id: 0f5487c3-927d-43a5-ba23-c26e75a5b1fd
+slug: graphql-cost-limits-and-persisted-queries
+lang: en
+
+domain: network
+topic: api-design
+subtopic: graphql
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: GraphQL
+  version_range: ">=2023"
+
+question: >-
+  An unauthenticated client sends a deeply nested query with the same expensive field
+  aliased a few hundred times. It ties up a worker for a minute. You are keeping GraphQL.
+  What do you add?
+probes: >-
+  Whether the candidate knows that the client controls the query shape and therefore the cost,
+  and whether they reach for static analysis plus an allow-list rather than a rate limit and a
+  timeout alone. The alias case is there to catch depth limiting as the only control.
+answer_strategy: >-
+  Name the property being attacked: in GraphQL the caller chooses the amount of work. Then
+  layer the controls in the order that stops the attack earliest — persisted queries and an
+  allow-list first, then complexity or cost accounting, then depth and alias limits, with
+  timeouts and response caps as the backstop. Say explicitly that a rate limit counts
+  requests and cannot see cost, which is why it is not the answer.
+expected_answer:
+  - text: >-
+      Names depth limiting as one control and immediately qualifies it: a shallow query with a wide
+      fan-out or repeated aliases is expensive too.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Proposes complexity or cost accounting with a per-field weight and a budget per request,
+      which is what catches the aliased case.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Adds alias and field-count limits, because aliasing the same expensive field many times is
+      a cost attack that depth alone misses.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Uses persisted queries, and in production an allow-list, so only known documents execute
+      and the API is not an arbitrary query surface.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Describes automatic persisted queries accurately: the client sends a hash, receives a
+      not-found, uploads the document once, then uses the hash.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Keeps a query timeout and a response-size cap as the backstop for when the static analysis
+      is wrong.
+    weight: 3
+    min_level: staff
+  - text: >-
+      States that a request-count rate limit does not measure cost, so it cannot be the primary
+      control for this attack.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - How do you set the cost budget without rejecting legitimate reports?
+  - What happens when a client sends a hash you have never seen?
+  - How would you monitor for a query shape that is getting more expensive over time?
+
+common_mistakes:
+  - >-
+    Enabling depth limiting with a generous maximum and considering the API protected.
+  - >-
+    Rate limiting requests, which lets a single expensive query do unbounded work.
+  - >-
+    Adding a timeout as the only defence, so the cost is paid before the request is killed.
+  - >-
+    Turning on arbitrary queries and introspection in production without an allow-list.
+
+related_questions: [graphql-n-plus-one-and-dataloader, rate-limiting-and-load-shedding]
+
+wiki_refs:
+  - slug: graphql-n-plus-one-and-cost-controls
+    anchor: cost-control-on-the-query-shape
+    wiki_reviewed_at: "2026-10-13"
+  - slug: graphql-n-plus-one-and-cost-controls
+    anchor: persisted-queries
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Apollo Server — Automatic persisted queries"
+    url: https://www.apollographql.com/docs/apollo-server/performance/apq/
+    kind: official-docs
+  - title: "GraphQL — Security"
+    url: https://graphql.org/learn/security/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

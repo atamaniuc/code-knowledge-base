@@ -1,0 +1,111 @@
+id: 58ada66d-aed2-43d4-8068-0fb18344447f
+slug: nodejs-memory-leak-hunt
+lang: en
+
+domain: backend-node
+topic: runtime
+subtopic: memory
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: Node.js
+  version_range: ">=24"
+
+question: >-
+  A service grows by about 200 MB a day and the team restarts it on a schedule. Someone
+  says that is just how Node is. What do you do?
+probes: >-
+  Whether the candidate treats steady growth as an ownership bug with a bound missing, or as
+  an unavoidable runtime property handled by restarts. The strong answer names the leak
+  shapes, says how to find the specific one, and fixes it with a bound rather than a flag.
+answer_strategy: >-
+  Reject the premise first, briefly: a service that grows without bound has a structure
+  that is never released, and the restart is containment rather than a fix. Then name the
+  realistic shapes, because the interviewer is checking whether you have actually seen one,
+  and say how you would confirm it: a snapshot diff by retained size, or allocation
+  sampling. Close on the bound and the metric that proves it holds.
+expected_answer:
+  - text: >-
+      Names concrete leak shapes: an unbounded cache or map keyed by user input, a listener added
+      per request to a long-lived emitter, an interval holding a finished request's context,
+      module-level registries that only grow, a queue with no bound.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Proposes comparing heap snapshots taken at intervals and diffing by retained size, or
+      allocation sampling, rather than guessing at the shared cache.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Distinguishes the V8 heap from external and Buffer memory, and checks RSS as well, because
+      a stream or native-module leak is invisible to heapUsed.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Fixes the leak with a bound — an LRU or TTL with a maximum size — and exposes the current
+      size of that bound as a metric so it cannot silently regrow.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Keeps a memory limit and a restart policy as containment, while stating clearly that it is
+      not the remedy.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Connects allocation churn to latency: promotion into the old generation makes major
+      collections, so reducing per-request allocation can improve p99 as well as memory.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Checks whether the growth is in the process at all — an unconsumed queue or an abandoned
+      database cursor looks the same from the outside.
+    weight: 2
+    min_level: staff
+
+follow_ups:
+  - The growth only reproduces under production traffic. How do you get a usable snapshot?
+  - How would you decide the maximum size for the cache you are about to bound?
+  - What metric would tell you the bound is working before memory becomes an incident again?
+
+common_mistakes:
+  - >-
+          Raising --max-old-space-size, which converts a predictable restart into a slower, less
+          predictable one.
+  - >-
+          Blaming garbage collection and tuning it, when the objects are reachable and therefore
+          correctly retained.
+  - >-
+          Taking one heap snapshot and reading it, instead of diffing two by retained size.
+  - >-
+          Assuming the largest cache is the leak and rewriting it before confirming with a snapshot.
+
+related_questions: [nodejs-event-loop-blocking-tail-latency, nodejs-stream-backpressure-upload]
+
+wiki_refs:
+  - slug: nodejs-memory-gc-and-leaks
+    anchor: what-actually-leaks-in-a-service
+    wiki_reviewed_at: "2026-10-13"
+  - slug: nodejs-memory-gc-and-leaks
+    anchor: hunting-one-in-production
+    wiki_reviewed_at: "2026-10-13"
+  - slug: nodejs-memory-gc-and-leaks
+    anchor: gc-pressure-is-a-latency-cost
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Node.js — Understanding and tuning memory"
+    url: https://nodejs.org/en/learn/diagnostics/memory/understanding-and-tuning-memory
+    kind: official-docs
+  - title: "Node.js — Using heap snapshots"
+    url: https://nodejs.org/en/learn/diagnostics/memory/using-heap-snapshot
+    kind: official-docs
+  - title: "Node.js CLI — --max-old-space-size"
+    url: https://nodejs.org/api/cli.html
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

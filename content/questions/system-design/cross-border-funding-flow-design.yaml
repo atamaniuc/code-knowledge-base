@@ -1,0 +1,122 @@
+id: 5fcf6333-d4b7-47a8-ad27-bf958bf7cb14
+slug: cross-border-funding-flow-design
+lang: en
+
+domain: system-design
+topic: payments
+subtopic: cross-border
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+
+tech:
+  name: Cross-border payment rails
+  version_range: ">=2024"
+
+question: >-
+  Design a service that lets a customer in Germany send euros to a seller in Vietnam, paid
+  out in dong, with the rate locked when they confirm. Talk me through the flow, the state
+  machine, and what happens when the payout fails after the sender's money has left.
+
+probes: >-
+  Whether the candidate can hold a cross-border flow end to end: two ledgers, a liquidity
+  position, an FX risk that exists from the moment the rate is quoted, a compliance hold
+  that can stop a payment the customer believes succeeded, and compensation for failures
+  after partial completion.
+
+answer_strategy: >-
+  Start by refusing to start with services. Walk one payment: the sender is debited, the
+  platform owes the recipient, and a payout must come out of a local account in a different
+  currency. Then state the liquidity model, because it determines the risk the platform
+  carries. Give the state machine explicitly, including a review state and a refunding path,
+  and lock the rate as stored data with an expiry. Close on the failure path and the
+  reconciliation, because a design that cannot return money is not finished.
+
+expected_answer:
+  - text: >-
+      Names the two ledgers and the treasury gap: the sending side creates a liability the
+      platform owes, and the payout is paid from a local account in another currency.
+    weight: 5
+    min_level: senior
+  - text: >-
+      States the liquidity model explicitly — prefunded local accounts, a partner bank or a
+      payout provider — and the risk and capital it implies.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Gives an explicit state machine including a compliance review state and a refunding
+      path, with every transition idempotent and auditable.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Locks the rate at quote, stores it on the transfer with its source and expiry, and
+      never recomputes it, so the contract is recoverable.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Explains that quoting a rate creates an FX position, and names how the platform
+      manages it: hedging, offsetting flows, or a deliberately held risk with a limit.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Makes the promise honest when screening halts a payment: the money is accepted, the
+      transfer sits in review, and that outcome is a normal product state rather than an
+      error.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Designs compensation, not just retries: a durable workflow that records intent,
+      retries idempotently, and on terminal failure cancels the payout, reverses the ledger
+      and refunds the sender.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Reconciles daily against the payout provider's statement by reference, with break
+      categories and owners, so the platform can say where the money is and prove it.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The dong position runs short on a Friday afternoon. What does the service do with the
+    transfers already accepted?
+  - The recipient's bank details are wrong and the payout bounces two days later. Walk me
+    through the money.
+  - Which guarantees do you make to the sender, and which do you make to the recipient?
+
+common_mistakes:
+  - >-
+    Listing services and queues without walking the money through the states.
+  - >-
+    Ignoring the FX position created by quoting a rate, and discovering it during a currency
+    move.
+  - >-
+    Treating a compliance hold as an error state, so the product cannot explain it to the
+    customer.
+  - >-
+    Handling failure with retries only, with no compensation path that returns the money.
+
+related_questions: [trade-finance-instruments, auth-capture-refund-settlement, reconciliation-drift-detection]
+
+wiki_refs:
+  - slug: cross-border-funding-flow
+    anchor: where-the-money-actually-moves
+    wiki_reviewed_at: "2026-10-13"
+  - slug: cross-border-funding-flow
+    anchor: failure-compensation-and-reconciliation
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Stripe — Cross-border payouts"
+    url: https://docs.stripe.com/connect/cross-border-payouts
+    kind: official-docs
+  - title: "Stripe — Receive payouts"
+    url: https://docs.stripe.com/payouts
+    kind: official-docs
+  - title: "FinCEN — Customer Due Diligence final rule"
+    url: https://www.fincen.gov/resources/statutes-and-regulations/cdd-final-rule
+    kind: official-docs
+
+difficulty: 5
+estimated_minutes: 14
+
+review_status: draft

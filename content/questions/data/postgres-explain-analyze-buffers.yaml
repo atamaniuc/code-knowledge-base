@@ -1,0 +1,106 @@
+id: 63a3fdfb-5d35-4095-9f03-0c63d64fa7cc
+slug: postgres-explain-analyze-buffers
+lang: en
+
+domain: data
+topic: performance
+subtopic: query-plans
+
+tracks: [backend, fullstack]
+levels: [middle, senior, staff]
+tech:
+  name: PostgreSQL
+  version_range: ">=16"
+
+question: >-
+  The same query takes 40 ms against staging and four seconds in production, and the
+  tables have the same schema. You have psql. Walk me through your first five minutes.
+
+probes: >-
+  Whether the candidate forms a hypothesis from evidence or reaches for an index. The
+  signal is running EXPLAIN (ANALYZE, BUFFERS), comparing estimated to actual rows and
+  reading buffer counts, rather than guessing at missing indexes.
+
+answer_strategy: >-
+  Announce the method before the commands: reproduce it, get the plan with actuals and
+  buffers, then find the node whose estimate is wrong. Name the two numbers you compare
+  first — estimated versus actual rows — and what a large divergence at the bottom of the
+  plan implies. Keep the index suggestion for last, and phrase it as a consequence of
+  what the plan showed, not as a first guess.
+
+expected_answer:
+  - text: >-
+      Runs EXPLAIN (ANALYZE, BUFFERS) rather than plain EXPLAIN, so the plan carries
+      actual row counts and buffer activity.
+    weight: 5
+    min_level: middle
+  - text: >-
+      Compares estimated rows to actual rows at each node and treats a large divergence
+      as a statistics or correlation problem rather than an index problem.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Reads loops and multiplies per-loop cost, instead of reading only the top-level
+      cost of the plan.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Interprets buffers: how much was served from shared buffers versus read from disk,
+      and whether a write node indicates a sort or hash spilling to a temporary file.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Considers why staging and production differ at all — different row counts,
+      statistics freshness, parameter values, plan flips, cold cache — before changing
+      anything.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Fixes the cause: ANALYZE, extended statistics on correlated columns, a query
+      rewrite, or a targeted work_mem for that query class rather than a global change.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Checks whether the admitted plan is still the intended one, for example by
+      confirming a partial or covering index is actually eligible for the predicate.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The estimates are correct and the plan is unchanged, but the query is still slow in
+    production. What do you look at next?
+  - How would you tell a plan that is slow because of disk I/O from one that is slow
+    because of CPU?
+  - When would you be willing to change a global parameter instead of the query?
+
+common_mistakes:
+  - >-
+    Adding an index for the WHERE clause before looking at a single plan.
+  - >-
+    Reading only the top node's cost and concluding the query is fine.
+  - >-
+    Raising work_mem globally to hide one spilling sort, which changes every connection's
+    memory ceiling.
+  - >-
+    Assuming the staging plan applies in production when the row counts differ by orders
+    of magnitude.
+
+related_questions: [postgres-pgbouncer-pool-size, postgres-normalisation-trade-offs]
+
+wiki_refs:
+  - slug: postgres-query-plans-and-indexing
+    anchor: what-to-read-in-the-plan
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "PostgreSQL 18 — Using EXPLAIN"
+    url: https://www.postgresql.org/docs/18/using-explain.html
+    kind: official-docs
+  - title: "PostgreSQL 18 — Indexes"
+    url: https://www.postgresql.org/docs/18/indexes.html
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

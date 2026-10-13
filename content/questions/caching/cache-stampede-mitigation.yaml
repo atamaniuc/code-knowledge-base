@@ -10,7 +10,7 @@ tracks: [backend, fullstack]
 levels: [senior, staff]
 tech:
   name: Redis
-  version_range: ">=6"
+  version_range: ">=8"
 
 question: >-
   A single hot key backed by a 200 ms query is read 1000 times per second.

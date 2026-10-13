@@ -1,0 +1,111 @@
+id: b42ca8b1-cc65-4928-afb0-5ac7a0f6cf3d
+slug: kafka-poison-message-dlq
+lang: en
+
+domain: messaging
+topic: reliability
+subtopic: dead-letter
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: Apache Kafka
+  version_range: ">=4.0"
+
+question: >-
+  One malformed order event stopped a partition for forty minutes. The consumer keeps
+  re-reading it and never advances its offset. Fix tonight, then design the path so this
+  cannot happen again.
+
+probes: >-
+  Whether the candidate knows Kafka has no built-in dead-letter mechanism and designs a
+  retry ladder, and whether the design includes someone actually reading the dead
+  letters. The operational half — retention, alerting, replay — is the staff signal.
+
+answer_strategy: >-
+  Fix tonight first: stop the loop by publishing the record onward and committing, or by
+  skipping it deliberately, and say what you check afterwards. Then design: a short
+  in-consumer retry for transient errors, retry topics with increasing delay, and a
+  dead-letter topic for the rest. Spend real time on the envelope and on the operation,
+  because a DLQ nobody monitors is the failure mode the question is about.
+
+expected_answer:
+  - text: >-
+      States that Kafka has no built-in dead-letter queue, so this is a consumer-side
+      pattern rather than a broker setting.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Unblocks the partition immediately by moving the record out of the way and
+      committing the offset, and says how to confirm the rest of the backlog drains.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Designs a retry ladder: limited in-consumer retries for transient failures, then
+      retry topics with increasing delays, then a dead-letter topic.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Gets the copy-versus-move semantics right: the original offset is committed after
+      the record is published onward, so the record is neither lost nor processed twice
+      by the same consumer.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Defines a dead-letter envelope with source topic, partition and offset, consumer
+      group and handler, exception class and message, attempt count and timestamps, and a
+      trace or correlation id.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Requires operational treatment: alert on DLQ depth and rate, keep retention longer
+      than the triage cycle, and have an idempotent replay path.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Adds a circuit breaker or error-rate threshold so a downstream outage does not
+      convert into a huge dead-letter backlog and an even larger replay.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Distinguishes deserialisation failures, which cannot succeed on retry, from
+      processing failures, which can.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - How do you replay dead letters without duplicating the ones already processed?
+  - The DLQ has 4 million records after an outage. What is your recovery plan?
+  - Would you use a DLQ at all for a stream whose events are all independent?
+
+common_mistakes:
+  - >-
+    Retrying inside the poll loop forever, which blocks the partition and consumes CPU.
+  - >-
+    Creating a dead-letter topic with no alerting and no retention matched to the triage
+    process.
+  - >-
+    Publishing to the retry topic without committing the original offset, or committing
+    it first and losing the record.
+  - >-
+    Putting only the payload in the DLQ, so replay cannot tell where the record came from.
+
+related_questions: [kafka-producer-durability, broker-choice-notification-flow]
+
+wiki_refs:
+  - slug: kafka-dead-letter-handling
+    anchor: the-retry-ladder
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Apache Kafka 4.3 — Consumer Rebalance Protocol"
+    url: https://kafka.apache.org/43/operations/consumer-rebalance-protocol/
+    kind: official-docs
+  - title: "RabbitMQ 4.3 — Queues (dead lettering)"
+    url: https://www.rabbitmq.com/docs/queues
+    kind: official-docs
+
+difficulty: 5
+estimated_minutes: 14
+
+review_status: draft

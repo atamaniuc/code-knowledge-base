@@ -1,0 +1,111 @@
+id: 62cf3507-c88f-41de-8670-569a04df2983
+slug: trade-finance-instruments
+lang: en
+
+domain: fintech
+topic: trade-finance
+subtopic: instruments
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+
+tech:
+  name: Trade finance platforms
+  version_range: ">=2024"
+
+question: >-
+  You are joining a trade-finance platform that finances exports. Walk me through a letter
+  of credit from the platform's point of view, and tell me where the engineering risk sits.
+
+probes: >-
+  Whether the candidate can map a document-driven banking instrument onto events, rules,
+  deadlines and an immutable record, and whether they recognise the multi-party trust
+  problem rather than treating it as another payment flow.
+
+answer_strategy: >-
+  Explain the instrument before the software: the importer's bank promises to pay the
+  exporter against a defined set of documents presented before a deadline, so payment is
+  against documents, not goods. Then translate it — documents are events, compliance rules
+  decide whether a presentation is accepted, deadlines create timeouts, and the record must
+  be immutable because the instruments are negotiable. Name the parties and where state must
+  be agreed between them, and finish on the failure that matters: the goods and the
+  documents can disagree.
+
+expected_answer:
+  - text: >-
+      Explains that a letter of credit substitutes the bank's promise for the importer's
+      credit, and that payment is made against documents rather than against goods.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Distinguishes a documentary credit from a documentary collection, where the bank
+      handles documents without adding its own undertaking.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Maps the instrument onto software: documents are events, presentation rules are
+      validation, deadlines are timeouts, and the record is immutable because the
+      instruments are negotiable.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Names the rulebook that governs examination of documents and the document of title
+      for goods in transit, and treats compliance rules as versioned data.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Identifies the multi-party state problem: exporter, importer, two banks, carrier and
+      insurer must agree on status without trusting one another's database.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Recognises that goods and documents can disagree, so reconciliation between the
+      physical shipment and the documentary record is part of the product, not an
+      afterthought.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Places supply-chain finance in the same picture: a buyer-approved invoice financed
+      early, priced by the buyer's credit rather than the supplier's.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - A presentation arrives with one document missing a required signature. Who decides, and
+    how is that decision recorded?
+  - How would you model a document that two parties disagree about?
+  - What does the platform guarantee and what does it merely witness?
+
+common_mistakes:
+  - >-
+    Treating trade finance as a payments integration and missing the document-driven,
+    multi-party workflow.
+  - >-
+    Assuming the goods and the documents always agree, so reconciliation is skipped.
+  - >-
+    Hard-coding documentary compliance rules instead of versioning them.
+  - >-
+    Modelling negotiable instruments in a mutable record that can be edited after issuance.
+
+related_questions: [cross-border-funding-flow-design, kyc-aml-engineer-vocabulary, limits-and-risk-checks]
+
+wiki_refs:
+  - slug: limits-risk-and-trade-finance
+    anchor: trade-and-supply-chain-finance
+    wiki_reviewed_at: "2026-10-13"
+  - slug: limits-risk-and-trade-finance
+    anchor: the-instruments-an-engineer-meets
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "ICC — Trade finance"
+    url: https://iccwbo.org/business-solutions/trade-finance/
+    kind: official-docs
+  - title: "Stripe — Cross-border payouts"
+    url: https://docs.stripe.com/connect/cross-border-payouts
+    kind: official-docs
+
+difficulty: 5
+estimated_minutes: 13
+
+review_status: draft

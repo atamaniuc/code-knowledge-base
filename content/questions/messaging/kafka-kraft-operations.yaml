@@ -1,0 +1,114 @@
+id: 6ad3f16e-1dd5-4370-bb61-1fff58ae3e43
+slug: kafka-kraft-operations
+lang: en
+
+domain: messaging
+topic: architecture
+subtopic: kraft
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: Apache Kafka
+  version_range: ">=4.0"
+
+question: >-
+  We are planning to move a Kafka 3.x cluster that still uses ZooKeeper onto Kafka 4,
+  and the platform lead wants a KRaft design review. Walk me through what changes and
+  where you would push back.
+
+probes: >-
+  Whether the candidate knows ZooKeeper was removed in Kafka 4 rather than deprecated,
+  and whether they can describe the controller quorum and the upgrade path concretely.
+  "KRaft is the new metadata mode" without the migration constraint is the answer being
+  screened out.
+
+answer_strategy: >-
+  Lead with the fact that changes the plan: KRaft is the only mode in 4.x, so this is a
+  migration before it is an upgrade. Then describe the controller quorum — a Raft group
+  whose size sets fault tolerance — and the metadata log, including the operational win:
+  a standby controller has already replayed the log. Push back on the upgrade order if
+  the plan skips the 3.x migration steps, and finish on monitoring the quorum itself.
+
+expected_answer:
+  - text: >-
+      States that ZooKeeper was removed in Kafka 4.0, so a 4.x cluster is KRaft by
+      definition and the migration is a prerequisite rather than an option.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Describes the controller quorum as a Raft group that stores metadata in a
+      replicated log, with the active controller as the Raft leader.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Sizes the quorum for fault tolerance — three controllers tolerate one failure,
+      five tolerate two — and separates controller nodes from the data plane.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Explains the metadata-as-a-log consequences: snapshotting bounds metadata size,
+      failover is fast because standbys replay the log, and topic or config changes share
+      one ordering with leader elections.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Distinguishes a dynamic quorum, configured with controller.quorum.bootstrap.servers
+      and allowing membership changes, from a static list of voters in
+      controller.quorum.voters.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Knows the migration must go through the 3.x ZooKeeper-to-KRaft path, and that
+      upgrading a static controller configuration to a dynamic one is a supported step
+      added after 4.0.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Notes the new operational failure mode: a controller quorum without a majority
+      stops metadata changes while data traffic continues, so quorum health needs its own
+      alert.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Points out the operational benefits honestly: one fewer distributed system to run,
+      monitor and secure, and no broker-versus-ZooKeeper disagreement class of bug.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - How do you roll a controller node without a metadata write outage?
+  - What would you monitor to know the quorum is one node from losing its majority?
+  - A team wants to run three controllers colocated on broker nodes. What are the risks?
+
+common_mistakes:
+  - >-
+    Describing ZooKeeper as still supported in Kafka 4 or as something you choose between.
+  - >-
+    Planning a direct in-place upgrade from a ZooKeeper cluster to Kafka 4.
+  - >-
+    Treating the controller quorum as just another broker role with no fault-tolerance
+    sizing.
+  - >-
+    Monitoring brokers only, so a majority-less controller quorum is discovered by an
+    application that cannot create a topic.
+
+related_questions: [kafka-rebalance-storm, kafka-partition-key-design]
+
+wiki_refs:
+  - slug: kafka-kraft-architecture
+    anchor: the-controller-quorum
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Apache Kafka 4.3 — KRaft"
+    url: https://kafka.apache.org/43/operations/kraft/
+    kind: official-docs
+  - title: "Apache Kafka 4.3 — Design"
+    url: https://kafka.apache.org/43/design/design/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

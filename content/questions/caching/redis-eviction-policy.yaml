@@ -1,0 +1,108 @@
+id: fc027ab1-43d3-484f-970e-2e59070914d1
+slug: redis-eviction-policy
+lang: en
+
+domain: caching
+topic: eviction
+subtopic: memory
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: Redis
+  version_range: ">=8"
+
+question: >-
+  Redis started rejecting writes with an out-of-memory error during peak traffic. The
+  same instance holds the page cache, a set of rate-limit counters and a few distributed
+  locks, and maxmemory was set last year by someone who has left. Walk me through the
+  diagnosis and the redesign.
+
+probes: >-
+  Whether the candidate knows the eviction policies well enough to explain what
+  noeviction and the volatile policies do, and whether they separate data with different
+  durability requirements instead of tuning one instance harder.
+
+answer_strategy: >-
+  Explain the error first: it is the signature of noeviction, or of a volatile policy
+  with no evictable keys. Then say why one instance cannot hold all three workloads —
+  the cache should be evictable, the counters and locks must not be. Propose the split,
+  then the cache's policy and TTL design, and finish on the monitoring that would have
+  caught this earlier.
+
+expected_answer:
+  - text: >-
+      Identifies the write failure as noeviction behaviour, or as a volatile policy that
+      sees no keys with a TTL and therefore behaves like noeviction.
+    weight: 5
+    min_level: senior
+  - text: >-
+      States the policy semantics correctly: noeviction errors on writes that allocate,
+      allkeys-lru and allkeys-lfu evict across the keyspace, volatile-* evicts only keys
+      with an expiration.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Separates the workloads: a pure cache can lose keys safely and belongs on
+      allkeys-lru or allkeys-lfu, while locks and counters must not be evicted.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Puts TTLs on all cache keys with jitter, so a batch of keys does not expire
+      together and the cache stays bounded by policy rather than by luck.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Leaves headroom below maxmemory for replication buffers and allocator
+      fragmentation, and monitors used memory, eviction rate and rejected writes.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Notes the new allkeys-lrm and volatile-lrm policies in Redis 8 when recency of
+      modification is a better signal than recency of use.
+    weight: 2
+    min_level: staff
+  - text: >-
+      Says what eviction means per workload: a lost session is a logout, a lost lock is
+      two holders, a lost counter is a billing error — so the policy is a product
+      decision, not a tuning knob.
+    weight: 5
+    min_level: staff
+
+follow_ups:
+  - The locks have to stay on this instance for latency reasons. What do you do instead of
+    splitting?
+  - How would you tell whether the instance is under-provisioned or leaking?
+  - What would a volatile-lru policy do to a key that never gets a TTL?
+
+common_mistakes:
+  - >-
+    Setting allkeys-lru on an instance that holds locks and counters, so mutexes are
+    evicted under load.
+  - >-
+    Raising maxmemory without revisiting the policy, so the same incident happens at a
+    higher number.
+  - >-
+    Assuming a volatile-* policy evicts anything, when none of the keys have a TTL.
+  - >-
+    Adding TTLs with the same value to every key, recreating an expiry avalanche later.
+
+related_questions: [cache-penetration-and-avalanche, redis-durability-choice]
+
+wiki_refs:
+  - slug: redis-ttl-and-eviction
+    anchor: eviction-policies
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Redis — Key eviction"
+    url: https://redis.io/docs/latest/develop/reference/eviction/
+    kind: official-docs
+  - title: "Redis Open Source 8.10 release notes"
+    url: https://raw.githubusercontent.com/redis/redis/8.10/00-RELEASENOTES
+    kind: release-notes
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

@@ -1,0 +1,96 @@
+id: a462ff52-ad70-4c76-8615-073ec6feb873
+slug: slo-burn-rate-alerting
+lang: en
+
+domain: observability
+topic: sre
+subtopic: alerting
+
+tracks: [backend, any]
+levels: [staff]
+tech:
+  name: Prometheus
+  version_range: ">=3.0"
+
+question: >-
+  You want to be paged early for a real outage and left alone for a blip. Design
+  the alerting for an SLO, and explain why the obvious thresholds fail.
+
+probes: >-
+  Whether the candidate can reason about detection time and precision together,
+  and whether they know the multi-window, multi-burn-rate shape rather than a
+  single error-rate threshold.
+
+answer_strategy: >-
+  Open by explaining why both naive approaches fail — too slow and too noisy —
+  then introduce burn rate as the thing that keeps the budget spend constant
+  while the window shrinks. Give the fast and slow conditions, then explain the
+  second window, because that is the detail that shows you have operated this.
+
+expected_answer:
+  - text: >-
+      Explains that alerting on budget exhaustion is too slow while a fixed
+      error-rate threshold is too noisy, so neither gives good detection time and
+      precision.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Defines burn rate as how fast the budget is consumed relative to the SLO,
+      where a burn rate of one exhausts the budget over the window.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Uses a fast, high-burn condition to page for an acute outage and a slow,
+      low-burn condition to open a ticket for a chronic problem.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Uses two windows for the paging alert — a long window for the burn
+      calculation and a short window that must also be burning — so an
+      already-recovered incident stops paging.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Chooses burn-rate multiplier and windows from an explicit trade-off between
+      how much budget may be consumed before paging and how long detection may
+      take.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Validates the design against past incidents after deployment, and treats a
+      page that led to no action as a defect in the rule.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - What burn rate and window would you start with, and what would make you change them?
+  - How does this look different for a low-traffic service where a single error moves the ratio?
+  - Where do cause-based alerts fit, if at all?
+
+common_mistakes:
+  - >-
+    Paging on budget exhaustion, which fires only after the damage is done.
+  - >-
+    Paging on an instantaneous error rate, which fires on every brief spike.
+  - >-
+    Using one window, so the alert keeps firing after the incident has recovered.
+  - >-
+    Tuning the multiplier by intuition and never checking it against real
+    incidents.
+
+related_questions: [slo-definition-and-error-budget, alert-noise-reduction]
+
+wiki_refs:
+  - slug: slos-and-error-budgets
+    anchor: burn-rate-alerting
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "The Site Reliability Workbook: Alerting on SLOs"
+    url: https://sre.google/workbook/alerting-on-slos/
+    kind: book
+
+difficulty: 5
+estimated_minutes: 12
+
+review_status: draft

@@ -106,6 +106,15 @@ domains:
     requires_tech: true
     market_weight: 0.0723
 
+  - id: fintech
+    title: Fintech & payments
+    description: >-
+      Money movement and the machinery an interview probes around it: double-entry ledgers,
+      idempotency, reconciliation, audit trails, limits and risk checks, settlement, and the
+      compliance vocabulary a regulated product forces into every design.
+    target_questions: 40
+    requires_tech: true
+
   - id: softskills
     title: Soft skills & leadership
     description: >-

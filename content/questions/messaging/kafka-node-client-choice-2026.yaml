@@ -1,0 +1,113 @@
+id: 1819c8c1-49df-4b1c-b413-0eb3e5344dff
+slug: kafka-node-client-choice-2026
+lang: en
+
+domain: messaging
+topic: clients
+subtopic: node
+
+tracks: [backend, fullstack]
+levels: [middle, senior, staff]
+tech:
+  name: "@platformatic/kafka"
+  version_range: ">=2"
+
+question: >-
+  A new Node service needs to consume from Kafka 4.3 and publish results. A candidate on
+  the panel says "use KafkaJS, it is what we have always used". Assess that answer in
+  2026.
+
+probes: >-
+  Currency, and whether the candidate can justify a dependency from evidence rather than
+  familiarity. The correct answer names KafkaJS as unmaintained since 2023 and reaches
+  for a maintained client with a reason.
+
+answer_strategy: >-
+  Answer directly: KafkaJS's last stable release was 2.2.4 in February 2023, with only a
+  beta since, so it predates Kafka 4 entirely. Then give the two maintained options and
+  the criterion for choosing between them — a pure-JavaScript client against
+  librdkafka-backed one — and mention what you would verify, such as Kafka 4 support and
+  transactional producers. Finish with the migration caution, because rebalance and
+  commit behaviour differ per client.
+
+expected_answer:
+  - text: >-
+      States that KafkaJS is unmaintained: its last stable release, 2.2.4, dates from
+      February 2023, so recommending it for a new service is a currency failure.
+    weight: 5
+    min_level: middle
+  - text: >-
+      Names at least one current alternative — @platformatic/kafka, actively released in
+      2026, or @confluentinc/kafka-javascript, the librdkafka-backed client.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Gives the selection criterion rather than a favourite: pure JavaScript with no
+      native build for deployment simplicity, versus librdkafka for the widest feature
+      coverage and transaction support.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Checks version support explicitly — Kafka 4.x protocol and the new consumer group
+      protocol — instead of assuming a library works because it connects.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Reads the maintenance signal from published releases rather than from a repository
+      that merely looks active, which is the same reasoning used to reject KafkaJS.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Plans the migration around behaviour that differs between clients: rebalance
+      callbacks, offset commit semantics, retriable error classification, batching and
+      compression defaults.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Notes the native-build consequence of the librdkafka client for CI images and
+      deployment platforms, and treats it as an explicit trade rather than a detail.
+    weight: 3
+    min_level: senior
+
+follow_ups:
+  - You have fifty services on KafkaJS. Do you migrate all of them, and in what order?
+  - How would you find out, without asking a person, whether a client library is
+    maintained?
+  - What breaks in an existing KafkaJS consumer when you swap the client underneath it?
+
+common_mistakes:
+  - >-
+    Recommending KafkaJS because it is familiar, without checking that it has had no
+    stable release since 2023.
+  - >-
+    Assuming any published client supports Kafka 4.x features such as the new consumer
+    group protocol.
+  - >-
+    Swapping the client without re-testing offset commit behaviour, which is where
+    duplicates and gaps appear.
+  - >-
+    Choosing a librdkafka-backed client without accounting for the native build in the
+    deployment pipeline.
+
+related_questions: [kafka-rebalance-storm, kafka-retention-for-replay]
+
+wiki_refs:
+  - slug: kafka-node-clients-2026
+    anchor: kafkajs-is-unmaintained
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "npm registry — kafkajs"
+    url: https://registry.npmjs.org/kafkajs
+    kind: release-notes
+  - title: "npm registry — @platformatic/kafka"
+    url: https://registry.npmjs.org/@platformatic%2Fkafka
+    kind: release-notes
+  - title: "npm registry — @confluentinc/kafka-javascript"
+    url: https://registry.npmjs.org/@confluentinc%2Fkafka-javascript
+    kind: release-notes
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

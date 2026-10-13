@@ -1,0 +1,106 @@
+id: a064b5da-b1ae-4a04-ac9a-67ea6cd82cb7
+slug: postgres-lost-update-isolation
+lang: en
+
+domain: data
+topic: concurrency
+subtopic: isolation
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+tech:
+  name: PostgreSQL
+  version_range: ">=16"
+
+question: >-
+  Two concurrent withdrawal requests against the same account both succeed and the
+  balance goes negative. The code reads the balance, checks it in the service, then
+  writes a new value. Reproduce the failure for me and fix it properly.
+
+probes: >-
+  Whether the candidate can describe the interleaving under Read Committed and choose a
+  fix that the database enforces, rather than adding a mutex in one process. The
+  separation between an application check and a database invariant is the signal.
+
+answer_strategy: >-
+  Reproduce first: state the two transactions and the exact interleaving that loses one
+  update. Then give the fix as a set with the reason each works — a single conditional
+  UPDATE, SELECT FOR UPDATE, or Serializable with retries — and pick one for this
+  workload. Say explicitly why the in-process lock does not solve it, because that is the
+  answer the interviewer is hoping you will reject on your own.
+
+expected_answer:
+  - text: >-
+      Reproduces the interleaving: both transactions read the same balance under Read
+      Committed, both compute a new value, the second write overwrites the first.
+    weight: 5
+    min_level: senior
+  - text: >-
+      States that read-check-write is the bug and that the check belongs in the same
+      statement or transaction as the write, not in application code.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Offers the single-statement conditional update (UPDATE ... WHERE balance >= amount)
+      and interprets zero rows affected as the business failure.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Offers SELECT ... FOR UPDATE as the alternative and describes what it does to
+      concurrency for that row.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Offers Serializable with a bounded retry, and notes the transaction must be
+      re-run from the start with application state reset, not resumed mid-way.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Rejects the in-process mutex or an optimistic flag in Redis as insufficient when
+      more than one application instance can serve the request.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Keeps an append-only record of the movement or an audit trail, so a negative
+      balance can be reconstructed and reconciled rather than only detected.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - What changes if the two requests arrive at different application instances, or from a
+    queue consumer instead of an HTTP request?
+  - How does deadlock detection interact with your chosen fix?
+  - Would you raise the isolation level for the whole service or for this transaction?
+
+common_mistakes:
+  - >-
+    Adding a lock in the Node process and calling it solved, ignoring the second instance.
+  - >-
+    Setting the transaction to Serializable and not implementing a retry or reset on the
+    serialization failure.
+  - >-
+    Reading the balance FOR UPDATE and then releasing the lock before the write, which
+    reintroduces the race.
+  - >-
+    Blaming the database, or reaching for a distributed lock in Redis when a conditional
+    UPDATE would do.
+
+related_questions: [postgres-ledger-read-model, postgres-deadlock-in-production]
+
+wiki_refs:
+  - slug: postgres-mvcc-isolation-and-locking
+    anchor: check-then-write-is-the-recurring-bug
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "PostgreSQL 18 — Transaction Isolation"
+    url: https://www.postgresql.org/docs/18/transaction-iso.html
+    kind: official-docs
+  - title: "PostgreSQL 18 — Explicit Locking"
+    url: https://www.postgresql.org/docs/18/explicit-locking.html
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 12
+
+review_status: draft

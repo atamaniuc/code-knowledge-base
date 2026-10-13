@@ -1,0 +1,105 @@
+id: 6056374b-baa0-4360-92f9-670f770b3c5a
+slug: kubernetes-operator-build-or-buy
+lang: en
+
+domain: infra
+topic: kubernetes
+subtopic: operators
+
+tracks: [backend, any]
+levels: [staff]
+tech:
+  name: Kubernetes
+  version_range: ">=1.34"
+
+question: >-
+  Your team proposes writing a Kubernetes operator that provisions databases for
+  application teams. Walk me through whether you would approve it, and what it
+  takes to run safely once it exists.
+
+probes: >-
+  Whether the candidate treats an operator as a service with an on-call cost
+  rather than a library, and whether they can name the reconcile contract —
+  idempotency, status, ownership — without reciting a framework's API.
+
+answer_strategy: >-
+  Do not answer yes or no immediately. Ask what the operator replaces and whether
+  the operator's interface is the product. Then talk about what running one
+  requires, and use a specific failure mode to show you have operated one rather
+  than read about it.
+
+expected_answer:
+  - text: >-
+      Tests the need: is the operational knowledge complex and repeated, does the
+      managed thing have a lifecycle the platform must react to, or is the custom
+      resource the interface being sold to application teams.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Names cheaper alternatives when none of those hold — a Helm chart, a typed
+      infrastructure module, or a ticket — and says why they are easier to debug.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Describes reconciliation as a level-triggered, idempotent loop that can be
+      re-run after a crash, not an event handler that fires once.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Writes observed state and conditions into status so the resource is
+      monitorable, instead of leaving callers to guess.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Uses ownership references or labels on every created resource so garbage
+      collection and adoption are deterministic, and deleting the custom resource
+      does not leave cloud resources billing forever.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Names the failure modes: a hot reconcile loop burning API server capacity,
+      CRD schema and conversion compatibility, and the operator itself as a
+      single point of failure that needs RBAC, monitoring and upgrades.
+    weight: 4
+    min_level: staff
+
+follow_ups:
+  - The CRD needs a breaking schema change. How do you ship it without breaking stored resources?
+  - Your controller reconciles once a second and the API server is unhappy. What is wrong?
+  - Who is paged when the operator wedges at 03:00?
+
+common_mistakes:
+  - >-
+    Approving the operator because operators are the Kubernetes-native pattern,
+    without asking what it replaces.
+  - >-
+    Treating the CRD as the deliverable and leaving no controller to reconcile it.
+  - >-
+    Writing a one-shot event handler and being surprised that a missed event
+    leaves state unconverged.
+  - >-
+    Leaving the operator unmonitored and un-versioned, as if it were not
+    production code.
+
+related_questions: [kubernetes-cluster-upgrade-plan, kubernetes-multi-tenancy-isolation]
+
+wiki_refs:
+  - slug: kubernetes-operators-and-crds
+    anchor: when-an-operator-earns-its-cost
+    wiki_reviewed_at: "2026-10-13"
+  - slug: kubernetes-operators-and-crds
+    anchor: the-controller-loop
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Kubernetes: Operator pattern"
+    url: https://kubernetes.io/docs/concepts/extend-kubernetes/operator/
+    kind: official-docs
+  - title: "Kubernetes: Custom Resources"
+    url: https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/
+    kind: official-docs
+
+difficulty: 5
+estimated_minutes: 12
+
+review_status: draft

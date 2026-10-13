@@ -1,0 +1,104 @@
+id: 94ad7383-466e-404f-9812-663c699bf28a
+slug: nestjs-request-scoped-provider-cost
+lang: en
+
+domain: backend-node
+topic: framework
+subtopic: di
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: NestJS
+  version_range: ">=12"
+
+question: >-
+  A team changed a repository provider to request scope so it could read the tenant from
+  the incoming request. p99 latency roughly doubled and memory use went up. Explain what
+  happened and how you would fix it without losing the tenant context.
+probes: >-
+  Whether the candidate understands that scope propagates through the injection graph, and
+  whether they reach for a cheaper mechanism for request context instead of a framework
+  feature that re-instantiates providers.
+answer_strategy: >-
+  Explain the mechanism first: the default is a singleton, request scope creates an instance
+  per request, and a singleton that injects a request-scoped provider becomes request-scoped
+  itself, so the cost is the whole chain rather than one provider. Then give the fix — pass
+  the context explicitly or carry it in AsyncLocalStorage — and keep the providers single.
+  Finish on how you would have caught it in a benchmark.
+expected_answer:
+  - text: >-
+      States that providers are singletons by default and that REQUEST scope creates an instance
+      per request.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Explains scope propagation: a singleton controller that injects a request-scoped provider
+      becomes request-scoped, so the whole injection chain is rebuilt per request.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Cites the documented performance impact of request-scoped providers rather than treating it
+      as folklore.
+    weight: 3
+    min_level: senior
+  - text: >-
+      Proposes the cheaper fix: carry the tenant in an explicit parameter or in
+      AsyncLocalStorage and keep every provider singleton.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Mentions durable providers as the answer for event-driven consumers that process many
+      messages and still need per-message context.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Knows the correctness half: request-specific data on a singleton provider is a race
+      between concurrent requests, so the original change was fixing a real bug.
+    weight: 2
+    min_level: staff
+  - text: >-
+      Says how to measure the regression: allocation and instance-creation counts, GC activity
+      and p99 under load, not one benchmark request.
+    weight: 2
+    min_level: staff
+
+follow_ups:
+  - When is a request-scoped provider genuinely the right answer?
+  - How does AsyncLocalStorage behave inside a worker thread or an event emitter callback?
+  - What would you change if the tenant had to be resolved from a database per request?
+
+common_mistakes:
+  - >-
+          Accepting the new latency as the cost of correctness, when passing the context explicitly or
+          using async-local storage keeps providers singletons.
+  - >-
+          Making the controller request-scoped as well and multiplying the cost without noticing.
+  - >-
+          Storing the tenant in a module-level variable, which is correct until two requests overlap.
+  - >-
+          Caching the request-scoped instance manually, which defeats the scope and leaks context.
+
+related_questions: [nestjs-request-lifecycle-and-placement, nestjs-testing-strategy]
+
+wiki_refs:
+  - slug: nestjs-request-lifecycle-and-scopes
+    anchor: injection-scopes
+    wiki_reviewed_at: "2026-10-13"
+  - slug: nestjs-request-lifecycle-and-scopes
+    anchor: modules-providers-and-the-default-scope
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "NestJS — Provider scopes"
+    url: https://raw.githubusercontent.com/nestjs/docs.nestjs.com/master/content/fundamentals/provider-scopes.md
+    kind: official-docs
+  - title: "NestJS — Request lifecycle"
+    url: https://raw.githubusercontent.com/nestjs/docs.nestjs.com/master/content/faq/request-lifecycle.md
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

@@ -1,0 +1,111 @@
+id: f6ce367d-09bc-4234-bf6b-7bbe9689df73
+slug: aws-cost-right-sizing
+lang: en
+
+domain: infra
+topic: aws
+subtopic: cost
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: AWS
+  version_range: ">=2024"
+
+question: >-
+  The AWS bill doubled year on year while traffic grew twenty percent. Walk me
+  through how you would find the cause and what you would do about it.
+
+probes: >-
+  Whether the candidate starts with allocation and unit economics rather than
+  with a discount, and whether they know the hidden line items that a container
+  platform produces. Right-sizing before commitment is the ordering the
+  interviewer is checking.
+
+answer_strategy: >-
+  Refuse to jump to Savings Plans. Open with allocation, then separate growth from
+  waste by looking at unit cost, then name the line items people forget. Only
+  after right-sizing does commitment belong in the answer, and say why the order
+  matters.
+
+expected_answer:
+  - text: >-
+      Starts with allocation — tags on every resource, a cost breakdown by service
+      or team, and anomaly detection — because an unattributed bill cannot be
+      managed.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Uses unit economics to separate real growth from waste, comparing cost per
+      request or per active user against the previous period rather than the total
+      alone.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Names the hidden line items a container platform produces: NAT gateway
+      processing, cross-Availability-Zone traffic, data transfer out, idle load
+      balancers, and observability ingestion.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Right-sizes from observed usage — p95 CPU, memory working set, and the gap
+      between requested and used capacity — before touching commitments.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Treats Graviton as a benchmarked migration with multi-architecture images
+      and a real-load comparison, not as a switch that saves a fixed percentage.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Commits only after right-sizing: savings plans or reserved capacity to cover
+      the steady floor, Spot for interruption-tolerant work, and on-demand for the
+      peak.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Tracks commitment coverage and utilisation, because the failure mode after
+      re-platforming is paying for committed capacity that is no longer used.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - How would you get a product team to care about their own unit cost?
+  - Where does serverless pricing beat provisioned compute, and where does it lose?
+  - You have found the waste but the team that owns it is not yours. What do you do?
+
+common_mistakes:
+  - >-
+    Buying Savings Plans first, then discovering the workload is over-provisioned
+    and the commitment is stranded.
+  - >-
+    Looking only at EC2 spend and missing NAT, cross-AZ and observability costs.
+  - >-
+    Cutting observability and capacity indiscriminately, which trades reliability
+    for a smaller invoice.
+  - >-
+    Reporting the total bill instead of unit cost, so growth is indistinguishable
+    from waste.
+
+related_questions: [aws-compute-choice-for-workload, aws-s3-access-and-performance]
+
+wiki_refs:
+  - slug: aws-cost-and-right-sizing
+    anchor: where-the-bill-comes-from
+    wiki_reviewed_at: "2026-10-13"
+  - slug: aws-cost-and-right-sizing
+    anchor: right-sizing
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "AWS Graviton Processors"
+    url: https://aws.amazon.com/ec2/graviton/
+    kind: official-docs
+  - title: "Amazon ECS: Architect for AWS Fargate"
+    url: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/AWS_Fargate.html
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

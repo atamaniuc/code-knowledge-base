@@ -1,0 +1,107 @@
+id: 181e4b02-40ce-470f-8f03-eb6e60dbee75
+slug: kubernetes-cluster-upgrade-plan
+lang: en
+
+domain: infra
+topic: kubernetes
+subtopic: upgrades
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: Kubernetes
+  version_range: ">=1.34"
+
+question: >-
+  You inherit a cluster that is three minor versions behind the current release.
+  Walk me through the upgrade plan, the order you do it in, and what you check
+  before you touch anything.
+
+probes: >-
+  Whether the candidate knows the support window and the skew rules as numbers
+  rather than as folklore, and whether the version-skew question turns into a
+  compatibility question about add-ons.
+
+answer_strategy: >-
+  Open with the support window, because three minors behind is a security finding
+  before it is an upgrade task. Then give the order and the checks, and be precise
+  about the skew direction — a newer kubelet than the API server is never
+  allowed. Finish with what makes the next upgrade boring, since that is the
+  staff-level part.
+
+expected_answer:
+  - text: >-
+      States that Kubernetes supports the three most recent minor releases, so a
+      cluster three minors behind is out of the supported window and no longer
+      receiving security fixes.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Upgrades one minor at a time, because skipping minors is not a supported
+      path.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Gets the skew direction right: a kubelet may be up to three minor versions
+      older than the API server, and must never be newer than it.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Upgrades the control plane first and then node pools one at a time,
+      draining nodes within their disruption budgets.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Checks for removed or deprecated APIs and for add-on compatibility — ingress
+      controller, CNI, CSI, operators — because the effective support matrix is
+      the intersection of all of them.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Treats the control plane upgrade as a one-way door: staging first, and no
+      rollback plan that depends on reverting it.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - A PodDisruptionBudget blocks every drain. How do you proceed without abandoning availability?
+  - The CNI plugin's newest version does not support the target Kubernetes minor. What now?
+  - How do you stop the cluster from ageing out of support again?
+
+common_mistakes:
+  - >-
+    Jumping two or three minors in one step and treating it as an optimisation.
+  - >-
+    Upgrading nodes before the control plane, or believing the skew allowance runs
+    in both directions.
+  - >-
+    Planning the upgrade around Kubernetes alone and discovering the add-on matrix
+    during the maintenance window.
+  - >-
+    Assuming the control plane version can simply be rolled back.
+
+related_questions: [kubernetes-eviction-and-disruption-budget, helm-4-release-lifecycle]
+
+wiki_refs:
+  - slug: kubernetes-upgrades-and-version-skew
+    anchor: supported-release-window
+    wiki_reviewed_at: "2026-10-13"
+  - slug: kubernetes-upgrades-and-version-skew
+    anchor: version-skew-rules
+    wiki_reviewed_at: "2026-10-13"
+  - slug: kubernetes-upgrades-and-version-skew
+    anchor: upgrade-order
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Kubernetes: Version Skew Policy"
+    url: https://kubernetes.io/releases/version-skew-policy/
+    kind: official-docs
+  - title: "Kubernetes Releases"
+    url: https://kubernetes.io/releases/
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft

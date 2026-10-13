@@ -1,0 +1,109 @@
+id: d67eb45a-2208-4a97-b054-e52fe164bc79
+slug: promql-cardinality-blowup
+lang: en
+
+domain: observability
+topic: metrics
+subtopic: cardinality
+
+tracks: [backend, any]
+levels: [senior, staff]
+tech:
+  name: Prometheus
+  version_range: ">=3.0"
+
+question: >-
+  A single instrumentation change took down your Prometheus. Walk me through the
+  diagnosis, the fix, and how you would prevent the next one.
+
+probes: >-
+  Whether the candidate treats cardinality as the data model's central constraint
+  rather than a tuning parameter, and whether prevention includes observing the
+  series count itself.
+
+answer_strategy: >-
+  Explain why one label change can take down the whole system before describing
+  the diagnosis, because the mechanism is the insight. Then give the fix in order
+  of preference — remove the label, bound it, or move the detail to traces — and
+  finish with the monitoring that catches the next change before it is an
+  incident.
+
+expected_answer:
+  - text: >-
+      Explains that a time series is a unique combination of metric name and label
+      values, so a label with unbounded values multiplies the series count.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Identifies the offending metric from the TSDB's own cardinality statistics
+      rather than guessing from a dashboard.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Names the usual culprits: user or session identifiers, raw URL paths, error
+      messages or exception classes, trace identifiers, and timestamps.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Fixes it by removing the label or bounding its values — route templates
+      instead of raw paths, status classes instead of codes — rather than raising
+      Prometheus resources.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Moves per-request detail to the right signal: exemplars on a histogram for
+      trace drill-down, and logs or traces for the individual request.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Reduces cost further with recording rules or collector-side attribute
+      filtering, and prefers native histograms to per-bucket series where the
+      instrumentation supports them.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Monitors active series per job and alerts on its growth rate, so the next
+      instrumentation change is caught before it becomes an outage.
+    weight: 5
+    min_level: staff
+
+follow_ups:
+  - A developer says the user ID is essential for debugging. What do you offer instead?
+  - How does a native histogram change the bucket-explosion problem?
+  - Your remote-write bill is driven by cardinality. Where do you cut first?
+
+common_mistakes:
+  - >-
+    Adding memory to Prometheus, which buys days rather than fixing the data
+    model.
+  - >-
+    Dropping the offending label at query time instead of at ingestion.
+  - >-
+    Believing a recording rule reduces cardinality when it can actually add
+    series.
+  - >-
+    Having no measurement of series count, so the next change is discovered as an
+    outage.
+
+related_questions: [opentelemetry-collector-topology, slo-definition-and-error-budget]
+
+wiki_refs:
+  - slug: prometheus-and-promql
+    anchor: cardinality
+    wiki_reviewed_at: "2026-10-13"
+  - slug: prometheus-and-promql
+    anchor: the-data-model-is-the-constraint
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "Prometheus: Metric and label naming"
+    url: https://prometheus.io/docs/practices/naming/
+    kind: official-docs
+  - title: "Prometheus 3.0"
+    url: https://prometheus.io/blog/2024/11/14/prometheus-3-0/
+    kind: release-notes
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

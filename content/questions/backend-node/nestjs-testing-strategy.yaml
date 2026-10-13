@@ -1,0 +1,108 @@
+id: 9de3c8ef-b82e-4737-85dc-dcca9579eceb
+slug: nestjs-testing-strategy
+lang: en
+
+domain: backend-node
+topic: testing
+subtopic: strategy
+
+tracks: [backend, fullstack]
+levels: [senior, staff]
+
+tech:
+  name: NestJS
+  version_range: ">=12"
+
+question: >-
+  You inherit a Nest service with a large unit-test suite that mocks everything and no test
+  that exercises HTTP or the database. Last week a guard rejected a request before the
+  validation pipe could return a useful error, and no test caught it. What do you change?
+probes: >-
+  Whether the candidate distinguishes the questions each test granularity answers, and whether
+  they know that a TestingModule builds the real injector. The bug in the prompt is a lifecycle
+  and error-shape bug, so the fix is an integration test, not more unit tests.
+answer_strategy: >-
+  Diagnose the gap first: the suite proves units in isolation and nothing proves the wiring
+  and the error contract. Then describe the two granularities and what each replaces — in a
+  unit test, the infrastructure boundary; in an end-to-end test, only services outside the
+  system. Say which test would have caught this bug, then finish on the cheap guards: a boot
+  test with production configuration validation, and isolated data per test.
+expected_answer:
+  - text: >-
+      Names the two useful granularities and what question each answers, instead of arguing for more
+      tests in general.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Knows that Test.createTestingModule builds the real injector, so a missing or mis-scoped
+      provider fails at compile time.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Uses overrideProvider for the expensive infrastructure boundary and keeps the domain
+      service and its wiring real.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Keeps the HTTP layer and the database real in the end-to-end test, stubbing only services
+      outside the system boundary.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Asserts on status and the machine-readable error body, because the error model is part of
+      the contract this bug broke.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Tests lifecycle behaviour where ordering is the behaviour: a guard that must reject, an
+      interceptor that must not swallow an exception.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Adds a boot test with production configuration validation so a missing variable fails in
+      CI, and isolates data per test so results do not depend on execution order.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - Which single test would you write first for this bug, and why that one?
+  - How do you keep an end-to-end suite from becoming slow and flaky?
+  - What would you stub in a test of the message consumer?
+
+common_mistakes:
+  - >-
+          Adding more unit tests that mock the class under test's own collaborators and assert nothing
+          about wiring.
+  - >-
+          Building the whole application but mocking every collaborator, which is slow and still cannot
+          catch the integration bug.
+  - >-
+          Treating coverage percentage as the goal rather than the boundaries that actually break.
+  - >-
+          Overriding a provider with a stub whose signature has drifted from the real one.
+
+related_questions: [nestjs-request-lifecycle-and-placement, nestjs-request-scoped-provider-cost]
+
+wiki_refs:
+  - slug: nestjs-testing-a-nest-application
+    anchor: what-a-nest-test-should-own
+    wiki_reviewed_at: "2026-10-13"
+  - slug: nestjs-testing-a-nest-application
+    anchor: overriding-providers
+    wiki_reviewed_at: "2026-10-13"
+  - slug: nestjs-testing-a-nest-application
+    anchor: the-integration-honesties
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "NestJS — Unit testing"
+    url: https://raw.githubusercontent.com/nestjs/docs.nestjs.com/master/content/fundamentals/unit-testing.md
+    kind: official-docs
+  - title: "NestJS — Request lifecycle"
+    url: https://raw.githubusercontent.com/nestjs/docs.nestjs.com/master/content/faq/request-lifecycle.md
+    kind: official-docs
+
+difficulty: 4
+estimated_minutes: 10
+
+review_status: draft

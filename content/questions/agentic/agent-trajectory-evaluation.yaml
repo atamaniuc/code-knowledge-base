@@ -1,0 +1,108 @@
+id: 100412e7-bac9-4ba8-be23-e4e495b4171a
+slug: agent-trajectory-evaluation
+lang: en
+
+domain: agentic
+topic: evaluation
+subtopic: trajectory
+
+tracks: [backend, fullstack, any]
+levels: [senior, staff]
+
+tech:
+  name: LLM evaluation
+  version_range: ">=2023"
+
+question: >-
+  You changed a prompt and the answer-quality score stayed the same, but the average number
+  of tool calls doubled. Is that a regression, and how would your evaluation know?
+
+probes: >-
+  Whether the candidate evaluates the path as well as the outcome, and whether they can say
+  what the doubled tool calls cost. The staff signal is an evaluation design that would
+  have caught this before the change shipped, and a view on when process metrics are
+  allowed to block a release.
+
+answer_strategy: >-
+  Answer the direct question first: the answer score cannot see this, so by itself it is
+  not evidence either way, but doubling tool calls is a strong prior for a regression
+  because it doubles cost and latency and increases the number of places a failure can
+  happen. Then describe the two-level evaluation you want: outcome metrics on a fixed task
+  set, and trajectory metrics — steps, tools used, forbidden actions, recovery from
+  errors. Close on the judge, because a trajectory score without calibration is just
+  another unmeasured model.
+
+expected_answer:
+  - text: >-
+      Says an outcome-only score cannot answer the question, and explains why: the same
+      answer reached by twice the steps is not the same system.
+    weight: 4
+    min_level: senior
+  - text: >-
+      Treats cost and latency per verified task as first-class metrics, so a doubled step
+      count shows up as a regression even when quality does not move.
+    weight: 5
+    min_level: senior
+  - text: >-
+      Adds trajectory evaluation: which tools were called, in what order, whether required
+      checks were performed, whether a forbidden or destructive tool was used.
+    weight: 5
+    min_level: staff
+  - text: >-
+      Uses an LLM judge for the qualitative part but calibrates it against a human-labelled
+      sample, and re-checks it when the judge's model changes.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Runs the suite on a fixed, versioned task set in CI so a prompt change has a verdict
+      before merge, rather than a dashboard afterwards.
+    weight: 4
+    min_level: staff
+  - text: >-
+      Distinguishes a real regression from a legitimate change in strategy, and asks whether
+      the extra calls bought a better recovery or a check that used to be implicit.
+    weight: 3
+    min_level: staff
+  - text: >-
+      Guards against reward hacking: a faster, cheaper path that games the metric rather
+      than satisfying the goal.
+    weight: 3
+    min_level: staff
+
+follow_ups:
+  - The judge disagrees with your human labels on a third of the sample. What do you do?
+  - A cheaper model halves the tool calls and the outcome score holds. Do you ship it?
+  - How do you keep the task set from being overfitted after a year of prompt changes?
+
+common_mistakes:
+  - >-
+    Concluding there is no regression because the answer score did not move.
+  - >-
+    Reporting average tokens or calls without tying them to the verified-outcome rate.
+  - >-
+    Trusting an LLM judge with no human-labelled calibration set.
+  - >-
+    Evaluating only in a notebook, so the metric is not a gate any change has to pass.
+
+related_questions: [llm-judge-design, rag-evaluation-strategy, replaying-an-agent-run]
+
+wiki_refs:
+  - slug: agent-tracing-and-replay
+    anchor: evaluating-a-trajectory-not-an-answer
+    wiki_reviewed_at: "2026-10-13"
+  - slug: llm-as-judge
+    anchor: calibrating-the-judge
+    wiki_reviewed_at: "2026-10-13"
+
+sources:
+  - title: "OpenTelemetry — Generative AI semantic conventions"
+    url: https://opentelemetry.io/docs/specs/semconv/gen-ai/
+    kind: official-docs
+  - title: "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena"
+    url: https://arxiv.org/abs/2306.05685
+    kind: paper
+
+difficulty: 4
+estimated_minutes: 11
+
+review_status: draft
