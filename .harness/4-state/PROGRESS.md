@@ -19,7 +19,7 @@ times across 173 stack-scoped postings, and structured preparation for it barely
   than scripts kept here; `.harness/` holds this project's own rules, state and feedback map,
   and `harnessimo.config.json` says which checks are enforced (`make harness-doctor` prints
   it).
-- `make check`: passing (26 files, 249 tests, 4 skipped without a plan; content valid; every
+- `make check`: passing (28 files, 271 tests, 4 skipped without a plan; content valid; every
   harness gate). The validator now reports an unparseable file instead of dying on it, with
   the line and the fix — one bad file used to hide the state of the whole tree.
 - `make prep ARGS="<job-url> [--out=<file>]"` turns a posting into a rehearsal plan:
@@ -35,8 +35,22 @@ times across 173 stack-scoped postings, and structured preparation for it barely
 - The panel now also: keeps its text size between openings (A- / A+ or - / +, five steps in
   `prefs.ts`), restores the session it was hidden on (view, question, committed answer,
   filters, expanded card, open article, scroll), navigates back and forward over those places
-  (`history.ts`, alt-arrows), goes fullscreen or falls back to a panel tab, and translates a
-  selection through a small popup at the cursor.
+  (`history.ts`, alt-arrows), opens itself in a fullscreen window, and translates a selection
+  through a small popup at the cursor.
+- **Text size had to stop being a `body` property.** Reported from a real session: the chips,
+  the probes box and the wiki body did not move when A+ was pressed. Now the root carries
+  `--font-size` and every rule states its size in `rem` — measured in the side panel, 100% →
+  125% → 140% scales all 22 measured elements by exactly that factor, where before only `body`
+  moved. `panel-css.test.ts` fails on a `px` font-size, and was shown failing first.
+- **Fullscreen could not be one API call.** From a side panel `requestFullscreen()` returns a
+  promise that never settles (Chrome 155, measured: still pending after 4s, no
+  `fullscreenchange`, no `fullscreenerror`), so the old `await` hung and the button looked
+  dead in the panel while it passed in a tab — which is how the first version was "verified".
+  `fullscreen.ts` decides from where the panel runs (a side panel has no
+  `chrome.tabs.getCurrent()`), bounds the wait, and puts a popup window into fullscreen
+  instead; `windows.create` ignores `state: "fullscreen"`, so that is a second call. Verified
+  in the real side panel: one window becomes `popup:fullscreen` at 1920x1200, a second press
+  focuses it instead of opening another, and the button inside it restores `normal`.
 - **Translate is the only thing that leaves the device.** It is isolated in `translate.ts`
   with both free Google endpoints (clients5 first; the gtx one answers 429 under load) and the
   manifest grants exactly those two origins — `make check` asserts the permission list, that

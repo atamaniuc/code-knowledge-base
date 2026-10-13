@@ -77,8 +77,11 @@ citations point at, so a missed bullet ends in the section that explains it. A b
 The toolbar icon is the brand mark itself — a blue rounded square with `IP`, drawn as real PNGs
 by `make icons` (`scripts/make-icons.ts`) rather than imported as art.
 
-The header carries back and forward through the session, text size (`-` and `+`, remembered
-between openings), and fullscreen. The panel remembers where you stopped — view, question,
+The header carries back and forward through the session, text size (A− / A+, or `-` / `+`:
+five steps that scale every text in the panel, remembered between openings), and fullscreen.
+A side panel cannot fill the screen itself — Chrome accepts `requestFullscreen()` there and
+then never answers it — so fullscreen opens the panel in a window of its own that does, and the
+button in that window leaves it again. The panel remembers where you stopped — view, question,
 filters, scroll — because a side panel is destroyed when it is hidden and reopened when the
 toolbar icon is clicked again. Select any text and a small **Translate → RU** popup appears at
 the cursor: that click is the only thing in the extension that leaves the device, and the

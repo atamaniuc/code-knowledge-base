@@ -450,3 +450,28 @@ content, so the first shipped bundle rendered "Nothing due" over ten questions. 
 now means the same thing on both surfaces, and the empty states say which of the three ways
 the bank ran dry.
 
+
+---
+
+## 2026-10-13 — The panel's text scale belongs to the root, and its fullscreen is a window
+
+Two defects that came back from using the panel, both of the same kind: a test exercised the
+code path but not the environment the code runs in.
+
+**Text size.** `--font-size` was set on `body`, and every rule that stated its own size in
+`px` kept it — the chips, the probes box and the wiki body did not move when A+ was pressed.
+The root now carries the variable and every rule states its size in `rem`. `panel-css.test.ts`
+fails on a `px` font-size and fails on a body that does not inherit `1rem`; it was shown
+failing before it was trusted.
+
+**Fullscreen.** From a side panel `requestFullscreen()` returns a promise that never settles —
+no `fullscreenchange`, no `fullscreenerror`, nothing on screen (Chrome 155) — so `await`ing
+it made the button dead in the panel while it worked in a tab, which is how the first version
+was "verified". `fullscreen.ts` decides from the context instead: a side panel has no
+`chrome.tabs.getCurrent()`, so it opens the panel in a popup window and puts that window into
+fullscreen (`windows.create` ignores `state: "fullscreen"`, so it takes a second call), and a
+second press focuses the window already open rather than opening another.
+
+**Why it matters beyond the two bugs:** "verified in Chrome" was true and useless — the
+difference between a side panel and a tab is the whole feature. Reproduce in the surface the
+user has, and assert the invariant rather than the intent.
