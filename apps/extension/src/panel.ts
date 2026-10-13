@@ -12,9 +12,32 @@ import {
 } from "./bank.js";
 import { articleBySlug, parseBundle, toSelectorPool, type Bundle, type Question } from "./bundle.js";
 import { mount, render } from "./dom.js";
+import {
+  canGoBack,
+  canGoForward,
+  currentPlace,
+  EMPTY_HISTORY,
+  goBack as historyBack,
+  goForward as historyForward,
+  type History,
+  type Place,
+  pushPlace,
+} from "./history.js";
 import { resolveKey, type Action, type ViewId } from "./keys.js";
+import {
+  canGrow,
+  canShrink,
+  chromeStore,
+  debounce,
+  fontPercent,
+  loadPrefs,
+  savePrefs,
+  type Session,
+  stepFont,
+} from "./prefs.js";
 import { dayProgress, streak } from "./stats.js";
 import { BrowserReviewLog } from "./storage.js";
+import { attachSelectionTranslator } from "./translate.js";
 import * as view from "./view.js";
 
 /**
@@ -44,6 +67,15 @@ async function main(): Promise<void> {
 
   const log = await BrowserReviewLog.load();
 
+  // Everything the panel has to remember is read here and written by persist() below: a side
+  // panel is destroyed when it is hidden, so the session exists only in storage.
+  const store = chromeStore();
+  const prefs = await loadPrefs(store);
+  let fontStep = prefs.fontStep;
+  let history: History = EMPTY_HISTORY;
+  let fullscreen = document.fullscreenElement !== null;
+  let restoredScroll = prefs.session?.scrollTop ?? 0;
+
   let viewId: ViewId = "drill";
   let filters: Filters = { ...NO_FILTERS };
   let revealed = false;
@@ -54,8 +86,96 @@ async function main(): Promise<void> {
   let sheet = false;
   let pending: "g" | null = null;
 
+  if (prefs.session) {
+    viewId = prefs.session.view;
+    filters = prefs.session.filters;
+    expanded = prefs.session.expanded;
+    wiki = prefs.session.wiki ? { ...prefs.session.wiki, from: prefs.session.view } : null;
+    pinned = prefs.session.questionId ? (bundle.questions.find((q) => q.id === prefs.session?.questionId) ?? null) : null;
+    shownId = prefs.session.questionId;
+    revealed = prefs.session.revealed;
+  }
+
   function announce(message: string): void {
     if (announcer) announcer.textContent = message;
+  }
+
+  function applyFont(step: number): void {
+    // Rounded to two decimals: 14 * 1.1 is 15.400000000000002 in binary floating point.
+    document.documentElement.style.setProperty("--font-size", String(Math.round(14 * step * 100) / 100) + "px");
+  }
+  applyFont(fontStep);
+
+  /**
+   * The element that actually scrolls.
+   *
+   * The sheet lays the panel out as one tall column today, so the document scrolls; #main only
+   * scrolls if a rule ever gives it an overflow. Asking for the overflow as well as the range
+   * is what tells the two apart — a flex child is as tall as its content, so its scrollHeight
+   * merely equals its clientHeight and it looks scrollable while never moving.
+   */
+  function scroller(): Element {
+    const main = document.getElementById("main");
+    if (main && /auto|scroll/.test(getComputedStyle(main).overflowY) && main.scrollHeight > main.clientHeight) return main;
+    return document.scrollingElement ?? document.documentElement;
+  }
+
+  function currentSession(): Session {
+    return {
+      view: wiki ? wiki.from : viewId,
+      questionId: pinned?.id ?? shownId,
+      revealed,
+      filters,
+      expanded,
+      wiki: wiki ? { slug: wiki.slug, anchor: wiki.anchor } : null,
+      scrollTop: scroller()?.scrollTop ?? 0,
+    };
+  }
+
+  const persist = debounce(() => {
+    void savePrefs(store, { fontStep, session: currentSession() });
+  }, 250);
+
+  function place(): Place {
+    return { view: viewId, questionId: pinned?.id ?? shownId, wiki: wiki ? { slug: wiki.slug, anchor: wiki.anchor } : null, expanded };
+  }
+
+  /** Put the panel back where a history entry was, without adding a new one. */
+  function restorePlace(target: Place): void {
+    viewId = target.view;
+    wiki = target.wiki ? { ...target.wiki, from: target.view } : null;
+    expanded = target.expanded;
+    pinned = target.questionId ? (bundle.questions.find((q) => q.id === target.questionId) ?? null) : null;
+    shownId = target.questionId;
+    revealed = false;
+    sheet = false;
+    rerender();
+  }
+
+  function openInTab(): void {
+    const api = (
+      globalThis as {
+        chrome?: { tabs?: { create?: (options: { url: string }) => void }; runtime?: { getURL?: (path: string) => string } };
+      }
+    ).chrome;
+    const url = api?.runtime?.getURL?.("panel.html");
+    if (url && api?.tabs?.create) {
+      api.tabs.create({ url });
+      announce("Opened the panel in a tab: a side panel cannot go fullscreen.");
+      return;
+    }
+    announce("Fullscreen is not available in this window.");
+  }
+
+  async function toggleFullscreen(): Promise<void> {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
+      else openInTab();
+    } catch {
+      // Side panels are not allowed to go fullscreen in every Chrome build; a tab always is.
+      openInTab();
+    }
   }
 
   function snapshot(): {
@@ -159,11 +279,18 @@ async function main(): Promise<void> {
 
     const snap = snapshot();
     const specs = body(snap);
+    // Every distinct place the panel shows is a history entry, so back walks the session
+    // rather than the browser tab: question, article, filter set, expanded answer.
+    history = pushPlace(history, place());
     const chrome: view.Chrome = {
       view: wiki ? wiki.from : viewId,
       progress: snap.progress,
       streak: snap.streak,
       remaining: snap.queue.length,
+      fontPercent: fontPercent(fontStep),
+      canBack: canGoBack(history),
+      canForward: canGoForward(history),
+      fullscreen,
     };
     mount(app, view.shell(chrome, specs, sheet ? view.shortcutSheetView() : undefined));
 
@@ -174,7 +301,12 @@ async function main(): Promise<void> {
     if (wiki && wiki.anchor) {
       scrollToAnchor(wiki.anchor);
       wiki = { ...wiki, anchor: "" };
+    } else if (restoredScroll > 0) {
+      // Returning to where the session stopped: once per opening, not on every render.
+      scroller().scrollTop = restoredScroll;
+      restoredScroll = 0;
     }
+    persist();
   }
 
   /** Search re-renders only the list, so the caret survives every keystroke. */
@@ -237,19 +369,43 @@ async function main(): Promise<void> {
         sheet = !sheet;
         rerender();
         return;
-      case "back":
+      case "back": {
         if (sheet) {
           sheet = false;
           rerender();
           return;
         }
-        if (wiki) {
-          viewId = wiki.from;
-          wiki = null;
-          rerender();
+        if (canGoBack(history)) {
+          history = historyBack(history);
+          const target = currentPlace(history);
+          if (target) restorePlace(target);
           return;
         }
         if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+        return;
+      }
+      case "forward": {
+        if (canGoForward(history)) {
+          history = historyForward(history);
+          const target = currentPlace(history);
+          if (target) restorePlace(target);
+        }
+        return;
+      }
+      case "font": {
+        const next = stepFont(fontStep, action.direction);
+        if (next === fontStep) {
+          announce(action.direction > 0 ? "Already at the largest text size." : "Already at the smallest text size.");
+          return;
+        }
+        fontStep = next;
+        applyFont(fontStep);
+        announce("Text size " + String(fontPercent(fontStep)) + "%");
+        rerender();
+        return;
+      }
+      case "fullscreen":
+        void toggleFullscreen();
         return;
       case "none":
         return;
@@ -300,6 +456,17 @@ async function main(): Promise<void> {
       case "back":
         apply({ type: "back" });
         return;
+      case "forward":
+        apply({ type: "forward" });
+        return;
+      case "font": {
+        const direction = Number(element.getAttribute("data-dir")) === 1 ? 1 : -1;
+        apply({ type: "font", direction });
+        return;
+      }
+      case "fullscreen":
+        apply({ type: "fullscreen" });
+        return;
       case "shortcuts":
         apply({ type: "shortcuts" });
         return;
@@ -344,14 +511,15 @@ async function main(): Promise<void> {
   });
 
   window.addEventListener("keydown", (event) => {
-    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    // Alt is allowed through for the history arrows; the resolver decides what it means.
+    if (event.metaKey || event.ctrlKey) return;
     const target = event.target;
     const inField =
       target instanceof HTMLInputElement ||
       target instanceof HTMLSelectElement ||
       target instanceof HTMLTextAreaElement ||
       (target instanceof HTMLElement && target.isContentEditable);
-    const result = resolveKey(pending, event.key, { inField });
+    const result = resolveKey(pending, event.key, { inField, alt: event.altKey });
     pending = result.pending;
 
     const action = result.action;
@@ -361,6 +529,20 @@ async function main(): Promise<void> {
     event.preventDefault();
     apply(action);
   });
+
+  // Scroll events do not bubble, so the listener captures the panel's own scroller.
+  document.addEventListener("scroll", () => persist(), { passive: true, capture: true });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") persist.flush();
+  });
+  window.addEventListener("pagehide", () => persist.flush());
+  document.addEventListener("fullscreenchange", () => {
+    fullscreen = document.fullscreenElement !== null;
+    rerender();
+  });
+
+  // The one feature that leaves the device, wired last so its failure cannot stop the drill.
+  attachSelectionTranslator({ onTranslated: (text) => announce("Translated: " + text) });
 
   rerender();
 }

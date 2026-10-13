@@ -18,6 +18,9 @@ export type Action =
   | { type: "view"; view: ViewId }
   | { type: "shortcuts" }
   | { type: "back" }
+  | { type: "forward" }
+  | { type: "font"; direction: 1 | -1 }
+  | { type: "fullscreen" }
   | { type: "none" };
 
 export interface KeyResult {
@@ -29,6 +32,8 @@ export interface KeyResult {
 export interface KeyContext {
   /** True while the event target is a text field: typing beats shortcuts. */
   inField?: boolean;
+  /** Alt is held. The only chords that use it are the browser-standard history arrows. */
+  alt?: boolean;
 }
 
 const PENDING_G = "g" as const;
@@ -44,6 +49,13 @@ function gradeFrom(key: string): Grade | null {
 export function resolveKey(pending: "g" | null, key: string, context: KeyContext = {}): KeyResult {
   // Escape always works: closing a sheet and leaving a text field are the same gesture.
   if (key === "Escape") return { pending: null, action: { type: "back" } };
+
+  // Alt-arrow is what a browser does with history, so it means the same thing here.
+  if (context.alt) {
+    if (key === "ArrowLeft") return { pending: null, action: { type: "back" } };
+    if (key === "ArrowRight") return { pending: null, action: { type: "forward" } };
+    return { pending: null, action: { type: "none" } };
+  }
 
   if (context.inField) return { pending: null, action: { type: "none" } };
 
@@ -62,6 +74,11 @@ export function resolveKey(pending: "g" | null, key: string, context: KeyContext
   if (key === "/") return { pending: null, action: { type: "focusSearch" } };
   if (key === "?") return { pending: null, action: { type: "shortcuts" } };
 
+  if (key === "+" || key === "=") return { pending: null, action: { type: "font", direction: 1 } };
+  if (key === "-" || key === "_") return { pending: null, action: { type: "font", direction: -1 } };
+  if (key === "f") return { pending: null, action: { type: "fullscreen" } };
+  if (key === "Backspace") return { pending: null, action: { type: "back" } };
+
   return { pending: null, action: { type: "none" } };
 }
 
@@ -73,6 +90,9 @@ export const SHORTCUTS: { keys: string; label: string }[] = [
   { keys: "g then d", label: "Drill" },
   { keys: "g then b", label: "Bank" },
   { keys: "g then p", label: "Posting" },
+  { keys: "+ / -", label: "Larger or smaller text, remembered between openings" },
+  { keys: "f", label: "Fullscreen, or a panel tab when the side panel cannot go fullscreen" },
+  { keys: "alt + ← / →", label: "Back and forward through where you have been" },
   { keys: "?", label: "This sheet" },
   { keys: "esc", label: "Close the sheet, or go back" },
 ];

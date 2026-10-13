@@ -1,7 +1,7 @@
 # Single command surface for humans, CI and the harness.
 # Every verification command referenced by feature_list.json is a target here.
 
-.PHONY: setup test lint validate check drill prep ingest extension verify-content cold-start harness-doctor harness-status harness-activate harness-verify harness-check clean help
+.PHONY: setup test lint validate check drill prep ingest extension icons verify-content cold-start harness-doctor harness-status harness-activate harness-verify harness-check clean help
 
 help:
 	@echo "setup             install dependencies and enable the pre-commit hook"
@@ -47,6 +47,10 @@ prep:
 
 ingest:
 	@pnpm exec tsx scripts/ingest-vacancies.ts $(ARGS)
+
+# The icon is drawn, not imported: two letters on a rounded square, as PNG bytes we ship.
+icons:
+	@pnpm exec tsx scripts/make-icons.ts
 
 # build first: it clears dist, so bundling the content before it would be wiped
 extension:

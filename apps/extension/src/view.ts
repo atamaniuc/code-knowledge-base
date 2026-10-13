@@ -315,6 +315,30 @@ export interface WikiInput {
   domains: DomainInfo[];
 }
 
+/** Previous and next article, so reading through a topic does not mean going back to the list. */
+function pager(articles: WikiArticle[], slug: string): Spec | null {
+  const index = articles.findIndex((entry) => entry.slug === slug);
+  if (index === -1 || articles.length < 2) return null;
+  const before = articles[index - 1];
+  const after = articles[index + 1];
+  return h("div", { class: "wiki-pager" }, [
+    before
+      ? h(
+          "button",
+          { type: "button", class: "ghost", "data-action": "wiki", "data-slug": before.slug, "data-focus-key": "wiki-prev", title: before.title },
+          ["← " + before.title],
+        )
+      : null,
+    after
+      ? h(
+          "button",
+          { type: "button", class: "ghost", "data-action": "wiki", "data-slug": after.slug, "data-focus-key": "wiki-next", title: after.title },
+          [after.title + " →"],
+        )
+      : null,
+  ]);
+}
+
 export function wikiView(input: WikiInput): Spec {
   const article = input.article;
   const meta: Spec[] = [chip(domainTitle(input.domains, article.domain))];
@@ -340,6 +364,7 @@ export function wikiView(input: WikiInput): Spec {
     h("article", { class: "card wiki-article" }, [
       h("button", { type: "button", class: "ghost back", "data-action": "back", "data-focus-key": "back" }, ["← Back"]),
       h("h1", {}, [article.title]),
+      pager(input.articles, article.slug),
       h("div", { class: "meta" }, meta),
       article.summary ? h("p", { class: "summary" }, [article.summary]) : null,
       // The only place content becomes markup, and it is escaped before any tag is emitted.
@@ -475,6 +500,51 @@ export interface Chrome {
   progress: DayProgress;
   streak: number;
   remaining: number;
+  /** Current text scale, as a percentage, for the label between the two size buttons. */
+  fontPercent: number;
+  canBack: boolean;
+  canForward: boolean;
+  fullscreen: boolean;
+}
+
+/**
+ * Back, forward, text size and fullscreen.
+ *
+ * These live in the header rather than in a menu because a side panel is narrow and a menu
+ * costs a click for something used constantly: text size is set once and adjusted often, and
+ * back is the only way out of a wiki article without losing the question behind it.
+ */
+function tools(chrome: Chrome): Spec {
+  const icon = (label: string, action: string, title: string, extra: Attrs = {}): Spec =>
+    h("button", { type: "button", class: "icon-btn", "data-action": action, title, "aria-label": title, ...extra }, [label]);
+  return h("div", { class: "tools", role: "group", "aria-label": "History and display" }, [
+    h("div", { class: "tools-group" }, [
+      icon("←", "back", "Back (alt + left)", {
+        "data-focus-key": "nav-back",
+        disabled: !chrome.canBack,
+        "aria-keyshortcuts": "Alt+ArrowLeft",
+      }),
+      icon("→", "forward", "Forward (alt + right)", {
+        "data-focus-key": "nav-forward",
+        disabled: !chrome.canForward,
+        "aria-keyshortcuts": "Alt+ArrowRight",
+      }),
+    ]),
+    h("div", { class: "tools-group" }, [
+      icon("A−", "font", "Smaller text (-)", { "data-dir": "-1", "data-focus-key": "font-smaller", "aria-keyshortcuts": "-" }),
+      h("span", { class: "font-label", "aria-live": "polite", title: "Text size, remembered between openings" }, [
+        String(chrome.fontPercent) + "%",
+      ]),
+      icon("A+", "font", "Larger text (+)", { "data-dir": "1", "data-focus-key": "font-larger", "aria-keyshortcuts": "+" }),
+    ]),
+    icon(chrome.fullscreen ? "⤡" : "⤢", "fullscreen", chrome.fullscreen ? "Leave fullscreen (f)" : "Fullscreen (f)", {
+      "data-focus-key": "fullscreen",
+      // Strings, not booleans: the renderer writes an empty attribute for true, which is right
+      // for disabled but wrong for an ARIA state that has to read "false" when it is off.
+      "aria-pressed": chrome.fullscreen ? "true" : "false",
+      "aria-keyshortcuts": "f",
+    }),
+  ]);
 }
 
 const VIEWS: { id: ViewId; label: string; key: string }[] = [
@@ -539,7 +609,10 @@ export function shell(chrome: Chrome, body: Spec[], overlay?: Spec): Spec {
 
   const children: Spec[] = [
     h("header", { class: "top" }, [
-      h("div", { class: "brand" }, [h("span", { class: "brand-mark" }, ["IP"]), h("span", { class: "brand-name" }, ["Interview Prep"])]),
+      h("div", { class: "brand-row" }, [
+        h("div", { class: "brand" }, [h("span", { class: "brand-mark" }, ["IP"]), h("span", { class: "brand-name" }, ["Interview Prep"])]),
+        tools(chrome),
+      ]),
       nav,
       statusBar(chrome),
     ]),

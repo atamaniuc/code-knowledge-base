@@ -243,7 +243,16 @@ describe("shortcut sheet", () => {
 });
 
 describe("shell", () => {
-  const chrome = { view: "bank" as const, progress: { answered: 3, recalled: 2 }, streak: 4, remaining: 5 };
+  const chrome = {
+    view: "bank" as const,
+    progress: { answered: 3, recalled: 2 },
+    streak: 4,
+    remaining: 5,
+    fontPercent: 100,
+    canBack: false,
+    canForward: false,
+    fullscreen: false,
+  };
 
   it("marks the open view and reports today, the streak and the queue", () => {
     const spec = shell(chrome, [emptyView("empty")]);
@@ -266,6 +275,22 @@ describe("shell", () => {
 
   it("appends the overlay when one is given", () => {
     expect(byAction(shell(chrome, [], shortcutSheetView()), "close-shortcuts")).toHaveLength(1);
+  });
+
+  it("carries the history, text-size and fullscreen controls", () => {
+    const idle = shell(chrome, []);
+    expect(byAction(idle, "back")).toHaveLength(1);
+    // Nothing behind you yet, so both arrows are inert rather than absent.
+    expect(byAction(idle, "back")[0]?.attrs?.disabled).toBe(true);
+    expect(byAction(idle, "forward")[0]?.attrs?.disabled).toBe(true);
+
+    const deep = shell({ ...chrome, canBack: true, canForward: true, fontPercent: 125, fullscreen: true }, []);
+    expect(byAction(deep, "back")[0]?.attrs?.disabled).toBe(false);
+    expect(byAction(deep, "forward")[0]?.attrs?.disabled).toBe(false);
+    expect(text(deep)).toContain("125%");
+    expect(attr(byAction(deep, "fullscreen")[0]!, "aria-pressed")).toBe("true");
+    expect(attr(byAction(idle, "fullscreen")[0]!, "aria-pressed")).toBe("false");
+    expect(byAction(deep, "font").map((node) => attr(node, "data-dir"))).toEqual(["-1", "1"]);
   });
 });
 
