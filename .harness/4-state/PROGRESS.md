@@ -19,7 +19,7 @@ times across 173 stack-scoped postings, and structured preparation for it barely
   than scripts kept here; `.harness/` holds this project's own rules, state and feedback map,
   and `harnessimo.config.json` says which checks are enforced (`make harness-doctor` prints
   it).
-- `make check`: passing (23 files, 215 tests, 4 skipped without a plan; content valid; every
+- `make check`: passing (26 files, 249 tests, 4 skipped without a plan; content valid; every
   harness gate). The validator now reports an unparseable file instead of dying on it, with
   the line and the fix — one bad file used to hide the state of the whole tree.
 - `make prep ARGS="<job-url> [--out=<file>]"` turns a posting into a rehearsal plan:
@@ -29,9 +29,21 @@ times across 173 stack-scoped postings, and structured preparation for it barely
 - Extension: `make extension ARGS="--include-drafts --plan=<file>"`, then load
   `apps/extension/dist` unpacked. Bundle **schema 2** (`docs/extension-bundle.md`) ships the
   whole bank — questions, the wiki they cite, the domain registry — plus the plan for one
-  posting. The panel is a keyboard-first three-view tool: Drill (two-stage, graded, stats and
-  streak), Bank (filters, search, show answer, drill this), Posting (emphasis, ordered plan,
-  gaps) and a wiki reader, light and dark.
+  posting. The panel is a keyboard-first tool: Drill (two-stage, graded, stats and streak),
+  Bank (filters, search, show answer, drill this), Posting (emphasis, ordered plan, gaps) and a
+  wiki reader, light and dark.
+- The panel now also: keeps its text size between openings (A- / A+ or - / +, five steps in
+  `prefs.ts`), restores the session it was hidden on (view, question, committed answer,
+  filters, expanded card, open article, scroll), navigates back and forward over those places
+  (`history.ts`, alt-arrows), goes fullscreen or falls back to a panel tab, and translates a
+  selection through a small popup at the cursor.
+- **Translate is the only thing that leaves the device.** It is isolated in `translate.ts`
+  with both free Google endpoints (clients5 first; the gtx one answers 429 under load) and the
+  manifest grants exactly those two origins — `make check` asserts the permission list, that
+  no other remote host appears in the built `panel.js`, and that the bundle read is still the
+  only literal `fetch`. Verified end to end in Chrome: a selected phrase came back in Cyrillic.
+- The toolbar icon is real PNGs, drawn by `make icons` (`scripts/make-icons.ts`): a blue
+  rounded square with IP, so the art is reproducible and the bytes we ship are in the repo.
 - pnpm pin is 12.11.2: pnpm 11 publishes no `darwin-x64` engine binary, so `make setup` failed
   on Intel macOS before any install ran.
 - Blockers: none. Nothing is waiting on a human. The whole bank is draft and unreviewed —
