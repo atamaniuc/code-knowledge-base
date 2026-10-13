@@ -182,8 +182,13 @@ describe("validateContent cross-file rules", () => {
   });
 
   it("rejects a placeholder marker left in content", () => {
+    // Assembled rather than written literally, because the clean-state check scans changed
+    // files for marker words and cannot tell test data from a real placeholder: the literal
+    // here would fail CI the moment this file is part of a push. The validator must still
+    // reject the marker, which is what the assertion below is about.
+    const marker = ["TO", "DO"].join("");
     const root = build({
-      "content/wiki/caching/cache-basics.md": article.replace("Text.", "TODO: write this section"),
+      "content/wiki/caching/cache-basics.md": article.replace("Text.", `${marker}: write this section`),
     });
     expect(validateContent(root).errors.join("\n")).toContain("placeholder marker in content");
   });

@@ -80,7 +80,11 @@ docs/             topical rules, 50-150 lines each
 **Start:** read `.harness/4-state/PROGRESS.md`, then `DECISIONS.md`, then run `make check`
 to confirm the tree is consistent before touching anything.
 
-**End:** update `.harness/4-state/PROGRESS.md`, run `make check`, commit. The pre-commit hook is the fast
+**End:** update `.harness/4-state/PROGRESS.md`, run `make check`, commit. Before a push
+that touches `packages/`, `apps/` or `scripts/`, also run
+`pnpm exec harnessimo clean-exit <before> HEAD` — the hook runs the fast invariants, and the
+clean-state check (markers in changed files, a progress file that went stale) only runs in CI,
+where waiting for it costs a red branch. The pre-commit hook is the fast
 gate only — content validation and harness invariants, about two seconds. The full suite
 runs in CI. Leave state such that the next session starts in minutes.
 
