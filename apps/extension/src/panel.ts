@@ -12,6 +12,7 @@ import {
 } from "./bank.js";
 import { articleBySlug, parseBundle, toSelectorPool, type Bundle, type Question } from "./bundle.js";
 import { mount, render } from "./dom.js";
+import { browserHost, fullscreenActive, toggleFullscreen } from "./fullscreen.js";
 import {
   canGoBack,
   canGoForward,
@@ -152,29 +153,34 @@ async function main(): Promise<void> {
     rerender();
   }
 
-  function openInTab(): void {
-    const api = (
-      globalThis as {
-        chrome?: { tabs?: { create?: (options: { url: string }) => void }; runtime?: { getURL?: (path: string) => string } };
-      }
-    ).chrome;
-    const url = api?.runtime?.getURL?.("panel.html");
-    if (url && api?.tabs?.create) {
-      api.tabs.create({ url });
-      announce("Opened the panel in a tab: a side panel cannot go fullscreen.");
-      return;
-    }
-    announce("Fullscreen is not available in this window.");
+  const fullscreenHost = browserHost(document, (globalThis as { chrome?: unknown }).chrome);
+
+  /**
+   * The button's whole job is to report what fullscreen.ts decided: a side panel cannot fill
+   * the screen itself (Chrome accepts the call there and never answers it), so the module falls
+   * back to a window it can put into fullscreen, and this only reflects the outcome.
+   */
+  async function applyFullscreen(): Promise<void> {
+    const result = await toggleFullscreen(fullscreenHost);
+    fullscreen = result.fullscreen || document.fullscreenElement !== null;
+    announce(result.message);
+    rerender();
   }
 
-  async function toggleFullscreen(): Promise<void> {
+  let refreshingFullscreen = false;
+
+  /** Leaving a fullscreen window is a window event, not a fullscreenchange, so both are read. */
+  async function refreshFullscreen(): Promise<void> {
+    if (refreshingFullscreen) return;
+    refreshingFullscreen = true;
     try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
-      else openInTab();
-    } catch {
-      // Side panels are not allowed to go fullscreen in every Chrome build; a tab always is.
-      openInTab();
+      const active = await fullscreenActive(fullscreenHost);
+      if (active !== fullscreen) {
+        fullscreen = active;
+        rerender();
+      }
+    } finally {
+      refreshingFullscreen = false;
     }
   }
 
@@ -405,7 +411,7 @@ async function main(): Promise<void> {
         return;
       }
       case "fullscreen":
-        void toggleFullscreen();
+        void applyFullscreen();
         return;
       case "none":
         return;
@@ -536,13 +542,14 @@ async function main(): Promise<void> {
     if (document.visibilityState === "hidden") persist.flush();
   });
   window.addEventListener("pagehide", () => persist.flush());
-  document.addEventListener("fullscreenchange", () => {
-    fullscreen = document.fullscreenElement !== null;
-    rerender();
-  });
+  document.addEventListener("fullscreenchange", () => void refreshFullscreen());
+  window.addEventListener("resize", () => void refreshFullscreen());
 
   // The one feature that leaves the device, wired last so its failure cannot stop the drill.
   attachSelectionTranslator({ onTranslated: (text) => announce("Translated: " + text) });
+
+  // The panel may already be filling the screen in the window it was opened into.
+  fullscreen = await fullscreenActive(fullscreenHost);
 
   rerender();
 }

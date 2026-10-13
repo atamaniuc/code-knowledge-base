@@ -52,13 +52,19 @@ body {
   padding: 0;
 }
 
+html {
+  /* The single control: the panel writes --font-size from prefs, and every text rule below
+     is expressed in rem so one step scales all of them. A px font-size here silently opts
+     out of the control, which is what panel-css.test.ts fails on. */
+  font-size: var(--font-size, 14px);
+}
+
 body {
   min-width: 320px;
   background: var(--bg);
   color: var(--fg);
-  /* One control drives every size in the sheet: the panel sets --font-size from prefs. */
   font-family: var(--font);
-  font-size: var(--font-size, 14px);
+  font-size: 1rem;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
@@ -131,13 +137,13 @@ body {
   border-radius: 6px;
   background: var(--accent);
   color: var(--accent-fg);
-  font-size: 10px;
+  font-size: 0.714286rem;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 .brand-name {
   font-weight: 650;
-  font-size: 13px;
+  font-size: 0.928571rem;
 }
 
 .nav {
@@ -146,7 +152,7 @@ body {
 }
 .nav-btn {
   font: inherit;
-  font-size: 12px;
+  font-size: 0.857143rem;
   padding: 5px 10px;
   border: 1px solid transparent;
   border-radius: 999px;
@@ -187,7 +193,7 @@ body {
 }
 .status-line {
   margin: 0;
-  font-size: 11px;
+  font-size: 0.785714rem;
   color: var(--muted);
   display: flex;
   flex-wrap: wrap;
@@ -219,12 +225,12 @@ body {
 }
 
 h1 {
-  font-size: 17px;
+  font-size: 1.214286rem;
   line-height: 1.3;
   margin: 0 0 8px;
 }
 h2 {
-  font-size: 11px;
+  font-size: 0.785714rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--muted);
@@ -260,7 +266,7 @@ li {
   border-radius: 999px;
   background: var(--surface-2);
   color: var(--muted);
-  font-size: 10.5px;
+  font-size: 0.75rem;
   line-height: 1.6;
   white-space: nowrap;
 }
@@ -270,7 +276,7 @@ li {
 .chip-tech,
 .chip-slug {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 0.714286rem;
 }
 .chip-weight {
   font-variant-numeric: tabular-nums;
@@ -334,7 +340,7 @@ button {
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--fg);
-  font-size: 12px;
+  font-size: 0.857143rem;
 }
 .ghost:hover {
   background: var(--surface-2);
@@ -344,13 +350,13 @@ button {
   border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
   background: var(--accent-soft);
   color: var(--fg);
-  font-size: 12px;
+  font-size: 0.857143rem;
   text-align: left;
 }
 
 kbd {
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 0.75rem;
   padding: 1px 5px;
   border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
   border-bottom-width: 2px;
@@ -359,7 +365,7 @@ kbd {
 }
 
 .hint {
-  font-size: 11.5px;
+  font-size: 0.821429rem;
   color: var(--muted);
   margin: 8px 0 0;
 }
@@ -378,7 +384,7 @@ kbd {
   min-width: 0;
 }
 .field-label {
-  font-size: 10px;
+  font-size: 0.714286rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--muted);
@@ -388,7 +394,7 @@ input[type="search"] {
   width: 100%;
   min-width: 0;
   font: inherit;
-  font-size: 13px;
+  font-size: 0.928571rem;
   padding: 7px 8px;
   color: var(--fg);
   background: var(--surface);
@@ -398,7 +404,7 @@ input[type="search"] {
 .count {
   grid-column: 1 / -1;
   margin: 0;
-  font-size: 11px;
+  font-size: 0.785714rem;
   color: var(--muted);
 }
 
@@ -414,7 +420,7 @@ input[type="search"] {
 /* ---------- drill ---------- */
 
 .drill .question {
-  font-size: 15.5px;
+  font-size: 1.107143rem;
   font-weight: 620;
   margin: 4px 0 10px;
 }
@@ -424,11 +430,11 @@ input[type="search"] {
   background: var(--accent-soft);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   margin-bottom: 12px;
-  font-size: 13px;
+  font-size: 0.928571rem;
 }
 .probes b {
   display: block;
-  font-size: 10px;
+  font-size: 0.714286rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--muted);
@@ -482,12 +488,12 @@ input[type="search"] {
   border-color: var(--accent);
 }
 .grade-n {
-  font-size: 15px;
+  font-size: 1.071429rem;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
 .grade-short {
-  font-size: 9.5px;
+  font-size: 0.678571rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--muted);
@@ -505,7 +511,7 @@ input[type="search"] {
   padding: 28px 14px;
 }
 .empty-title {
-  font-size: 14px;
+  font-size: 1rem;
   color: var(--fg);
   font-weight: 600;
 }
@@ -570,7 +576,7 @@ input[type="search"] {
   border-left: 3px solid var(--accent);
   background: var(--accent-soft);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  font-size: 13px;
+  font-size: 0.928571rem;
 }
 @media (min-width: 560px) {
   .wiki {
@@ -585,7 +591,7 @@ input[type="search"] {
 }
 
 .md {
-  font-size: 13.5px;
+  font-size: 0.964286rem;
 }
 .md h1,
 .md h2,
@@ -599,20 +605,20 @@ input[type="search"] {
   margin: 18px 0 6px;
 }
 .md h1 {
-  font-size: 18px;
+  font-size: 1.285714rem;
 }
 .md h2 {
-  font-size: 15px;
+  font-size: 1.071429rem;
 }
 .md h3 {
-  font-size: 13.5px;
+  font-size: 0.964286rem;
 }
 .md p {
   margin: 0 0 10px;
 }
 .md code {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 0.857143rem;
   padding: 1px 4px;
   border-radius: 4px;
   background: var(--surface-2);
@@ -641,11 +647,11 @@ input[type="search"] {
   gap: 12px;
 }
 .posting-source h1 {
-  font-size: 16px;
+  font-size: 1.142857rem;
 }
 .url {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 0.785714rem;
   color: var(--muted);
   word-break: break-all;
   margin: 0;
@@ -707,7 +713,7 @@ button.plan-item:hover {
   text-decoration: underline;
 }
 .reason {
-  font-size: 11.5px;
+  font-size: 0.821429rem;
   color: var(--muted);
   margin: 4px 0 0;
 }
@@ -750,7 +756,7 @@ button.plan-item:hover {
 .shortcuts dd {
   margin: 0;
   color: var(--muted);
-  font-size: 12.5px;
+  font-size: 0.892857rem;
 }
 
 .error h1 {
@@ -801,7 +807,7 @@ button.plan-item:hover {
   background: transparent;
   color: var(--fg);
   font: inherit;
-  font-size: 0.92em;
+  font-size: 0.92rem;
   line-height: 1;
   cursor: pointer;
 }
@@ -823,15 +829,18 @@ button.plan-item:hover {
 .font-label {
   min-width: 36px;
   color: var(--muted);
-  font-size: 0.78em;
+  font-size: 0.78rem;
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
 
-/* A side panel cannot always go fullscreen; when it does, keep the measure readable. */
-html:fullscreen .shell {
-  max-width: 860px;
-  margin: 0 auto;
+/* Fullscreen is not a side panel: it runs in a window as wide as the screen, and a 1920px
+   line is unreadable, so the column keeps a measure and centres itself. */
+@media (min-width: 900px) {
+  .shell {
+    max-width: 860px;
+    margin: 0 auto;
+  }
 }
 
 html:fullscreen .main {
@@ -865,7 +874,7 @@ html:fullscreen .main {
   border-radius: var(--radius-sm);
   background: var(--surface);
   box-shadow: var(--shadow);
-  font-size: 0.95em;
+  font-size: 0.95rem;
 }
 
 .translate-pop-source {
@@ -914,3 +923,4 @@ html:fullscreen .main {
   font: inherit;
   cursor: pointer;
 }
+

@@ -11,3 +11,6 @@ dist/
 .drill/
 .pipeline/
 apps/extension/dist/
+# scratch from driving a real Chrome against the built extension; the profile in here is a
+# browser profile, and a browser profile must never be committable
+.tmp-chrome/
