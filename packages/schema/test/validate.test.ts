@@ -88,6 +88,18 @@ describe("validateContent cross-file rules", () => {
     expect(validateContent(root).errors).toEqual([]);
   });
 
+  it("reports an unparseable file instead of dying on it", () => {
+    // One unquoted colon used to escape as an exception and hide every other file's state,
+    // so an author could not tell their own content from someone else's mistake.
+    const root = build({
+      "content/wiki/caching/broken.md": "---\nslug: broken\ntitle: Caching: the hard parts\n---\n\n## Body\n",
+      "content/wiki/caching/cache-basics.md": article,
+    });
+    const errors = validateContent(root).errors.join("\n");
+    expect(errors).toContain("unparseable");
+    expect(errors).toContain("content/wiki/caching/broken.md");
+  });
+
   it("rejects a question pointing at an article that does not exist", () => {
     const root = build({
       "content/wiki/caching/cache-basics.md": article,

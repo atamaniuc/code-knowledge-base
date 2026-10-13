@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Question } from "@schema/question.js";
-import { buildPrepPlan, type JobProfile, targetLevels } from "../src/prep.js";
+import { buildPrepPlan, type JobProfile, targetLevels, toBundlePlan } from "../src/prep.js";
 
 const q = (over: Partial<Question> & { id: string; slug: string; domain: string }): Question =>
   ({
@@ -92,5 +92,32 @@ describe("buildPrepPlan", () => {
 
   it("caps the core plan so a session stays a session", () => {
     expect(buildPrepPlan(questions, profile, { limit: 1 }).core).toHaveLength(1);
+  });
+});
+
+describe("toBundlePlan", () => {
+  it("stores identities and reasons, not copies of the questions", () => {
+    // The bundle already carries the question; a plan that duplicated it would drift from
+    // the bank the moment either was edited.
+    const bundle = toBundlePlan(buildPrepPlan(questions, profile), "2026-10-13T00:00:00.000Z");
+    expect(bundle.core[0]).toEqual({
+      id: "1",
+      slug: "nestjs-boundaries",
+      domain: "backend-node",
+      levels: ["senior"],
+      reason: "backend-node is a stated requirement; names NestJS; asks at senior, the level the posting states",
+    });
+    expect(bundle.source).toEqual({
+      title: "Senior Node.js Engineer",
+      url: "https://example.com/job",
+      level: "senior",
+      capturedAt: "2026-10-13T00:00:00.000Z",
+    });
+  });
+
+  it("keeps the emphasis the panel shows, strongest requirement first", () => {
+    const bundle = toBundlePlan(buildPrepPlan(questions, profile), "2026-10-13T00:00:00.000Z");
+    expect(bundle.emphasis.map((e) => e.domain)).toEqual(["backend-node", "messaging", "caching"]);
+    expect(bundle.emphasis[2]).toEqual({ domain: "caching", required: [], optional: ["Redis"] });
   });
 });

@@ -17,7 +17,7 @@ import { readYaml, walk } from "@schema/load.js";
 import { Question } from "@schema/question.js";
 import { DomainsFile } from "@schema/registry.js";
 import { detectLevel, extract, loadGazetteer } from "../packages/pipeline/src/gazetteer.js";
-import { buildPrepPlan, type JobProfile } from "../packages/pipeline/src/prep.js";
+import { buildPrepPlan, type JobProfile, toBundlePlan } from "../packages/pipeline/src/prep.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
@@ -165,13 +165,16 @@ gaps — required by the posting, nothing in the bank`);
   for (const g of plan.gaps) console.log(`  ! ${g.domain.padEnd(13)} ${g.technologies.join(", ")}`);
 }
 
+const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
+const outFile = flag("out")
+  ? resolve(ROOT, flag("out") as string)
+  : join(ROOT, ".pipeline/prep", `${new Date().toISOString().slice(0, 10)}-${slug}.json`);
+mkdirSync(dirname(outFile), { recursive: true });
+writeFileSync(outFile, JSON.stringify(toBundlePlan(plan, new Date().toISOString()), null, 2));
+const rel = outFile.replace(ROOT + "/", "");
+
 const domainsInPlan = [...new Set(plan.core.map((r) => r.question.domain))];
 console.log(`
-next: make drill ARGS="--domains=${domainsInPlan.join(",") || "all"} --levels=${plan.levels.slice(0, 2).join(",")} --include-drafts --limit=${Math.max(plan.core.length, 1)}"`);
-
-const outDir = join(ROOT, ".pipeline/prep");
-mkdirSync(outDir, { recursive: true });
-const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
-const outFile = join(outDir, `${new Date().toISOString().slice(0, 10)}-${slug}.json`);
-writeFileSync(outFile, JSON.stringify({ captured_at: new Date().toISOString(), ...plan }, null, 2));
-console.log(`plan archived: ${outFile.replace(ROOT + "/", "")}`);
+plan written: ${rel}`);
+console.log(`next: make drill ARGS="--domains=${domainsInPlan.join(",") || "all"} --levels=${plan.levels.slice(0, 2).join(",")} --include-drafts --limit=${Math.max(plan.core.length, 1)}"`);
+console.log(`      make extension ARGS="--include-drafts --plan=${rel}"`);

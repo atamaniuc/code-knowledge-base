@@ -42,6 +42,50 @@ export interface PrepPlan {
   gaps: Gap[];
 }
 
+/** The plan as a bundle stores it: identities and reasons, not second copies of questions. */
+export interface PlanEntry {
+  id: string;
+  slug: string;
+  domain: string;
+  levels: string[];
+  reason: string;
+}
+
+export interface BundlePlan {
+  source: { title: string; url: string; level: string | null; capturedAt: string };
+  levels: string[];
+  emphasis: { domain: string; required: string[]; optional: string[] }[];
+  core: PlanEntry[];
+  stretch: PlanEntry[];
+  gaps: Gap[];
+}
+
+export function toBundlePlan(plan: PrepPlan, capturedAt: string): BundlePlan {
+  const entry = (r: RankedQuestion): PlanEntry => ({
+    id: r.question.id,
+    slug: r.question.slug,
+    domain: r.question.domain,
+    levels: r.question.levels,
+    reason: r.reasons.join("; "),
+  });
+  const emphasis = [...new Set(plan.profile.mentions.map((m) => m.domain))]
+    .map((domain) => ({
+      domain,
+      required: plan.profile.mentions.filter((m) => m.domain === domain && m.strength === "required").map((m) => m.canonical),
+      optional: plan.profile.mentions.filter((m) => m.domain === domain && m.strength === "optional").map((m) => m.canonical),
+    }))
+    .sort((a, b) => b.required.length - a.required.length || a.domain.localeCompare(b.domain));
+
+  return {
+    source: { title: plan.profile.title, url: plan.profile.url, level: plan.profile.level, capturedAt },
+    levels: plan.levels,
+    emphasis,
+    core: plan.core.map(entry),
+    stretch: plan.stretch.map(entry),
+    gaps: plan.gaps,
+  };
+}
+
 const ORDER = ["junior", "middle", "senior", "staff", "head"];
 
 /**

@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import type { ZodType } from "zod";
 import { SHIPPABLE_STATUSES } from "./common.js";
 import { DsaConcept, DsaPattern, DsaTask } from "./dsa.js";
@@ -44,29 +44,54 @@ export function validateContent(root: string): ValidationResult {
   const domainRequiresTech = new Map((domainsFile[0]?.value.domains ?? []).map((d) => [d.id, d.requires_tech]));
   const sourceById = new Map((sourcesFile[0]?.value.sources ?? []).map((s) => [s.id, s]));
 
-  const wiki = parseAll(
-    WikiFrontmatter,
-    walk(join(contentDir, "wiki"), [".md"]).map((f) => readMarkdown(root, f)),
-    errors,
-  );
+  /**
+   * Reads every file, reporting the ones it cannot parse.
+   *
+   * A YAML error used to escape as an exception and kill the run, so a single unquoted colon
+   * in one file hid the state of every other file — an author could not tell whether their
+   * own content was valid. Unreadable is now a validation error like any other, and the rest
+   * of the tree is still checked.
+   */
+  const readAll = (files: string[], reader: (file: string) => LoadedFile): LoadedFile[] => {
+    const out: LoadedFile[] = [];
+    for (const file of files) {
+      try {
+        out.push(reader(file));
+      } catch (err) {
+        // The parser knows the line; showing it saves the author from bisecting a 100-line file.
+        const pos = (err as { linePos?: { line: number; col: number }[] }).linePos?.[0];
+        const source = pos ? readFileSync(file, "utf8").split(/\r?\n/)[pos.line - 1]?.trim() : undefined;
+        errors.push(
+          `${relative(root, file)}${pos ? `:${pos.line}` : ""}\n  what: unparseable: ${(err as Error).message.split("\n")[0]}\n` +
+            (source ? `  line: ${source.slice(0, 120)}\n` : "") +
+            "  why:  a file that cannot be read is invisible to every other rule, so it would ship as if it had passed\n" +
+            '  fix:  repair the YAML — a value containing ": " has to be quoted, and a block scalar (">-" or "|") has\n' +
+            "        to keep every continuation line at the same indentation as its first",
+        );
+      }
+    }
+    return out;
+  };
+
+  const wiki = parseAll(WikiFrontmatter, readAll(walk(join(contentDir, "wiki"), [".md"]), (f) => readMarkdown(root, f)), errors);
   const questions = parseAll(
     Question,
-    walk(join(contentDir, "questions"), [".yaml", ".yml"]).map((f) => readYaml(root, f)),
+    readAll(walk(join(contentDir, "questions"), [".yaml", ".yml"]), (f) => readYaml(root, f)),
     errors,
   );
   const concepts = parseAll(
     DsaConcept,
-    walk(join(contentDir, "dsa/concepts"), [".yaml", ".yml"]).map((f) => readYaml(root, f)),
+    readAll(walk(join(contentDir, "dsa/concepts"), [".yaml", ".yml"]), (f) => readYaml(root, f)),
     errors,
   );
   const patterns = parseAll(
     DsaPattern,
-    walk(join(contentDir, "dsa/patterns"), [".yaml", ".yml"]).map((f) => readYaml(root, f)),
+    readAll(walk(join(contentDir, "dsa/patterns"), [".yaml", ".yml"]), (f) => readYaml(root, f)),
     errors,
   );
   const tasks = parseAll(
     DsaTask,
-    walk(join(contentDir, "dsa/tasks"), [".yaml", ".yml"]).map((f) => readYaml(root, f)),
+    readAll(walk(join(contentDir, "dsa/tasks"), [".yaml", ".yml"]), (f) => readYaml(root, f)),
     errors,
   );
 
