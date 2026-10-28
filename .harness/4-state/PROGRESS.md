@@ -7,7 +7,7 @@ State carried between sessions. Read this first; update it before you stop.
 **Phase 0, writing the wedge domain.** `agentic` is the differentiator: LLM appears 41
 times across 173 stack-scoped postings, and structured preparation for it barely exists.
 
-- Content: **100 articles, 115 questions, 1 interview brief of 117 questions**, 3 DSA entities,
+- Content: **100 articles, 115 questions, 1 interview brief of 119 questions**, 3 DSA entities,
   all `review_status: draft`
   (the gates promote; nobody writes a promoted status by hand). The bank now covers the
   posting's whole stack rather than one wedge: Node runtime and NestJS 12 and Hono,
@@ -38,7 +38,7 @@ times across 173 stack-scoped postings, and structured preparation for it barely
   `target`, `stages`, then groups split by `side` (technical / domain) with per-question
   `asks`, an ordered spoken `answer`, `traps` and `follow_ups`. The bank answers "do you know
   this topic"; a brief answers "will they ask this, and what are they listening for". The first
-  brief is the Finverity Senior Node.js role: **117 questions in 21 groups**, built from the
+  brief is the Finverity Senior Node.js role: **119 questions in 21 groups**, built from the
   posting, the Program Capacity assignment, the SCF explainer and the personal defence notes, and
   checked against the solution repository itself (PRD requirements, the eight invariants, 22
   ADRs, the assumptions table) —
