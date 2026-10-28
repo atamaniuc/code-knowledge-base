@@ -830,6 +830,11 @@ button.plan-item:hover {
   background: var(--ok-soft);
   color: var(--ok);
 }
+.chip-side-personal {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--fg);
+}
 .chip-likelihood-high {
   background: var(--warn-soft);
   color: var(--warn);

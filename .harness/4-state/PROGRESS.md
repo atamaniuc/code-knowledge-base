@@ -7,7 +7,7 @@ State carried between sessions. Read this first; update it before you stop.
 **Phase 0, writing the wedge domain.** `agentic` is the differentiator: LLM appears 41
 times across 173 stack-scoped postings, and structured preparation for it barely exists.
 
-- Content: **100 articles, 115 questions, 1 interview brief of 119 questions**, 3 DSA entities,
+- Content: **100 articles, 115 questions, 1 interview brief of 129 questions**, 3 DSA entities,
   all `review_status: draft`
   (the gates promote; nobody writes a promoted status by hand). The bank now covers the
   posting's whole stack rather than one wedge: Node runtime and NestJS 12 and Hono,
@@ -38,7 +38,7 @@ times across 173 stack-scoped postings, and structured preparation for it barely
   `target`, `stages`, then groups split by `side` (technical / domain) with per-question
   `asks`, an ordered spoken `answer`, `traps` and `follow_ups`. The bank answers "do you know
   this topic"; a brief answers "will they ask this, and what are they listening for". The first
-  brief is the Finverity Senior Node.js role: **119 questions in 21 groups**, built from the
+  brief is the Finverity Senior Node.js role: **129 questions in 22 groups**, built from the
   posting, the Program Capacity assignment, the SCF explainer and the personal defence notes, and
   checked against the solution repository itself (PRD requirements, the eight invariants, 22
   ADRs, the assumptions table) —
@@ -65,6 +65,15 @@ times across 173 stack-scoped postings, and structured preparation for it barely
   theme with its count, groups that lose every match disappear, a question's own tags are the
   way to its neighbours, and the chosen theme survives the panel being closed. Idempotency
   spreads over six groups; the theme collects those nine answers in one page.
+- **Life and STAR questions are now personal, and grounded in the CV.** `side` grew a third
+  rung — `personal`, "о себе и карьере" — because "tell me about yourself" is rehearsed neither
+  as engineering nor as domain. The `about-you` group (five questions: two-minute bio, why
+  fintech and why here, strengths and weaknesses, lead or engineer, what you are looking for),
+  the AI questions and the STAR group live on it. The incident and code-review answers now
+  carry the CV's own facts (99.9% SLA platform, Redis cache-miss triage; tech lead of six
+  engineers plus QA, hiring and onboarding), and four STAR stories come straight from the
+  resume: the Quorum Strangler Fig monolith decomposition, the Lambda cost reduction, the
+  address-resolution accuracy case, and the SLA incident.
 - **Space and enter no longer get swallowed outside the drill.** They used to be
   `preventDefault`-ed in every view, so a focused row in the bank or a brief question could not
   be activated from the keyboard at all. Now the panel returns before `preventDefault` unless

@@ -510,6 +510,7 @@ const BRIEF_LABELS = {
   all: "все",
   technical: "техническая сторона",
   domain: "доменная сторона",
+  personal: "о себе и карьере",
   high: "спросят почти наверняка",
   asks: "Что проверяют",
   answer: "Ответ",
@@ -546,7 +547,9 @@ function briefCount(questions: BriefQuestion[]): string {
 }
 
 function sideLabel(side: string): string {
-  return side === "domain" ? BRIEF_LABELS.domain : BRIEF_LABELS.technical;
+  if (side === "domain") return BRIEF_LABELS.domain;
+  if (side === "personal") return BRIEF_LABELS.personal;
+  return BRIEF_LABELS.technical;
 }
 
 function tagTitle(tags: TagInfo[], id: string): string {

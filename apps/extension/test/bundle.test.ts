@@ -199,7 +199,7 @@ describe("baked interview brief", () => {
     for (const item of briefs) {
       for (const group of item.groups) {
         expect(group.intro.length, group.id).toBeGreaterThan(0);
-        expect(["technical", "domain"], group.id).toContain(group.side);
+        expect(["technical", "domain", "personal"], group.id).toContain(group.side);
         for (const question of group.questions) {
           expect(question.asks.length, question.id).toBeGreaterThan(0);
           expect(question.answer.length, question.id).toBeGreaterThanOrEqual(2);

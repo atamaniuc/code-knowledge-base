@@ -10,8 +10,15 @@ import { Domain, IsoDate, ReviewStatus, Slug } from "./common.js";
  * technology you have to defend, and the business you have to understand.
  */
 
-/** Which half of the interview a group rehearses. */
-export const INTERVIEW_SIDES = ["technical", "domain"] as const;
+/**
+ * Which half of the interview a group rehearses.
+ *
+ * "technical" is the technology to defend, "domain" the business to understand, and
+ * "personal" is the one the schema did not have until the CV came along: the questions about
+ * you, your career and your stories, which are rehearsed neither as engineering nor as
+ * domain.
+ */
+export const INTERVIEW_SIDES = ["technical", "domain", "personal"] as const;
 export const InterviewSide = z.enum(INTERVIEW_SIDES);
 export type InterviewSide = z.infer<typeof InterviewSide>;
 

@@ -53,8 +53,10 @@ interview that follows.
 - A brief is **not** a bank question. The bank answers "do you know this topic"; a brief
   answers "will they ask this, and what are they listening for". That is why it carries a
   `target` (role, company, domain, stack) and `stages` rather than a domain and levels.
-- `groups[].side` is `technical` or `domain` — the technology you have to defend, and the
-  business you have to understand. One axis, because a candidate rehearses them differently.
+- `groups[].side` is `technical`, `domain` or `personal` — the technology to defend,
+  the business to understand, and the questions about you, your career and your stories. The
+  third rung exists because "tell me about yourself" is rehearsed neither as engineering nor as
+  domain, and labelling it either would lie about the answer it expects.
 - `likelihood` has two rungs, not five. A five-point probability is a number an author
   invents; the only ordering decision that matters is what to answer before there is time
   for the rest.
