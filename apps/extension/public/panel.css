@@ -844,6 +844,11 @@ button.plan-item:hover {
 .brief-tags .chips {
   margin-bottom: 0;
   gap: 6px;
+  /* Twenty themes in a side panel is six wrapped rows, which would push the brief itself
+     below the fold. Three rows and a scroll keeps every theme reachable without hiding it. */
+  max-height: 7rem;
+  overflow-y: auto;
+  justify-content: flex-start;
 }
 button.tag-chip {
   border: 1px solid var(--line);
