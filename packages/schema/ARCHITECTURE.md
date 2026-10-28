@@ -5,7 +5,7 @@ content through this package, so a rule that is not expressed here is not enforc
 
 ## Responsibilities
 
-- Zod schemas for every content entity (`common`, `wiki`, `question`, `dsa`, `registry`)
+- Zod schemas for every content entity (`common`, `wiki`, `question`, `dsa`, `interview`, `registry`)
 - Loading and frontmatter parsing (`load.ts`)
 - Cross-file rules that no single-file schema can express (`validate.ts`)
 - Turning failures into guidance an agent can act on (`explain.ts`)

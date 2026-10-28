@@ -11,6 +11,7 @@ import {
   filtersBar,
   GRADE_SCALE,
   metaRow,
+  interviewView,
   postingView,
   shell,
   shortcutSheetView,
@@ -18,7 +19,7 @@ import {
   type BankInput,
   type Spec,
 } from "../src/view.js";
-import { article, DOMAINS, plan, question, WIKI_TITLES } from "./fixture.js";
+import { article, brief, DOMAINS, plan, question, WIKI_TITLES } from "./fixture.js";
 
 const rag = question();
 const cache = question({
@@ -231,6 +232,83 @@ describe("posting", () => {
   });
 });
 
+describe("interview brief", () => {
+  const input = (overrides: Partial<Parameters<typeof interviewView>[0]> = {}) => ({
+    briefs: [brief()],
+    domains: DOMAINS,
+    expanded: null,
+    wikiTitles: WIKI_TITLES,
+    ...overrides,
+  });
+
+  it("says so when a build baked no brief", () => {
+    expect(text(interviewView(input({ briefs: [] })))).toContain("No interview brief is baked into this build");
+  });
+
+  it("introduces the target, the process and how many questions are almost certain", () => {
+    const rendered = text(interviewView(input()));
+    expect(rendered).toContain("Finverity · Senior Node.js Engineer");
+    expect(rendered).toContain("Senior Node.js Engineer");
+    expect(rendered).toContain("Техническое интервью");
+    expect(rendered).toContain("90");
+    expect(rendered).toContain("2 вопроса · 1 спросят почти наверняка");
+  });
+
+  it("declines its count the way the language does, not the way a template does", () => {
+    // Every group here holds one question, so the count on the page is the group count.
+    const withGroups = (n: number) => {
+      const one = brief();
+      const group = one.groups[0];
+      if (!group) throw new Error("fixture lost its group");
+      const groups = Array.from({ length: n }, (_, index) => ({ ...group, id: "group-" + String(index) }));
+      return text(interviewView(input({ briefs: [{ ...one, groups }] })));
+    };
+    expect(withGroups(1)).toContain("1 вопрос ·");
+    expect(withGroups(3)).toContain("3 вопроса ·");
+    expect(withGroups(5)).toContain("5 вопросов ·");
+  });
+
+  it("groups the questions by the side of the interview they rehearse", () => {
+    const rendered = text(interviewView(input()));
+    expect(rendered).toContain("Защита ядра решения");
+    expect(rendered).toContain("техническая сторона");
+    expect(rendered).toContain("доменная сторона");
+    expect(rendered).toContain("Вопросы по сторонам интервью");
+  });
+
+  it("keeps the answer off the screen until the question is opened", () => {
+    const closed = interviewView(input());
+    expect(JSON.stringify(closed)).not.toContain("Называю окно");
+    const trigger = byAction(closed, "toggle");
+    expect(trigger.map((node) => attr(node, "data-id"))).toEqual(["limit-race-atomic-update", "fx-drift-on-release"]);
+    expect(attr(trigger[0] as Spec, "aria-expanded")).toBe("false");
+  });
+
+  it("opens one answer: what is checked, the answer, the traps and the follow-up", () => {
+    const spec = interviewView(input({ expanded: "limit-race-atomic-update" }));
+    const rendered = text(spec);
+    expect(rendered).toContain("Что проверяют");
+    expect(rendered).toContain("Называю окно прочитал-проверил-записал источником бага");
+    expect(rendered).toContain("Ловушки");
+    expect(rendered).toContain("Распределённая блокировка");
+    expect(rendered).toContain("Что спросят дальше");
+    expect(rendered).toContain("Что если запросы придут на разные реплики?");
+    expect(attr(byAction(spec, "toggle")[0] as Spec, "aria-expanded")).toBe("true");
+    // The other question stays shut.
+    expect(rendered).not.toContain("Пересчёт по текущему курсу");
+  });
+
+  it("links back to the articles behind a group", () => {
+    const spec = interviewView(input());
+    expect(byAction(spec, "wiki").map((node) => attr(node, "data-slug"))).toEqual(["evaluating-rag"]);
+    expect(text(spec)).toContain("Evaluating a RAG system");
+  });
+
+  it("falls back to the id when a group names a domain the registry does not carry", () => {
+    const orphan = brief({ target: { role: "r", company: "c", domain: "unknown-domain", stack: [] } });
+    expect(text(interviewView(input({ briefs: [orphan] })))).toContain("Unknown Domain");
+  });
+});
 describe("shortcut sheet", () => {
   it("lists every shortcut and is labelled as a dialog", () => {
     const spec = shortcutSheetView();
@@ -256,7 +334,7 @@ describe("shell", () => {
 
   it("marks the open view and reports today, the streak and the queue", () => {
     const spec = shell(chrome, [emptyView("empty")]);
-    expect(byAction(spec, "view").map((node) => attr(node, "data-view"))).toEqual(["drill", "bank", "posting"]);
+    expect(byAction(spec, "view").map((node) => attr(node, "data-view"))).toEqual(["drill", "bank", "posting", "interview"]);
     expect(attr(specs(spec).find((node) => attr(node, "data-view") === "bank") ?? spec, "aria-current")).toBe("page");
     const rendered = text(spec);
     expect(rendered).toContain("2 of 3 recalled today");

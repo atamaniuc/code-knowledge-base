@@ -70,6 +70,16 @@ const REMEDIES: Remedy[] = [
     fix: "reference existing article slugs, or leave the list empty for an entry-point article",
   },
   {
+    match: /(^|\.)asks$/,
+    why: "a brief question is preparation for a specific moment, and the moment is the check the interviewer runs — not the facts in the answer",
+    fix: "state in one sentence what they are verifying by asking it; if you cannot, the question belongs in the bank instead",
+  },
+  {
+    match: /(^|\.)answer$/,
+    why: "an answer spoken out loud is a sequence of points, not one sentence: a single bullet is a fact to recognise, which is what the interview does not test",
+    fix: "split it into 3-5 bullets in the order they should be said",
+  },
+  {
     match: /^review_status$/,
     why: "only auto_verified and verified content reaches a trainer session or a public surface, and promotion has to be traceable to the gate run that granted it",
     fix: "leave the item at draft; the verifier promotes it once every gate passes with stored evidence",

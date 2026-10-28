@@ -32,19 +32,32 @@ promoted content, so a bundle that carried `draft` verbatim would render an empt
 however many questions it held. Without the flag only `auto_verified` and `verified` items
 ship, which is what a store build must do.
 
-## Shape: schema 2
+## Shape: schema 3
 
 ```ts
 {
-  schema: 2,
+  schema: 3,
   generatedAt: string,
   questions: Shipped[],
   wiki: ShippedArticle[],
   domains: { id, title, description }[],
   levels: string[],            // ordered junior → head
   plan: BundlePlan | null,
+  interview: ShippedBrief[],   // empty when no brief was authored or promoted
 }
 ```
+
+`ShippedBrief` is `{ id, slug, lang, title, summary, target{role, company, domain, stack},
+stages[{name, minutes, note}], groups[{id, title, side, domain|null, intro, wikiRefs[],
+questions[{id, question, likelihood, asks, answer[], traps[], followUps[]}]}] }`. The
+brief's headings are Russian inside the panel while its chrome stays English, because the
+content it frames is Russian: an English frame around a Russian answer reads like a
+translation that stopped halfway down the page.
+
+Schema 3 only adds a field, and the reader still accepts schema 1 and 2 documents — a
+bundle without `interview` parses to `[]` and the Interview view explains how to build
+one. The bump is for the other direction: a consumer that pins the schema number should
+never meet a field it was not written to read.
 
 `Shipped` is what the panel renders and nothing else: `id, slug, domain, topic, subtopic?,
 levels, tracks, tech (string | null), question, probes, answerStrategy?, expected[{text,
@@ -80,6 +93,10 @@ impossible.
 - The drill stays two-stage: question and probes first, expected answer only after the user
   commits. Seeing the answer while thinking produces recognition, which is what an interview
   does not test.
+- **Space and enter commit a drill answer and mean nothing anywhere else.** They used to be
+  swallowed in every view, which left a focused button in the bank or the brief impossible to
+  activate from the keyboard. The panel now returns before `preventDefault` outside the
+  drill, so a list row opens the way a button is supposed to.
 
 `apps/extension/test/` asserts these against the built output rather than the source, which
 is why they run after `make extension`.

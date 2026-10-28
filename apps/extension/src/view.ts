@@ -1,5 +1,5 @@
 import { statusOf, type BankStatus, type Filters, type Option } from "./bank.js";
-import { domainTitle, type DomainInfo, type Plan, type Question, type WikiArticle } from "./bundle.js";
+import { domainTitle, type Brief, type BriefGroup, type BriefQuestion, type DomainInfo, type Plan, type Question, type WikiArticle } from "./bundle.js";
 import { SHORTCUTS, type ViewId } from "./keys.js";
 import { renderMarkdown } from "./markdown.js";
 import { progressPercent, type DayProgress } from "./stats.js";
@@ -471,6 +471,180 @@ export function postingView(input: PostingInput): Spec {
   ]);
 }
 
+export interface InterviewInput {
+  briefs: Brief[];
+  domains: DomainInfo[];
+  /** The one question whose answer is showing, or null. Keyed on the brief question id. */
+  expanded: string | null;
+  wikiTitles: Record<string, string>;
+}
+
+/**
+ * The brief's own headings are Russian, because the brief is.
+ *
+ * The panel's chrome stays English everywhere else; here the content is a Russian rehearsal
+ * for a Russian-speaking candidate, and an English frame around a Russian answer reads like a
+ * translation that stopped halfway down the page.
+ */
+const BRIEF_LABELS = {
+  process: "Как устроен процесс",
+  stages: "минут",
+  sides: "Вопросы по сторонам интервью",
+  technical: "техническая сторона",
+  domain: "доменная сторона",
+  high: "спросят почти наверняка",
+  asks: "Что проверяют",
+  answer: "Ответ",
+  traps: "Ловушки",
+  followUps: "Что спросят дальше",
+  reread: "Перечитать",
+  nothing: "Здесь пока пусто",
+};
+
+/**
+ * Russian counts take three forms: 1 вопрос, 2 вопроса, 5 вопросов.
+ *
+ * The panel is English everywhere else, so this is the one place a count has to be declined
+ * — and "1 вопросов" in the first line of the page reads as a machine translation.
+ */
+function plural(n: number, one: string, few: string, many: string): string {
+  const mod100 = n % 100;
+  const mod10 = n % 10;
+  if (mod100 >= 11 && mod100 <= 14) return many;
+  if (mod10 === 1) return one;
+  if (mod10 >= 2 && mod10 <= 4) return few;
+  return many;
+}
+
+function questionCount(n: number): string {
+  return String(n) + " " + plural(n, "вопрос", "вопроса", "вопросов");
+}
+
+/** One line about size and about what to answer first, without a verb to disagree with. */
+function briefCount(groups: BriefGroup[]): string {
+  const all = groups.reduce((sum, group) => sum + group.questions.length, 0);
+  const high = groups.reduce((sum, group) => sum + group.questions.filter((q) => q.likelihood === "high").length, 0);
+  return questionCount(all) + " · " + String(high) + " " + BRIEF_LABELS.high;
+}
+
+function sideLabel(side: string): string {
+  return side === "domain" ? BRIEF_LABELS.domain : BRIEF_LABELS.technical;
+}
+
+function briefQuestionItem(question: BriefQuestion, input: InterviewInput): Spec {
+  const open = input.expanded === question.id;
+  const head: Spec[] = [
+    chip(question.likelihood === "high" ? "high" : "medium", "likelihood-" + question.likelihood),
+    h("span", { class: "brief-q" }, [question.question]),
+  ];
+  const children: Spec[] = [
+    h(
+      "button",
+      {
+        type: "button",
+        class: "brief-toggle",
+        "data-action": "toggle",
+        "data-id": question.id,
+        "data-focus-key": "brief-" + question.id,
+        "aria-expanded": open,
+      },
+      head,
+    ),
+  ];
+
+  if (open) {
+    const body: Spec[] = [
+      h("div", { class: "probes" }, [h("b", {}, [BRIEF_LABELS.asks]), h("span", {}, [question.asks])]),
+      h("section", {}, [
+        h("h2", {}, [BRIEF_LABELS.answer]),
+        h("ol", { class: "expected" }, question.answer.map((line) => h("li", { class: "expected-item" }, [h("span", { class: "expected-text" }, [line])]))),
+      ]),
+    ];
+    if (question.traps.length > 0) {
+      body.push(
+        h("section", {}, [h("h2", {}, [BRIEF_LABELS.traps]), h("ul", {}, question.traps.map((trap) => h("li", {}, [trap])))]),
+      );
+    }
+    if (question.followUps.length > 0) {
+      body.push(
+        h("section", {}, [
+          h("h2", {}, [BRIEF_LABELS.followUps]),
+          h("ul", {}, question.followUps.map((follow) => h("li", {}, [follow]))),
+        ]),
+      );
+    }
+    children.push(h("div", { class: "answer" }, body));
+  }
+
+  return h("li", { class: "brief-item" }, children);
+}
+
+function briefGroupCard(group: BriefGroup, input: InterviewInput): Spec {
+  const high = group.questions.filter((q) => q.likelihood === "high").length;
+  const refs = group.wikiRefs.map((slug) =>
+    h(
+      "button",
+      { type: "button", class: "link", "data-action": "wiki", "data-slug": slug, "data-anchor": "", "data-focus-key": "brief-wiki-" + slug },
+      [input.wikiTitles[slug] ?? slug],
+    ),
+  );
+
+  return h("section", { class: "card brief-group" }, [
+    h("h3", {}, [group.title]),
+    h("div", { class: "meta" }, [
+      chip(sideLabel(group.side), "side-" + group.side),
+      group.domain ? chip(domainTitle(input.domains, group.domain)) : null,
+      chip(questionCount(group.questions.length) + (high > 0 ? " · " + String(high) + " high" : ""), "muted"),
+    ]),
+    h("p", { class: "hint" }, [group.intro]),
+    h("ul", { class: "brief-questions" }, group.questions.map((question) => briefQuestionItem(question, input))),
+    refs.length > 0 ? h("div", { class: "brief-refs" }, [h("span", { class: "field-label" }, [BRIEF_LABELS.reread]), ...refs]) : null,
+  ]);
+}
+
+export function interviewView(input: InterviewInput): Spec {
+  if (input.briefs.length === 0) {
+    return emptyView(
+      "No interview brief is baked into this build.",
+      "Author one under content/interview/, then rebuild with make extension --include-drafts. The bank works without one.",
+    );
+  }
+
+  return h(
+    "div",
+    { class: "interview" },
+    input.briefs.flatMap((brief) => {
+      const heading: Spec[] = [
+        h("h1", {}, [brief.title]),
+        h("div", { class: "meta" }, [
+          chip(brief.target.role),
+          chip(brief.target.company, "muted"),
+          chip(domainTitle(input.domains, brief.target.domain)),
+          ...brief.target.stack.map((tech) => chip(tech, "tech")),
+        ]),
+        h("p", { class: "summary" }, [brief.summary]),
+        h("p", { class: "count" }, [briefCount(brief.groups)]),
+      ];
+      const stages = brief.stages.map((stage) =>
+        h("li", { class: "stage" }, [
+          h("b", {}, [stage.name]),
+          chip(String(stage.minutes) + " " + BRIEF_LABELS.stages, "muted"),
+          h("span", { class: "stage-note" }, [stage.note]),
+        ]),
+      );
+      return [
+        h("article", { class: "card brief-head" }, heading),
+        h("section", { class: "card brief-process" }, [
+          h("h2", {}, [BRIEF_LABELS.process]),
+          stages.length > 0 ? h("ol", { class: "stages" }, stages) : h("p", { class: "hint" }, [BRIEF_LABELS.nothing]),
+        ]),
+        h("h2", { class: "brief-sides" }, [BRIEF_LABELS.sides]),
+        ...brief.groups.map((group) => briefGroupCard(group, input)),
+      ];
+    }),
+  );
+}
+
 export function shortcutSheetView(): Spec {
   return h("div", { class: "overlay" }, [
     h("div", { class: "sheet", role: "dialog", "aria-modal": "true", "aria-label": "Keyboard shortcuts", tabindex: "-1", "data-autofocus": "true" }, [
@@ -551,6 +725,7 @@ const VIEWS: { id: ViewId; label: string; key: string }[] = [
   { id: "drill", label: "Drill", key: "d" },
   { id: "bank", label: "Bank", key: "b" },
   { id: "posting", label: "Posting", key: "p" },
+  { id: "interview", label: "Interview", key: "i" },
 ];
 
 function statusBar(chrome: Chrome): Spec {

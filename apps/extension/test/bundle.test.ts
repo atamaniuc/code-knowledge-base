@@ -49,6 +49,32 @@ interface DistPlan {
   stretch: DistPlanEntry[];
   gaps: { domain: string; technologies: string[] }[];
 }
+interface DistBriefQuestion {
+  id: string;
+  question: string;
+  likelihood: string;
+  asks: string;
+  answer: string[];
+  traps: string[];
+  followUps: string[];
+}
+interface DistBrief {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  target: { role: string; company: string; domain: string; stack: string[] };
+  stages: { name: string; minutes: number; note: string }[];
+  groups: {
+    id: string;
+    title: string;
+    side: string;
+    domain: string | null;
+    intro: string;
+    wikiRefs: string[];
+    questions: DistBriefQuestion[];
+  }[];
+}
 interface DistBundle {
   schema: number;
   generatedAt: string;
@@ -57,6 +83,7 @@ interface DistBundle {
   domains: DistDomain[];
   levels: string[];
   plan: DistPlan | null;
+  interview: DistBrief[];
 }
 
 const bundle = JSON.parse(readFileSync(join(dist, "content.json"), "utf8")) as DistBundle;
@@ -76,8 +103,8 @@ const emptyLog: ReviewLog = {
  * the selector — rather than discovered by loading the extension.
  */
 describe("bundled bank", () => {
-  it("is content bundle schema 2", () => {
-    expect(bundle.schema).toBe(2);
+  it("is content bundle schema 3", () => {
+    expect(bundle.schema).toBe(3);
     expect(typeof bundle.generatedAt).toBe("string");
     expect(bundle.generatedAt.length).toBeGreaterThan(0);
   });
@@ -142,6 +169,56 @@ describe("bundled bank", () => {
   });
 });
 
+/**
+ * A brief is the one part of the bundle whose ids are keys rather than labels: the panel
+ * expands a question by id and the history stack remembers it. A duplicate would open the
+ * wrong answer, which is a defect no screenshot would catch.
+ */
+describe("baked interview brief", () => {
+  const briefs = bundle.interview ?? [];
+
+  it("ships the brief authored for this target", () => {
+    expect(briefs.length).toBeGreaterThan(0);
+    for (const item of briefs) {
+      expect(item.title.length, item.slug).toBeGreaterThan(0);
+      expect(item.summary.length, item.slug).toBeGreaterThan(0);
+      expect(item.stages.length, item.slug).toBeGreaterThan(0);
+      expect(item.groups.length, item.slug).toBeGreaterThan(0);
+    }
+  });
+
+  it("keeps every question id unique across every brief", () => {
+    const ids = briefs.flatMap((item) => item.groups.flatMap((group) => group.questions.map((q) => q.id)));
+    expect(ids.length).toBeGreaterThan(0);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("ships each question with an answer and what it checks", () => {
+    for (const item of briefs) {
+      for (const group of item.groups) {
+        expect(group.intro.length, group.id).toBeGreaterThan(0);
+        expect(["technical", "domain"], group.id).toContain(group.side);
+        for (const question of group.questions) {
+          expect(question.asks.length, question.id).toBeGreaterThan(0);
+          expect(question.answer.length, question.id).toBeGreaterThanOrEqual(2);
+          expect(["high", "medium"], question.id).toContain(question.likelihood);
+        }
+      }
+    }
+  });
+
+  it("names only domains and articles this bundle carries", () => {
+    const domains = new Set(bundle.domains.map((domain) => domain.id));
+    const articles = new Set(bundle.wiki.map((article) => article.slug));
+    for (const item of briefs) {
+      expect(domains.has(item.target.domain), item.target.domain).toBe(true);
+      for (const group of item.groups) {
+        if (group.domain) expect(domains.has(group.domain), group.domain).toBe(true);
+        for (const ref of group.wikiRefs) expect(articles.has(ref), group.id + " -> " + ref).toBe(true);
+      }
+    }
+  });
+});
 describe("baked plan", () => {
   it.skipIf(bundle.plan === null)("names only questions this bundle carries", () => {
     if (!bundle.plan) return;

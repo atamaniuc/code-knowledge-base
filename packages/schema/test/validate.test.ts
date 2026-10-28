@@ -200,3 +200,84 @@ describe("validateContent cross-file rules", () => {
     expect(validateContent(root).errors.join("\n")).toContain('prerequisite "missing-article" has no article');
   });
 });
+/** A brief for the cross-file rules: one target, one group, one question. */
+const brief = (overrides: string) => `id: 8f0d7c1e-0c1a-4a5e-9d1f-3b2c4d5e6f70
+slug: example-brief
+lang: ru
+title: Example brief
+summary: A rehearsal brief for one target, written to exercise the cross-file rules.
+target:
+  role: Senior Node.js Engineer
+  company: Example Ltd
+  domain: caching
+  stack: [Redis]
+stages:
+  - name: Technical interview
+    minutes: 90
+    note: Defence of the assignment, then questions.
+groups:
+  - id: assignment-defense
+    title: Defending the assignment
+    side: technical
+    domain: caching
+    intro: What the reviewer checks first, and the order to answer in.
+    wiki_refs: [cache-basics]
+    questions:
+      - id: limit-race
+        question: Two reservations arrive at once with room for one. What happens?
+        likelihood: high
+        asks: Whether the check lives in the database rather than in the service.
+        answer:
+          - Name the read-check-write window as the bug, not the traffic spike.
+          - Put the check inside the write, where the row lock re-evaluates it.
+review_status: draft
+${overrides}`;
+
+describe("validateContent interview briefs", () => {
+  it("accepts a brief whose domain and wiki reference resolve", () => {
+    const root = build({
+      "content/wiki/caching/cache-basics.md": article,
+      "content/interview/example.yaml": brief(""),
+    });
+    expect(validateContent(root).errors).toEqual([]);
+    expect(validateContent(root).counts.interview_briefs).toBe(1);
+  });
+
+  it("rejects a group pointing at an article that does not exist", () => {
+    // The link is what a reader follows when an answer will not come out.
+    const root = build({
+      "content/wiki/caching/cache-basics.md": article,
+      "content/interview/example.yaml": brief("").replace("wiki_refs: [cache-basics]", "wiki_refs: [no-such-article]"),
+    });
+    expect(validateContent(root).errors.join("\n")).toContain('article "no-such-article" does not exist');
+  });
+
+  it("rejects two briefs claiming the same question id", () => {
+    // The id is the key the panel expands and the history records; a duplicate opens the
+    // wrong answer rather than merely looking wrong.
+    const root = build({
+      "content/wiki/caching/cache-basics.md": article,
+      "content/interview/one.yaml": brief(""),
+      "content/interview/two.yaml": brief("").replace("slug: example-brief", "slug: second-brief"),
+    });
+    const errors = validateContent(root).errors.join("\n");
+    expect(errors).toContain('question id "limit-race" is already used in');
+  });
+
+  it("rejects two briefs claiming the same slug", () => {
+    const root = build({
+      "content/wiki/caching/cache-basics.md": article,
+      "content/interview/one.yaml": brief(""),
+      "content/interview/two.yaml": brief("").replace("limit-race", "another-race"),
+    });
+    expect(validateContent(root).errors.join("\n")).toContain('brief slug "example-brief" is used by more than one file');
+  });
+
+  it("rejects a group rehearsing a domain the registry does not carry", () => {
+    const root = build({
+      "content/wiki/caching/cache-basics.md": article,
+      "content/interview/example.yaml": brief("").replace("    domain: caching", "    domain: quantum"),
+    });
+    expect(validateContent(root).errors.join("\n")).toContain('unknown domain "quantum"');
+  });
+});

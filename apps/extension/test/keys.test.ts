@@ -27,6 +27,7 @@ describe("resolveKey", () => {
     expect(press("g", "d").action).toEqual({ type: "view", view: "drill" });
     expect(press("g", "b").action).toEqual({ type: "view", view: "bank" });
     expect(press("g", "p").action).toEqual({ type: "view", view: "posting" });
+    expect(press("g", "i").action).toEqual({ type: "view", view: "interview" });
   });
 
   it("clears a half-typed chord on an unknown second key", () => {
@@ -52,7 +53,7 @@ describe("resolveKey", () => {
 describe("SHORTCUTS", () => {
   it("documents every gesture the resolver implements", () => {
     const keys = SHORTCUTS.map((s) => s.keys).join(" ");
-    for (const expected of ["space", "0 – 5", "/", "g then d", "g then b", "g then p", "?", "esc"]) {
+    for (const expected of ["space", "0 – 5", "/", "g then d", "g then b", "g then p", "g then i", "?", "esc"]) {
       expect(keys).toContain(expected);
     }
   });

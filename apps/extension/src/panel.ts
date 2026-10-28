@@ -258,6 +258,9 @@ async function main(): Promise<void> {
     if (viewId === "posting") {
       return [view.postingView({ plan: bundle.plan, questions: bundle.questions, domains: bundle.domains })];
     }
+    if (viewId === "interview") {
+      return [view.interviewView({ briefs: bundle.interview, domains: bundle.domains, expanded, wikiTitles: wikiTitles() })];
+    }
     const question = currentQuestion(snap);
     if (!question) {
       const empty = emptyState({
@@ -430,7 +433,9 @@ async function main(): Promise<void> {
       }
       case "view": {
         const target = element.getAttribute("data-view");
-        if (target === "drill" || target === "bank" || target === "posting") apply({ type: "view", view: target });
+        if (target === "drill" || target === "bank" || target === "posting" || target === "interview") {
+          apply({ type: "view", view: target });
+        }
         return;
       }
       case "toggle": {
@@ -532,6 +537,10 @@ async function main(): Promise<void> {
     if (action.type === "none") return;
     // A digit is a grade only while an answer is committed and nothing is covering it.
     if (action.type === "grade" && (viewId !== "drill" || wiki !== null || sheet || !revealed)) return;
+    // Space and enter commit a drill answer and nothing else. Swallowing them in the other
+    // views would stop a focused button from ever being activated from the keyboard, which is
+    // how every list row and every brief question is opened.
+    if (action.type === "reveal" && (viewId !== "drill" || wiki !== null || sheet)) return;
     event.preventDefault();
     apply(action);
   });

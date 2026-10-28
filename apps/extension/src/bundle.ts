@@ -97,6 +97,45 @@ export interface Plan {
   gaps: PlanGap[];
 }
 
+export interface BriefQuestion {
+  id: string;
+  question: string;
+  likelihood: string;
+  /** What the interviewer is checking by asking this. */
+  asks: string;
+  answer: string[];
+  traps: string[];
+  followUps: string[];
+}
+
+export interface BriefGroup {
+  id: string;
+  title: string;
+  /** "technical" or "domain": which half of the interview the group rehearses. */
+  side: string;
+  domain: string | null;
+  intro: string;
+  wikiRefs: string[];
+  questions: BriefQuestion[];
+}
+
+export interface BriefStage {
+  name: string;
+  minutes: number;
+  note: string;
+}
+
+export interface Brief {
+  id: string;
+  slug: string;
+  lang: string;
+  title: string;
+  summary: string;
+  target: { role: string; company: string; domain: string; stack: string[] };
+  stages: BriefStage[];
+  groups: BriefGroup[];
+}
+
 export interface Bundle {
   schema: number;
   generatedAt: string;
@@ -105,6 +144,7 @@ export interface Bundle {
   domains: DomainInfo[];
   levels: string[];
   plan: Plan | null;
+  interview: Brief[];
 }
 
 /** Raised when `content.json` is not a bundle at all. */
@@ -248,6 +288,60 @@ function readPlan(raw: unknown, questions: Question[]): Plan | null {
   };
 }
 
+function readBriefQuestion(raw: Record<string, unknown>, index: number): BriefQuestion {
+  const id = str(raw.id, "q".concat(String(index)));
+  return {
+    id,
+    question: str(raw.question),
+    likelihood: str(raw.likelihood, "medium"),
+    asks: str(raw.asks),
+    answer: strings(raw.answer),
+    traps: strings(raw.traps),
+    followUps: strings(raw.followUps ?? raw.follow_ups),
+  };
+}
+
+function readBriefGroup(raw: Record<string, unknown>, index: number): BriefGroup {
+  const id = str(raw.id, "group".concat(String(index)));
+  return {
+    id,
+    title: str(raw.title, humanize(id)),
+    side: str(raw.side, "technical"),
+    domain: optionalStr(raw.domain) ?? null,
+    intro: str(raw.intro),
+    wikiRefs: strings(raw.wikiRefs ?? raw.wiki_refs),
+    questions: records(raw.questions).map(readBriefQuestion),
+  };
+}
+
+/**
+ * A brief is optional content: a build that only baked the bank carries none, and the panel
+ * says so rather than showing an empty interview.
+ */
+function readBrief(raw: Record<string, unknown>, index: number): Brief {
+  const id = str(raw.id, "brief".concat(String(index)));
+  const target = isRecord(raw.target) ? raw.target : {};
+  return {
+    id,
+    slug: str(raw.slug, id),
+    lang: str(raw.lang, "en"),
+    title: str(raw.title, "A rehearsal brief"),
+    summary: str(raw.summary),
+    target: {
+      role: str(target.role),
+      company: str(target.company),
+      domain: str(target.domain),
+      stack: strings(target.stack),
+    },
+    stages: records(raw.stages).map((stage) => ({
+      name: str(stage.name),
+      minutes: num(stage.minutes),
+      note: str(stage.note),
+    })),
+    groups: records(raw.groups).map(readBriefGroup),
+  };
+}
+
 function deriveLevels(questions: Question[]): string[] {
   const seen = new Set(questions.flatMap((q) => q.levels));
   return LEVEL_ORDER.filter((level) => seen.has(level));
@@ -265,6 +359,7 @@ export function parseBundle(raw: unknown): Bundle {
     domains: readDomains(raw.domains),
     levels: strings(raw.levels).length > 0 ? strings(raw.levels) : deriveLevels(questions),
     plan: readPlan(raw.plan, questions),
+    interview: records(raw.interview).map(readBrief),
   };
 }
 

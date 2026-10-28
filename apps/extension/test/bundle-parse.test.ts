@@ -9,7 +9,7 @@ import {
 } from "../src/bundle.js";
 
 const shipped = {
-  schema: 2,
+  schema: 3,
   generatedAt: "2026-10-13T16:37:41.191Z",
   questions: [
     {
@@ -54,12 +54,44 @@ const shipped = {
     stretch: [],
     gaps: [{ domain: "data", technologies: ["ClickHouse"] }],
   },
+  interview: [
+    {
+      id: "b-1",
+      slug: "finverity-senior-node-js",
+      lang: "ru",
+      title: "Finverity · Senior Node.js Engineer",
+      summary: "Защита тестового задания и разговор с CTO.",
+      target: { role: "Senior Node.js Engineer", company: "Finverity", domain: "agentic", stack: ["Node.js"] },
+      stages: [{ name: "Техническое интервью", minutes: 90, note: "Защита решения." }],
+      groups: [
+        {
+          id: "assignment-core",
+          title: "Защита ядра решения",
+          side: "technical",
+          domain: "agentic",
+          intro: "Три операции и один инвариант.",
+          wikiRefs: ["evaluating-rag"],
+          questions: [
+            {
+              id: "limit-race-atomic-update",
+              question: "Два резерва одновременно. Как гарантируешь один?",
+              likelihood: "high",
+              asks: "Где живёт проверка лимита.",
+              answer: ["Называю окно источником бага.", "Проверка уезжает в условие записи."],
+              traps: ["Блокировка в Redis поверх строки в базе."],
+              followUps: ["Что если запросы придут на разные реплики?"],
+            },
+          ],
+        },
+      ],
+    },
+  ],
 };
 
 describe("parseBundle", () => {
-  it("reads the schema 2 shape field for field", () => {
+  it("reads the schema 3 shape field for field", () => {
     const bundle = parseBundle(shipped);
-    expect(bundle.schema).toBe(2);
+    expect(bundle.schema).toBe(3);
     expect(bundle.questions).toHaveLength(1);
     expect(bundle.questions[0]).toMatchObject({
       id: "q-1",
@@ -76,6 +108,23 @@ describe("parseBundle", () => {
     expect(bundle.domains).toEqual([
       { id: "agentic", title: "Agentic & AI-assisted development", description: "LLMs in production." },
     ]);
+  });
+
+  it("reads a brief down to the question that has to be rehearsed", () => {
+    const [brief] = parseBundle(shipped).interview;
+    expect(brief?.target.role).toBe("Senior Node.js Engineer");
+    expect(brief?.stages).toEqual([{ name: "Техническое интервью", minutes: 90, note: "Защита решения." }]);
+    expect(brief?.groups[0]?.side).toBe("technical");
+    expect(brief?.groups[0]?.wikiRefs).toEqual(["evaluating-rag"]);
+    expect(brief?.groups[0]?.questions[0]).toEqual({
+      id: "limit-race-atomic-update",
+      question: "Два резерва одновременно. Как гарантируешь один?",
+      likelihood: "high",
+      asks: "Где живёт проверка лимита.",
+      answer: ["Называю окно источником бага.", "Проверка уезжает в условие записи."],
+      traps: ["Блокировка в Redis поверх строки в базе."],
+      followUps: ["Что если запросы придут на разные реплики?"],
+    });
   });
 
   it("normalises the plan the bundler writes", () => {
@@ -99,6 +148,7 @@ describe("parseBundle", () => {
     const bundle = parseBundle({ schema: 2, questions: [{ id: "q-9", domain: "data" }] });
     expect(bundle.wiki).toEqual([]);
     expect(bundle.plan).toBeNull();
+    expect(bundle.interview).toEqual([]);
     expect(bundle.domains).toEqual([]);
     expect(bundle.questions[0]?.probes).toBe("");
     expect(bundle.questions[0]?.slug).toBe("q-9");

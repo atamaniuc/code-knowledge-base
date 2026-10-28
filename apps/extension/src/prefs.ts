@@ -58,7 +58,7 @@ export function canShrink(step: number): boolean {
   return nearestStep(step) !== FONT_STEPS[0];
 }
 
-const VIEWS: ViewId[] = ["drill", "bank", "posting"];
+const VIEWS: ViewId[] = ["drill", "bank", "posting", "interview"];
 const FIELDS: (keyof Filters)[] = ["domain", "level", "tech", "query"];
 
 function readFilters(raw: unknown): Filters {

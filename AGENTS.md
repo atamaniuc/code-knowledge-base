@@ -61,6 +61,7 @@ content/          source of truth, independent of any application
   wiki/           Markdown + frontmatter; facts live here first
   questions/      YAML, derived from wiki sections via wiki_refs
   dsa/            concepts (complexity), patterns, tasks
+  interview/      one rehearsal brief per target: posting, take-home, the interview after it
   domains.yaml    domain tree and market weights
   sources.yaml    external sources and licenses — human-edited only
   tech-aliases.yaml  gazetteer for vacancy parsing

@@ -18,6 +18,7 @@ import { build } from "esbuild";
 import { parse as parseYaml } from "yaml";
 import { readMarkdown, readYaml, walk } from "@schema/load.js";
 import { Question } from "@schema/question.js";
+import { InterviewBrief } from "@schema/interview.js";
 import { DomainsFile } from "@schema/registry.js";
 import { SHIPPABLE_STATUSES } from "@schema/common.js";
 import { WikiFrontmatter } from "@schema/wiki.js";
@@ -47,6 +48,34 @@ interface Shipped {
   difficulty: number;
   minutes: number;
   wikiRefs: { slug: string; anchor: string }[];
+}
+
+/** A rehearsal brief, trimmed to what the panel renders. Authoring metadata stays in content/. */
+interface ShippedBrief {
+  id: string;
+  slug: string;
+  lang: string;
+  title: string;
+  summary: string;
+  target: { role: string; company: string; domain: string; stack: string[] };
+  stages: { name: string; minutes: number; note: string }[];
+  groups: {
+    id: string;
+    title: string;
+    side: string;
+    domain: string | null;
+    intro: string;
+    wikiRefs: string[];
+    questions: {
+      id: string;
+      question: string;
+      likelihood: string;
+      asks: string;
+      answer: string[];
+      traps: string[];
+      followUps: string[];
+    }[];
+  }[];
 }
 
 interface ShippedArticle {
@@ -133,6 +162,59 @@ for (const file of walk(join(ROOT, "content/wiki"), [".md"])) {
   });
 }
 
+/**
+ * Rehearsal briefs.
+ *
+ * One target, one file: the posting, its assignment and the interview that follows. They go
+ * through the same promotion gate as the bank — a brief is an opinion about what will be
+ * asked, so it ships only when a build asked for drafts.
+ */
+const interview: ShippedBrief[] = [];
+for (const file of walk(join(ROOT, "content/interview"), [".yaml", ".yml"])) {
+  let parsed;
+  try {
+    parsed = InterviewBrief.safeParse(readYaml(ROOT, file).data);
+  } catch {
+    unreadable.push(file.replace(ROOT + "/", ""));
+    continue;
+  }
+  if (!parsed.success) continue;
+  const brief = parsed.data;
+  if (!includeDrafts && !(SHIPPABLE_STATUSES as readonly string[]).includes(brief.review_status)) continue;
+
+  interview.push({
+    id: brief.id,
+    slug: brief.slug,
+    lang: brief.lang,
+    title: brief.title.trim(),
+    summary: brief.summary.trim(),
+    target: {
+      role: brief.target.role.trim(),
+      company: brief.target.company.trim(),
+      domain: brief.target.domain,
+      stack: brief.target.stack.map((s) => s.trim()),
+    },
+    stages: brief.stages.map((s) => ({ name: s.name.trim(), minutes: s.minutes, note: s.note.trim() })),
+    groups: brief.groups.map((g) => ({
+      id: g.id,
+      title: g.title.trim(),
+      side: g.side,
+      domain: g.domain ?? null,
+      intro: g.intro.trim(),
+      wikiRefs: g.wiki_refs.map((r) => r),
+      questions: g.questions.map((q) => ({
+        id: q.id,
+        question: q.question.trim(),
+        likelihood: q.likelihood,
+        asks: q.asks.trim(),
+        answer: q.answer.map((a) => a.trim()),
+        traps: q.traps.map((t) => t.trim()),
+        followUps: q.follow_ups.map((x) => x.trim()),
+      })),
+    })),
+  });
+}
+
 const domains = DomainsFile.parse(parseYaml(readFileSync(join(ROOT, "content/domains.yaml"), "utf8")))
   .domains.map((d) => ({ id: d.id, title: d.title, description: d.description.trim() }));
 
@@ -182,19 +264,20 @@ await build({
 });
 
 const bundle = {
-  schema: 2,
+  schema: 3,
   generatedAt: new Date().toISOString(),
   questions,
   wiki,
   domains,
   levels,
   plan,
+  interview,
 };
 
 mkdirSync(OUT, { recursive: true });
 writeFileSync(join(OUT, "content.json"), JSON.stringify(bundle));
 if (unreadable.length) {
-  console.warn(`skipped ${unreadable.length} unparseable question file(s) — run make validate:`);
+  console.warn(`skipped ${String(unreadable.length)} unparseable content file(s) — run make validate:`);
   for (const f of unreadable) console.warn("  " + f);
 }
 
@@ -202,5 +285,7 @@ console.log(
   `built extension -> apps/extension/dist` +
     `\nbundled ${questions.length} questions across ${new Set(questions.map((q) => q.domain)).size} domains` +
     `, ${wiki.length} wiki articles` +
-    `${plan ? `, a posting plan` : ""}${includeDrafts ? " (drafts included)" : ""}`,
+    `${plan ? `, a posting plan` : ""}` +
+    `${interview.length > 0 ? `, ${String(interview.length)} interview brief(s)` : ""}` +
+    `${includeDrafts ? " (drafts included)" : ""}`,
 );

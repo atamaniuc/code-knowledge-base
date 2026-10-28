@@ -721,6 +721,125 @@ button.plan-item:hover {
   opacity: 0.7;
 }
 
+/* ---------- interview brief ---------- */
+
+.interview {
+  display: grid;
+  gap: 12px;
+}
+.brief-head h1 {
+  font-size: 1.142857rem;
+}
+.brief-head .summary {
+  font-size: 0.892857rem;
+  color: var(--fg);
+  margin: 0 0 8px;
+}
+.brief-head .count {
+  margin: 0;
+  font-size: 0.821429rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.stages {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.stage {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.stage-note {
+  grid-column: 1 / -1;
+  font-size: 0.821429rem;
+  color: var(--muted);
+}
+.brief-sides {
+  margin: 8px 0 0;
+}
+.brief-group h3 {
+  font-size: 1rem;
+  margin: 0 0 6px;
+}
+.brief-questions {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.brief-item {
+  margin: 0;
+}
+.brief-toggle {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--fg);
+  cursor: pointer;
+}
+.brief-toggle:hover {
+  border-color: var(--accent);
+}
+.brief-toggle[aria-expanded="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.brief-q {
+  font-weight: 600;
+  min-width: 0;
+}
+.brief-item .answer {
+  padding: 8px 10px 2px;
+  border: 1px solid var(--line);
+  border-top: 0;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  background: var(--surface-2);
+}
+.brief-item .answer .probes {
+  margin-bottom: 10px;
+}
+.brief-refs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+}
+.chip-side-technical {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.chip-side-domain {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.chip-likelihood-high {
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-variant-numeric: tabular-nums;
+}
+.chip-likelihood-medium {
+  border: 1px dashed var(--line);
+  background: transparent;
+}
+
 /* ---------- shortcut sheet ---------- */
 
 .overlay {

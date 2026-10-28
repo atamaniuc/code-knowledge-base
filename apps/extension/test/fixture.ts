@@ -1,4 +1,4 @@
-import type { DomainInfo, Plan, Question, WikiArticle } from "../src/bundle.js";
+import type { Brief, DomainInfo, Plan, Question, WikiArticle } from "../src/bundle.js";
 
 /** One question with every field the panel reads, so a test can override just what it is about. */
 export function question(overrides: Partial<Question> = {}): Question {
@@ -54,3 +54,57 @@ export function plan(overrides: Partial<Plan> = {}): Plan {
 }
 
 export const WIKI_TITLES: Record<string, string> = { "evaluating-rag": "Evaluating a RAG system" };
+
+/** One brief with the fields the panel reads, so a test can override just what it is about. */
+export function brief(overrides: Partial<Brief> = {}): Brief {
+  return {
+    id: "b-1",
+    slug: "finverity-senior-node-js",
+    lang: "ru",
+    title: "Finverity · Senior Node.js Engineer",
+    summary: "Защита тестового задания и разговор с CTO.",
+    target: { role: "Senior Node.js Engineer", company: "Finverity", domain: "agentic", stack: ["Node.js", "PostgreSQL"] },
+    stages: [{ name: "Техническое интервью", minutes: 90, note: "Защита решения и техническая дискуссия." }],
+    groups: [
+      {
+        id: "assignment-core",
+        title: "Защита ядра решения",
+        side: "technical",
+        domain: "agentic",
+        intro: "Три операции, один инвариант, где он живёт.",
+        wikiRefs: ["evaluating-rag"],
+        questions: [
+          {
+            id: "limit-race-atomic-update",
+            question: "Два резерва приходят одновременно, свободно миллион. Как гарантируешь один?",
+            likelihood: "high",
+            asks: "Понимание, что проверка и запись должны быть одной операцией в базе.",
+            answer: ["Называю окно прочитал-проверил-записал источником бага.", "Проверка уезжает в условие записи."],
+            traps: ["Распределённая блокировка поверх строки в базе."],
+            followUps: ["Что если запросы придут на разные реплики?"],
+          },
+        ],
+      },
+      {
+        id: "money-fx",
+        title: "Деньги и валюты",
+        side: "domain",
+        domain: null,
+        intro: "Инвойс в евро, программа в долларах.",
+        wikiRefs: [],
+        questions: [
+          {
+            id: "fx-drift-on-release",
+            question: "Курс ушёл за девяносто дней. Сколько освободить?",
+            likelihood: "medium",
+            asks: "Освобождается сохранённая сумма, а не пересчитанная.",
+            answer: ["Освобождаю ту сумму, которая была занята при резерве.", "Пересчёт по текущему курсу создаёт лимит из воздуха."],
+            traps: [],
+            followUps: [],
+          },
+        ],
+      },
+    ],
+    ...overrides,
+  };
+}

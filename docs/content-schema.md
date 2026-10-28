@@ -45,6 +45,30 @@ at it, so an article update propagates to everything built on it.
 - `provenance` is present only on imported items and is checked against the license
   registry.
 
+## Interview brief
+
+`content/interview/{slug}.yaml` — one file per target: a posting, its take-home, the
+interview that follows.
+
+- A brief is **not** a bank question. The bank answers "do you know this topic"; a brief
+  answers "will they ask this, and what are they listening for". That is why it carries a
+  `target` (role, company, domain, stack) and `stages` rather than a domain and levels.
+- `groups[].side` is `technical` or `domain` — the technology you have to defend, and the
+  business you have to understand. One axis, because a candidate rehearses them differently.
+- `likelihood` has two rungs, not five. A five-point probability is a number an author
+  invents; the only ordering decision that matters is what to answer before there is time
+  for the rest.
+- `asks` is the same idea as `probes` on a question: an author who cannot say what the
+  interviewer is checking cannot say how to prepare for it.
+- `answer` is an ordered list of spoken points, minimum two. One bullet is a fact to
+  recognise, and recognition is exactly what the interview does not test.
+- `groups[].wiki_refs` points at the articles to reread when an answer will not come out.
+  They resolve against the wiki like any other reference, so the brief is never the only
+  place a fact lives.
+- Question ids are **global keys**, not labels: the panel expands a question by id and the
+  history stack remembers it, so a duplicate anywhere in `content/interview/` is a
+  validation error rather than a cosmetic repeat.
+
 ## DSA
 
 Three entities, because DSA is practice rather than Q&A.

@@ -7,7 +7,8 @@ State carried between sessions. Read this first; update it before you stop.
 **Phase 0, writing the wedge domain.** `agentic` is the differentiator: LLM appears 41
 times across 173 stack-scoped postings, and structured preparation for it barely exists.
 
-- Content: **100 articles, 115 questions**, 3 DSA entities, all `review_status: draft`
+- Content: **100 articles, 115 questions, 1 interview brief**, 3 DSA entities, all
+  `review_status: draft`
   (the gates promote; nobody writes a promoted status by hand). The bank now covers the
   posting's whole stack rather than one wedge: Node runtime and NestJS 12 and Hono,
   Kubernetes/Helm/AWS/Docker/CI, PostgreSQL 18/Redis 8/Kafka 4, gRPC/GraphQL/REST, SRE-grade
@@ -19,7 +20,7 @@ times across 173 stack-scoped postings, and structured preparation for it barely
   than scripts kept here; `.harness/` holds this project's own rules, state and feedback map,
   and `harnessimo.config.json` says which checks are enforced (`make harness-doctor` prints
   it).
-- `make check`: passing (28 files, 271 tests, 4 skipped without a plan; content valid; every
+- `make check`: passing (29 files, 295 tests, 4 skipped without a plan; content valid; every
   harness gate). The validator now reports an unparseable file instead of dying on it, with
   the line and the fix — one bad file used to hide the state of the whole tree.
 - `make prep ARGS="<job-url> [--out=<file>]"` turns a posting into a rehearsal plan:
@@ -27,11 +28,25 @@ times across 173 stack-scoped postings, and structured preparation for it barely
   stretch domains the posting omits, and the gaps that are the authoring backlog. The posting
   is always an argument; no URL is stored in the repository.
 - Extension: `make extension ARGS="--include-drafts --plan=<file>"`, then load
-  `apps/extension/dist` unpacked. Bundle **schema 2** (`docs/extension-bundle.md`) ships the
-  whole bank — questions, the wiki they cite, the domain registry — plus the plan for one
-  posting. The panel is a keyboard-first tool: Drill (two-stage, graded, stats and streak),
-  Bank (filters, search, show answer, drill this), Posting (emphasis, ordered plan, gaps) and a
-  wiki reader, light and dark.
+  `apps/extension/dist` unpacked. Bundle **schema 3** (`docs/extension-bundle.md`) ships the
+  whole bank — questions, the wiki they cite, the domain registry, the interview briefs — plus
+  the plan for one posting. The panel is a keyboard-first tool: Drill (two-stage, graded, stats
+  and streak), Bank (filters, search, show answer, drill this), Posting (emphasis, ordered
+  plan, gaps), Interview and a wiki reader, light and dark.
+- **Interview is a new entity, not a filter over the bank.** `content/interview/{slug}.yaml`
+  holds one rehearsal brief per target — the posting, its take-home, the interview after it:
+  `target`, `stages`, then groups split by `side` (technical / domain) with per-question
+  `asks`, an ordered spoken `answer`, `traps` and `follow_ups`. The bank answers "do you know
+  this topic"; a brief answers "will they ask this, and what are they listening for". The first
+  brief is the Finverity Senior Node.js role: 55 questions in 10 groups, built from the posting,
+  the Program Capacity assignment and the SCF explainer, and citing the wiki groups it leans on.
+  Question ids are global keys — the panel expands by id and the history stack records it — so a
+  duplicate anywhere under `content/interview/` is a validation error, not a cosmetic repeat.
+- **Space and enter no longer get swallowed outside the drill.** They used to be
+  `preventDefault`-ed in every view, so a focused row in the bank or a brief question could not
+  be activated from the keyboard at all. Now the panel returns before `preventDefault` unless
+  the drill is the view, and the brief is fully operable with keys: tab to a question, space to
+  open it, space again to close it.
 - The panel now also: keeps its text size between openings (A- / A+ or - / +, five steps in
   `prefs.ts`), restores the session it was hidden on (view, question, committed answer,
   filters, expanded card, open article, scroll), navigates back and forward over those places

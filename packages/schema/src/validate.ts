@@ -4,6 +4,7 @@ import type { ZodType } from "zod";
 import { SHIPPABLE_STATUSES } from "./common.js";
 import { DsaConcept, DsaPattern, DsaTask } from "./dsa.js";
 import { formatIssue } from "./explain.js";
+import { InterviewBrief } from "./interview.js";
 import { type LoadedFile, readMarkdown, readYaml, walk } from "./load.js";
 import { Question } from "./question.js";
 import { DomainsFile, SourcesFile, TechAliasesFile } from "./registry.js";
@@ -94,6 +95,11 @@ export function validateContent(root: string): ValidationResult {
     readAll(walk(join(contentDir, "dsa/tasks"), [".yaml", ".yml"]), (f) => readYaml(root, f)),
     errors,
   );
+  const briefs = parseAll(
+    InterviewBrief,
+    readAll(walk(join(contentDir, "interview"), [".yaml", ".yml"]), (f) => readYaml(root, f)),
+    errors,
+  );
 
   const wikiSlugs = new Set(wiki.map((w) => w.value.slug));
   const questionSlugs = new Set(questions.map((q) => q.value.slug));
@@ -171,6 +177,52 @@ export function validateContent(root: string): ValidationResult {
     }
   }
 
+  /**
+   * Briefs are the one entity whose ids are global rather than file-scoped.
+   *
+   * A bank question has a uuid and a slug that only its own file can claim; a brief's
+   * question id is a kebab key the panel expands and the history stack remembers, so two
+   * briefs claiming it would make the second one open the first one's answer.
+   */
+  const briefSlugs = new Set<string>();
+  const briefQuestionIds = new Map<string, string>();
+  for (const { file, value } of briefs) {
+    if (briefSlugs.has(value.slug)) {
+      errors.push(
+        `${file}: slug\n  what: brief slug "${value.slug}" is used by more than one file\n` +
+          "  why:  the bundle and the panel address a brief by slug; a duplicate makes one of them unreachable\n" +
+          "  fix:  give each target its own slug",
+      );
+    }
+    briefSlugs.add(value.slug);
+    domainRef(file, value.target.domain);
+
+    for (const group of value.groups) {
+      if (group.domain) domainRef(file, group.domain);
+      for (const ref of group.wiki_refs) {
+        if (!wikiSlugs.has(ref)) {
+          errors.push(
+            `${file}: groups.${group.id}.wiki_refs\n  what: article "${ref}" does not exist\n` +
+              "  why:  this is the link shown when an answer will not come out; a dangling one sends the reader nowhere\n" +
+              "  fix:  point at an existing article, or write it",
+          );
+        }
+      }
+      for (const question of group.questions) {
+        const owner = briefQuestionIds.get(question.id);
+        if (owner) {
+          errors.push(
+            `${file}: groups.${group.id}.questions.${question.id}\n  what: question id "${question.id}" is already used in ${owner}\n` +
+              "  why:  the panel expands a question and the history stack records it by this id, so a repeat shows the wrong answer\n" +
+              "  fix:  rename one of them — the id is a key, the question text is the label",
+          );
+        } else {
+          briefQuestionIds.set(question.id, file);
+        }
+      }
+    }
+  }
+
   for (const { file, value } of tasks) {
     if (!patternSlugs.has(value.pattern)) {
       errors.push(`${file}: pattern\n  what: pattern "${value.pattern}" does not exist\n  fix:  reference an existing pattern in content/dsa/patterns`);
@@ -185,7 +237,7 @@ export function validateContent(root: string): ValidationResult {
   }
 
   // A promoted item must point at the gate run that promoted it.
-  const shippable: { file: string; value: Shippable }[] = [...wiki, ...questions, ...concepts, ...patterns, ...tasks];
+  const shippable: { file: string; value: Shippable }[] = [...wiki, ...questions, ...concepts, ...patterns, ...tasks, ...briefs];
   for (const { file, value } of shippable) {
     if ((SHIPPABLE_STATUSES as readonly string[]).includes(value.review_status)) {
       if (!value.reviewed_at || !value.verified_by) {
@@ -219,6 +271,7 @@ export function validateContent(root: string): ValidationResult {
       dsa_concepts: concepts.length,
       dsa_patterns: patterns.length,
       dsa_tasks: tasks.length,
+      interview_briefs: briefs.length,
     },
   };
 }

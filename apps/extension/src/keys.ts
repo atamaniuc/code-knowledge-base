@@ -9,7 +9,7 @@ import type { Grade } from "@scheduling/index.js";
  * ifs in a view file.
  */
 
-export type ViewId = "drill" | "bank" | "posting";
+export type ViewId = "drill" | "bank" | "posting" | "interview";
 
 export type Action =
   | { type: "reveal" }
@@ -38,7 +38,7 @@ export interface KeyContext {
 
 const PENDING_G = "g" as const;
 
-const VIEW_KEYS: Record<string, ViewId> = { d: "drill", b: "bank", p: "posting" };
+const VIEW_KEYS: Record<string, ViewId> = { d: "drill", b: "bank", p: "posting", i: "interview" };
 
 /** Digits 0-5 grade; anything else is not a grade. */
 function gradeFrom(key: string): Grade | null {
@@ -90,6 +90,7 @@ export const SHORTCUTS: { keys: string; label: string }[] = [
   { keys: "g then d", label: "Drill" },
   { keys: "g then b", label: "Bank" },
   { keys: "g then p", label: "Posting" },
+  { keys: "g then i", label: "Interview" },
   { keys: "+ / -", label: "Larger or smaller text, remembered between openings" },
   { keys: "f", label: "Fullscreen, or a panel tab when the side panel cannot go fullscreen" },
   { keys: "alt + ← / →", label: "Back and forward through where you have been" },
