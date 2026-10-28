@@ -1,5 +1,16 @@
 import { statusOf, type BankStatus, type Filters, type Option } from "./bank.js";
-import { domainTitle, type Brief, type BriefGroup, type BriefQuestion, type DomainInfo, type Plan, type Question, type WikiArticle } from "./bundle.js";
+import {
+  domainTitle,
+  humanize,
+  type Brief,
+  type BriefGroup,
+  type BriefQuestion,
+  type DomainInfo,
+  type Plan,
+  type Question,
+  type TagInfo,
+  type WikiArticle,
+} from "./bundle.js";
 import { SHORTCUTS, type ViewId } from "./keys.js";
 import { renderMarkdown } from "./markdown.js";
 import { progressPercent, type DayProgress } from "./stats.js";
@@ -476,6 +487,10 @@ export interface InterviewInput {
   domains: DomainInfo[];
   /** The one question whose answer is showing, or null. Keyed on the brief question id. */
   expanded: string | null;
+  /** The tag the reader picked, or "" for everything. */
+  tag: string;
+  /** The shipped tag registry: id and the title to draw. */
+  tags: TagInfo[];
   wikiTitles: Record<string, string>;
 }
 
@@ -490,6 +505,9 @@ const BRIEF_LABELS = {
   process: "Как устроен процесс",
   stages: "минут",
   sides: "Вопросы по сторонам интервью",
+  topics: "Темы",
+  topicsHint: "Один вопрос живёт в группе и в нескольких темах: тема собирает связанное по всему брифу.",
+  all: "все",
   technical: "техническая сторона",
   domain: "доменная сторона",
   high: "спросят почти наверняка",
@@ -499,13 +517,14 @@ const BRIEF_LABELS = {
   followUps: "Что спросят дальше",
   reread: "Перечитать",
   nothing: "Здесь пока пусто",
+  nothingTagged: "По этой теме ничего нет.",
 };
 
 /**
  * Russian counts take three forms: 1 вопрос, 2 вопроса, 5 вопросов.
  *
- * The panel is English everywhere else, so this is the one place a count has to be declined
- * — and "1 вопросов" in the first line of the page reads as a machine translation.
+ * The panel is English everywhere else, so this is the one place a count has to be declined —
+ * and "1 вопросов" in the first line of the page reads as a machine translation.
  */
 function plural(n: number, one: string, few: string, many: string): string {
   const mod100 = n % 100;
@@ -521,22 +540,63 @@ function questionCount(n: number): string {
 }
 
 /** One line about size and about what to answer first, without a verb to disagree with. */
-function briefCount(groups: BriefGroup[]): string {
-  const all = groups.reduce((sum, group) => sum + group.questions.length, 0);
-  const high = groups.reduce((sum, group) => sum + group.questions.filter((q) => q.likelihood === "high").length, 0);
-  return questionCount(all) + " · " + String(high) + " " + BRIEF_LABELS.high;
+function briefCount(questions: BriefQuestion[]): string {
+  const high = questions.filter((q) => q.likelihood === "high").length;
+  return questionCount(questions.length) + " · " + String(high) + " " + BRIEF_LABELS.high;
 }
 
 function sideLabel(side: string): string {
   return side === "domain" ? BRIEF_LABELS.domain : BRIEF_LABELS.technical;
 }
 
+function tagTitle(tags: TagInfo[], id: string): string {
+  return tags.find((tag) => tag.id === id)?.title ?? humanize(id);
+}
+
+/** A chip that filters the brief. Pressed state is the ARIA one, not a second class. */
+function tagButton(input: InterviewInput, id: string, label: string, focusKey: string): Spec {
+  return h(
+    "button",
+    {
+      type: "button",
+      class: "chip tag-chip",
+      "data-action": "tag",
+      "data-tag": id,
+      "data-focus-key": focusKey,
+      "aria-pressed": input.tag === id,
+    },
+    [label],
+  );
+}
+
+/**
+ * The tag bar is the navigation the groups cannot give you.
+ *
+ * A group answers "where in the interview"; a tag answers "what is this about". Idempotency is
+ * spread across six groups, and rehearsing it means collecting those answers, not re-reading
+ * the assignment section around each one.
+ */
+function tagBar(input: InterviewInput, questions: BriefQuestion[]): Spec {
+  const counts = new Map<string, number>();
+  for (const question of questions) {
+    for (const tag of question.tags) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+  }
+  const present = input.tags.filter((tag) => (counts.get(tag.id) ?? 0) > 0);
+  const buttons: Spec[] = [
+    tagButton(input, "", BRIEF_LABELS.all + " (" + String(questions.length) + ")", "tag-all"),
+    ...present.map((tag) =>
+      tagButton(input, tag.id, tag.title + " (" + String(counts.get(tag.id) ?? 0) + ")", "tag-" + tag.id),
+    ),
+  ];
+  return h("section", { class: "card brief-tags", "aria-label": "Темы вопросов" }, [
+    h("h2", {}, [BRIEF_LABELS.topics]),
+    h("p", { class: "hint" }, [BRIEF_LABELS.topicsHint]),
+    h("div", { class: "chips" }, buttons),
+  ]);
+}
+
 function briefQuestionItem(question: BriefQuestion, input: InterviewInput): Spec {
   const open = input.expanded === question.id;
-  const head: Spec[] = [
-    chip(question.likelihood === "high" ? "high" : "medium", "likelihood-" + question.likelihood),
-    h("span", { class: "brief-q" }, [question.question]),
-  ];
   const children: Spec[] = [
     h(
       "button",
@@ -548,7 +608,10 @@ function briefQuestionItem(question: BriefQuestion, input: InterviewInput): Spec
         "data-focus-key": "brief-" + question.id,
         "aria-expanded": open,
       },
-      head,
+      [
+        chip(question.likelihood === "high" ? "high" : "medium", "likelihood-" + question.likelihood),
+        h("span", { class: "brief-q" }, [question.question]),
+      ],
     ),
   ];
 
@@ -557,7 +620,11 @@ function briefQuestionItem(question: BriefQuestion, input: InterviewInput): Spec
       h("div", { class: "probes" }, [h("b", {}, [BRIEF_LABELS.asks]), h("span", {}, [question.asks])]),
       h("section", {}, [
         h("h2", {}, [BRIEF_LABELS.answer]),
-        h("ol", { class: "expected" }, question.answer.map((line) => h("li", { class: "expected-item" }, [h("span", { class: "expected-text" }, [line])]))),
+        h(
+          "ol",
+          { class: "expected" },
+          question.answer.map((line) => h("li", { class: "expected-item" }, [h("span", { class: "expected-text" }, [line])])),
+        ),
       ]),
     ];
     if (question.traps.length > 0) {
@@ -573,14 +640,24 @@ function briefQuestionItem(question: BriefQuestion, input: InterviewInput): Spec
         ]),
       );
     }
+    // From one answer to the others on the same theme, which is where rehearsal continues.
+    if (question.tags.length > 0) {
+      body.push(
+        h(
+          "div",
+          { class: "chips brief-q-tags" },
+          question.tags.map((id) => tagButton(input, id, tagTitle(input.tags, id), "qtag-" + question.id + "-" + id)),
+        ),
+      );
+    }
     children.push(h("div", { class: "answer" }, body));
   }
 
   return h("li", { class: "brief-item" }, children);
 }
 
-function briefGroupCard(group: BriefGroup, input: InterviewInput): Spec {
-  const high = group.questions.filter((q) => q.likelihood === "high").length;
+function briefGroupCard(group: BriefGroup, questions: BriefQuestion[], input: InterviewInput): Spec {
+  const high = questions.filter((q) => q.likelihood === "high").length;
   const refs = group.wikiRefs.map((slug) =>
     h(
       "button",
@@ -594,10 +671,10 @@ function briefGroupCard(group: BriefGroup, input: InterviewInput): Spec {
     h("div", { class: "meta" }, [
       chip(sideLabel(group.side), "side-" + group.side),
       group.domain ? chip(domainTitle(input.domains, group.domain)) : null,
-      chip(questionCount(group.questions.length) + (high > 0 ? " · " + String(high) + " high" : ""), "muted"),
+      chip(questionCount(questions.length) + (high > 0 ? " · " + String(high) + " high" : ""), "muted"),
     ]),
     h("p", { class: "hint" }, [group.intro]),
-    h("ul", { class: "brief-questions" }, group.questions.map((question) => briefQuestionItem(question, input))),
+    h("ul", { class: "brief-questions" }, questions.map((question) => briefQuestionItem(question, input))),
     refs.length > 0 ? h("div", { class: "brief-refs" }, [h("span", { class: "field-label" }, [BRIEF_LABELS.reread]), ...refs]) : null,
   ]);
 }
@@ -610,11 +687,39 @@ export function interviewView(input: InterviewInput): Spec {
     );
   }
 
-  return h(
-    "div",
-    { class: "interview" },
-    input.briefs.flatMap((brief) => {
-      const heading: Spec[] = [
+  const everything = input.briefs.flatMap((brief) => brief.groups.flatMap((group) => group.questions));
+  const picked = (question: BriefQuestion): boolean => input.tag === "" || question.tags.includes(input.tag);
+  const shown = everything.filter(picked);
+
+  const process = input.briefs.map((brief) =>
+    h("section", { class: "card brief-process" }, [
+      h("h2", {}, [BRIEF_LABELS.process]),
+      brief.stages.length > 0
+        ? h(
+            "ol",
+            { class: "stages" },
+            brief.stages.map((stage) =>
+              h("li", { class: "stage" }, [
+                h("b", {}, [stage.name]),
+                chip(String(stage.minutes) + " " + BRIEF_LABELS.stages, "muted"),
+                h("span", { class: "stage-note" }, [stage.note]),
+              ]),
+            ),
+          )
+        : h("p", { class: "hint" }, [BRIEF_LABELS.nothing]),
+    ]),
+  );
+
+  const groups = input.briefs.flatMap((brief) =>
+    brief.groups
+      .map((group) => ({ group, questions: group.questions.filter(picked) }))
+      .filter((entry) => entry.questions.length > 0)
+      .map((entry) => briefGroupCard(entry.group, entry.questions, input)),
+  );
+
+  return h("div", { class: "interview" }, [
+    ...input.briefs.map((brief) =>
+      h("article", { class: "card brief-head" }, [
         h("h1", {}, [brief.title]),
         h("div", { class: "meta" }, [
           chip(brief.target.role),
@@ -623,26 +728,20 @@ export function interviewView(input: InterviewInput): Spec {
           ...brief.target.stack.map((tech) => chip(tech, "tech")),
         ]),
         h("p", { class: "summary" }, [brief.summary]),
-        h("p", { class: "count" }, [briefCount(brief.groups)]),
-      ];
-      const stages = brief.stages.map((stage) =>
-        h("li", { class: "stage" }, [
-          h("b", {}, [stage.name]),
-          chip(String(stage.minutes) + " " + BRIEF_LABELS.stages, "muted"),
-          h("span", { class: "stage-note" }, [stage.note]),
+        h("p", { class: "count" }, [
+          input.tag === ""
+            ? briefCount(shown)
+            : questionCount(shown.length) + " по теме «" + tagTitle(input.tags, input.tag) + "»",
         ]),
-      );
-      return [
-        h("article", { class: "card brief-head" }, heading),
-        h("section", { class: "card brief-process" }, [
-          h("h2", {}, [BRIEF_LABELS.process]),
-          stages.length > 0 ? h("ol", { class: "stages" }, stages) : h("p", { class: "hint" }, [BRIEF_LABELS.nothing]),
-        ]),
-        h("h2", { class: "brief-sides" }, [BRIEF_LABELS.sides]),
-        ...brief.groups.map((group) => briefGroupCard(group, input)),
-      ];
-    }),
-  );
+      ]),
+    ),
+    ...process,
+    tagBar(input, everything),
+    shown.length === 0
+      ? (emptyView(BRIEF_LABELS.nothingTagged, "Снимите тему или выберите другую.") as Spec)
+      : h("h2", { class: "brief-sides" }, [input.tag === "" ? BRIEF_LABELS.sides : tagTitle(input.tags, input.tag)]),
+    ...groups,
+  ]);
 }
 
 export function shortcutSheetView(): Spec {

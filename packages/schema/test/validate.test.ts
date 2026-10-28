@@ -226,6 +226,7 @@ groups:
       - id: limit-race
         question: Two reservations arrive at once with room for one. What happens?
         likelihood: high
+        tags: [concurrency, postgres]
         asks: Whether the check lives in the database rather than in the service.
         answer:
           - Name the read-check-write window as the bug, not the traffic spike.

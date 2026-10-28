@@ -71,6 +71,13 @@ interview that follows.
   knowing the mechanism in Russian and not being able to name it in English is the same as
   not knowing it. A gloss is introduced once per answer and never inside a parenthetical or a
   quoted reason code, because those are the author's text talking to itself.
+- `tags` is the second axis: groups say *where in the interview* a question sits, tags say
+  *what it is about*. Idempotency is spread across six groups, and rehearsing it means
+  collecting those answers rather than re-reading the assignment section around each one. The
+  vocabulary is **closed** (`INTERVIEW_TAG_IDS`) for the same reason as the technology
+  gazetteer — an open vocabulary grows a near-duplicate per author, and a filter that misses
+  answers "nothing here" with confidence. Every question carries at least one tag, and the
+  titles live next to the ids so a new tag cannot exist without the word to draw.
 - Question ids are **global keys**, not labels: the panel expands a question by id and the
   history stack remembers it, so a duplicate anywhere in `content/interview/` is a
   validation error rather than a cosmetic repeat.

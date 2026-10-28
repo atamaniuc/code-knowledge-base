@@ -27,6 +27,7 @@ const valid = {
           id: "limit-race",
           question: "Two reservations arrive at once with room for one. What happens?",
           likelihood: "high",
+          tags: ["concurrency", "postgres"],
           asks: "Whether the check lives in the database rather than in the service.",
           answer: [
             "Name the read-check-write window as the bug, not the traffic spike.",
@@ -72,6 +73,22 @@ describe("InterviewBrief", () => {
     const group = valid.groups[0];
     if (!group) throw new Error("fixture lost its group");
     expect(InterviewBrief.safeParse({ ...valid, groups: [{ ...group, side: "behavioural" }] }).success).toBe(false);
+  });
+
+  it("rejects a tag outside the closed vocabulary", () => {
+    // An open vocabulary grows a near-duplicate per author, and a filter that misses is worse
+    // than no filter: it answers "nothing here" with confidence.
+    const group = valid.groups[0];
+    if (!group) throw new Error("fixture lost its group");
+    const stray = { ...valid, groups: [{ ...group, questions: [{ ...group.questions[0], tags: ["limity"] }] }] };
+    expect(InterviewBrief.safeParse(stray).success).toBe(false);
+  });
+
+  it("rejects a question with no tags, because the tag bar is how related answers are found", () => {
+    const group = valid.groups[0];
+    if (!group) throw new Error("fixture lost its group");
+    const bare = { ...valid, groups: [{ ...group, questions: [{ ...group.questions[0], tags: [] }] }] };
+    expect(InterviewBrief.safeParse(bare).success).toBe(false);
   });
 
   it("rejects unknown fields so a frontmatter typo surfaces", () => {

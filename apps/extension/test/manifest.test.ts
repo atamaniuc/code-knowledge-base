@@ -88,7 +88,7 @@ describe("built extension", () => {
 
   it("ships a content bundle the panel can read", () => {
     const bundle = JSON.parse(read("content.json")) as { schema: number; questions: unknown[]; domains: unknown[] };
-    expect(bundle.schema).toBe(3);
+    expect(bundle.schema).toBe(4);
     expect(bundle.questions.length).toBeGreaterThan(0);
     expect(bundle.domains.length).toBeGreaterThan(0);
   });

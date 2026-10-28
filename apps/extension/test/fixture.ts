@@ -1,4 +1,12 @@
-import type { Brief, DomainInfo, Plan, Question, WikiArticle } from "../src/bundle.js";
+import type { Brief, DomainInfo, Plan, Question, TagInfo, WikiArticle } from "../src/bundle.js";
+
+/** The shipped registry, with a title for the two tags the fixture questions carry. */
+export const TAGS: TagInfo[] = [
+  { id: "concurrency", title: "конкурентность" },
+  { id: "postgres", title: "PostgreSQL" },
+  { id: "fx", title: "валюты и курсы" },
+  { id: "money", title: "деньги" },
+];
 
 /** One question with every field the panel reads, so a test can override just what it is about. */
 export function question(overrides: Partial<Question> = {}): Question {
@@ -78,6 +86,7 @@ export function brief(overrides: Partial<Brief> = {}): Brief {
             id: "limit-race-atomic-update",
             question: "Два резерва приходят одновременно, свободно миллион. Как гарантируешь один?",
             likelihood: "high",
+            tags: ["concurrency", "postgres"],
             asks: "Понимание, что проверка и запись должны быть одной операцией в базе.",
             answer: ["Называю окно прочитал-проверил-записал источником бага.", "Проверка уезжает в условие записи."],
             traps: ["Распределённая блокировка поверх строки в базе."],
@@ -97,6 +106,7 @@ export function brief(overrides: Partial<Brief> = {}): Brief {
             id: "fx-drift-on-release",
             question: "Курс ушёл за девяносто дней. Сколько освободить?",
             likelihood: "medium",
+            tags: ["fx", "money"],
             asks: "Освобождается сохранённая сумма, а не пересчитанная.",
             answer: ["Освобождаю ту сумму, которая была занята при резерве.", "Пересчёт по текущему курсу создаёт лимит из воздуха."],
             traps: [],

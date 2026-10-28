@@ -53,6 +53,7 @@ interface DistBriefQuestion {
   id: string;
   question: string;
   likelihood: string;
+  tags: string[];
   asks: string;
   answer: string[];
   traps: string[];
@@ -84,6 +85,7 @@ interface DistBundle {
   levels: string[];
   plan: DistPlan | null;
   interview: DistBrief[];
+  interviewTags: { id: string; title: string }[];
 }
 
 const bundle = JSON.parse(readFileSync(join(dist, "content.json"), "utf8")) as DistBundle;
@@ -103,8 +105,8 @@ const emptyLog: ReviewLog = {
  * the selector — rather than discovered by loading the extension.
  */
 describe("bundled bank", () => {
-  it("is content bundle schema 3", () => {
-    expect(bundle.schema).toBe(3);
+  it("is content bundle schema 4", () => {
+    expect(bundle.schema).toBe(4);
     expect(typeof bundle.generatedAt).toBe("string");
     expect(bundle.generatedAt.length).toBeGreaterThan(0);
   });
@@ -205,6 +207,34 @@ describe("baked interview brief", () => {
         }
       }
     }
+  });
+
+  /**
+   * Tags are the navigation axis: a tag the registry cannot name renders as a bare id, and a
+   * tag no question carries is a filter that finds nothing. Both are silent failures in the
+   * panel, so they are asserted on the bundle instead.
+   */
+  it("gives every question tags the shipped registry can name", () => {
+    const known = new Set(bundle.interviewTags.map((tag) => tag.id));
+    expect(known.size).toBeGreaterThan(5);
+    for (const tag of bundle.interviewTags) {
+      expect(tag.title.length, tag.id).toBeGreaterThan(0);
+      expect(tag.title, tag.id).not.toBe(tag.id);
+    }
+    for (const item of briefs) {
+      for (const group of item.groups) {
+        for (const question of group.questions) {
+          expect(question.tags.length, question.id).toBeGreaterThan(0);
+          for (const tag of question.tags) expect(known.has(tag), question.id + " -> " + tag).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("carries every registry tag on at least one question", () => {
+    // A registry entry nothing carries is a chip that filters to an empty page.
+    const used = new Set(briefs.flatMap((item) => item.groups.flatMap((group) => group.questions.flatMap((q) => q.tags))));
+    for (const tag of bundle.interviewTags) expect(used.has(tag.id), tag.id).toBe(true);
   });
 
   it("names only domains and articles this bundle carries", () => {

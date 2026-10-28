@@ -32,11 +32,11 @@ promoted content, so a bundle that carried `draft` verbatim would render an empt
 however many questions it held. Without the flag only `auto_verified` and `verified` items
 ship, which is what a store build must do.
 
-## Shape: schema 3
+## Shape: schema 4
 
 ```ts
 {
-  schema: 3,
+  schema: 4,
   generatedAt: string,
   questions: Shipped[],
   wiki: ShippedArticle[],
@@ -44,6 +44,7 @@ ship, which is what a store build must do.
   levels: string[],            // ordered junior → head
   plan: BundlePlan | null,
   interview: ShippedBrief[],   // empty when no brief was authored or promoted
+  interviewTags: { id, title }[],  // the closed vocabulary, with the word to draw
 }
 ```
 
@@ -54,7 +55,9 @@ brief's headings are Russian inside the panel while its chrome stays English, be
 content it frames is Russian: an English frame around a Russian answer reads like a
 translation that stopped halfway down the page.
 
-Schema 3 only adds a field, and the reader still accepts schema 1 and 2 documents — a
+Schema 4 adds the tag registry: the panel filters the brief by tag, and a tag it cannot name
+would render as a bare id. Schema 3 added the briefs themselves. Both are additive, and the
+reader still accepts schema 1 and 2 documents — a
 bundle without `interview` parses to `[]` and the Interview view explains how to build
 one. The bump is for the other direction: a consumer that pins the schema number should
 never meet a field it was not written to read.

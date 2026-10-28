@@ -7,8 +7,8 @@ State carried between sessions. Read this first; update it before you stop.
 **Phase 0, writing the wedge domain.** `agentic` is the differentiator: LLM appears 41
 times across 173 stack-scoped postings, and structured preparation for it barely exists.
 
-- Content: **100 articles, 115 questions, 1 interview brief**, 3 DSA entities, all
-  `review_status: draft`
+- Content: **100 articles, 115 questions, 1 interview brief of 104 questions**, 3 DSA entities,
+  all `review_status: draft`
   (the gates promote; nobody writes a promoted status by hand). The bank now covers the
   posting's whole stack rather than one wedge: Node runtime and NestJS 12 and Hono,
   Kubernetes/Helm/AWS/Docker/CI, PostgreSQL 18/Redis 8/Kafka 4, gRPC/GraphQL/REST, SRE-grade
@@ -28,9 +28,9 @@ times across 173 stack-scoped postings, and structured preparation for it barely
   stretch domains the posting omits, and the gaps that are the authoring backlog. The posting
   is always an argument; no URL is stored in the repository.
 - Extension: `make extension ARGS="--include-drafts --plan=<file>"`, then load
-  `apps/extension/dist` unpacked. Bundle **schema 3** (`docs/extension-bundle.md`) ships the
-  whole bank — questions, the wiki they cite, the domain registry, the interview briefs — plus
-  the plan for one posting. The panel is a keyboard-first tool: Drill (two-stage, graded, stats
+  `apps/extension/dist` unpacked. Bundle **schema 4** (`docs/extension-bundle.md`) ships the
+  whole bank — questions, the wiki they cite, the domain registry, the interview briefs and their
+  tag registry — plus the plan for one posting. The panel is a keyboard-first tool: Drill (two-stage, graded, stats
   and streak), Bank (filters, search, show answer, drill this), Posting (emphasis, ordered
   plan, gaps), Interview and a wiki reader, light and dark.
 - **Interview is a new entity, not a filter over the bank.** `content/interview/{slug}.yaml`
@@ -38,8 +38,12 @@ times across 173 stack-scoped postings, and structured preparation for it barely
   `target`, `stages`, then groups split by `side` (technical / domain) with per-question
   `asks`, an ordered spoken `answer`, `traps` and `follow_ups`. The bank answers "do you know
   this topic"; a brief answers "will they ask this, and what are they listening for". The first
-  brief is the Finverity Senior Node.js role: 55 questions in 10 groups, built from the posting,
-  the Program Capacity assignment and the SCF explainer, and citing the wiki groups it leans on.
+  brief is the Finverity Senior Node.js role: **104 questions in 20 groups**, built from the
+  posting, the Program Capacity assignment, the SCF explainer and the personal defence notes —
+  the second half of it is the defence itself: pitch and demo script, trade-offs with their
+  price, production topology and failure modes, edge cases each tied to a test (AC-01, AC-09,
+  AC-12), nine hard questions, the AI questions, STAR stories, weak spots to name first, and
+  the SCF vocabulary. Groups cite the wiki sections they lean on.
   Question ids are global keys — the panel expands by id and the history stack records it — so a
   duplicate anywhere under `content/interview/` is a validation error, not a cosmetic repeat.
 - **The brief names every term twice.** The interview is in English, so each Russian term
@@ -50,6 +54,15 @@ times across 173 stack-scoped postings, and structured preparation for it barely
   the wording is what has to come out of your mouth under pressure. `освобождение` glosses as
   **release**, the assignment's own word, not `cancellation` — cancellation is the separate
   concept (`отмена`) that releases a reservation before any money moved.
+- **Tags are the second axis, and the one you navigate by.** Groups answer "where in the
+  interview"; `tags` answer "what is this about" — 19 themes (`concurrency`, `idempotency`,
+  `money`, `fx`, `postgres`, `kafka`, `reconciliation`, `tenancy`, `auth`, `audit`,
+  `api`, `tests`, `ops`, `nfr`, `tradeoff`, `scope`, `ai`, `demo`, `process`). The
+  vocabulary is closed in the schema and the titles ship with the bundle (schema 4), so a tag
+  cannot exist without the word to draw. In the panel: a tagged bar above the groups, a chip per
+  theme with its count, groups that lose every match disappear, a question's own tags are the
+  way to its neighbours, and the chosen theme survives the panel being closed. Idempotency
+  spreads over six groups; the theme collects those nine answers in one page.
 - **Space and enter no longer get swallowed outside the drill.** They used to be
   `preventDefault`-ed in every view, so a focused row in the bank or a brief question could not
   be activated from the keyboard at all. Now the panel returns before `preventDefault` unless

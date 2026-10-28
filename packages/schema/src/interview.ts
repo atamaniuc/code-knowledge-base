@@ -26,11 +26,71 @@ export const LIKELIHOODS = ["high", "medium"] as const;
 export const Likelihood = z.enum(LIKELIHOODS);
 export type Likelihood = z.infer<typeof Likelihood>;
 
+/**
+ * The cross-cutting themes a question belongs to, as a closed vocabulary.
+ *
+ * Groups already say where a question sits in the interview; tags say what it is about, which
+ * is the axis a candidate actually navigates by — "show me everything about idempotency" cuts
+ * across six groups. Closed rather than free text for the same reason as the technology
+ * gazetteer: an open vocabulary grows a near-duplicate per author, and a tag that names two
+ * questions differently is a filter that silently misses.
+ */
+export const INTERVIEW_TAG_IDS = [
+  "concurrency",
+  "idempotency",
+  "money",
+  "fx",
+  "postgres",
+  "kafka",
+  "reconciliation",
+  "tenancy",
+  "auth",
+  "audit",
+  "api",
+  "tests",
+  "ops",
+  "nfr",
+  "tradeoff",
+  "scope",
+  "ai",
+  "demo",
+  "process",
+] as const;
+
+export type InterviewTagId = (typeof INTERVIEW_TAG_IDS)[number];
+
+/** Russian titles, because the brief is read in Russian. Exhaustive by type: a new id needs a title. */
+export const INTERVIEW_TAG_TITLES: Record<InterviewTagId, string> = {
+  concurrency: "конкурентность",
+  idempotency: "идемпотентность",
+  money: "деньги",
+  fx: "валюты и курсы",
+  postgres: "PostgreSQL",
+  kafka: "Kafka",
+  reconciliation: "сверка",
+  tenancy: "тенанты",
+  auth: "доступ и токены",
+  audit: "аудит и журнал",
+  api: "контракты API",
+  tests: "доказательства тестами",
+  ops: "эксплуатация",
+  nfr: "нефункциональные требования",
+  tradeoff: "трейд-оффы",
+  scope: "границы объёма",
+  ai: "работа с ИИ",
+  demo: "демо и питч",
+  process: "процесс и бюджет",
+};
+
+export const InterviewTag = z.enum(INTERVIEW_TAG_IDS);
+
 export const InterviewQuestion = z.strictObject({
   /** Global key, unique across every brief: the panel expands it and history records it. */
   id: Slug,
   question: z.string().min(10),
   likelihood: Likelihood,
+  /** What the question is about, for navigation across groups. At least one, at most four. */
+  tags: z.array(InterviewTag).min(1).max(4),
   /**
    * What the interviewer is checking by asking this — not a summary of the answer.
    * Same reasoning as `probes` on a bank question: an author who cannot say what is being

@@ -69,10 +69,12 @@ describe("parsePrefs", () => {
 describe("store", () => {
   it("round-trips through a store under one key", async () => {
     const store = memoryStore();
-    await savePrefs(store, { fontStep: 1.25, session: { view: "posting", questionId: null, revealed: false, filters: { domain: "", level: "", tech: "", query: "" }, expanded: null, wiki: null, scrollTop: 40 } });
+    await savePrefs(store, { fontStep: 1.25, session: { view: "posting", questionId: null, revealed: false, filters: { domain: "", level: "", tech: "", query: "" }, expanded: null, tag: "kafka", wiki: null, scrollTop: 40 } });
     const loaded = await loadPrefs(store);
     expect(loaded.fontStep).toBe(1.25);
     expect(loaded.session?.view).toBe("posting");
+    // The brief's filter survives the panel being destroyed, like every other place in it.
+    expect(loaded.session?.tag).toBe("kafka");
     expect(store.raw.size).toBe(1);
   });
 

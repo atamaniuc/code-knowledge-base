@@ -9,7 +9,7 @@ import {
 } from "../src/bundle.js";
 
 const shipped = {
-  schema: 3,
+  schema: 4,
   generatedAt: "2026-10-13T16:37:41.191Z",
   questions: [
     {
@@ -76,6 +76,7 @@ const shipped = {
               id: "limit-race-atomic-update",
               question: "Два резерва одновременно. Как гарантируешь один?",
               likelihood: "high",
+              tags: ["concurrency", "postgres"],
               asks: "Где живёт проверка лимита.",
               answer: ["Называю окно источником бага.", "Проверка уезжает в условие записи."],
               traps: ["Блокировка в Redis поверх строки в базе."],
@@ -86,12 +87,13 @@ const shipped = {
       ],
     },
   ],
+  interviewTags: [{ id: "concurrency", title: "конкурентность" }],
 };
 
 describe("parseBundle", () => {
-  it("reads the schema 3 shape field for field", () => {
+  it("reads the schema 4 shape field for field", () => {
     const bundle = parseBundle(shipped);
-    expect(bundle.schema).toBe(3);
+    expect(bundle.schema).toBe(4);
     expect(bundle.questions).toHaveLength(1);
     expect(bundle.questions[0]).toMatchObject({
       id: "q-1",
@@ -120,6 +122,7 @@ describe("parseBundle", () => {
       id: "limit-race-atomic-update",
       question: "Два резерва одновременно. Как гарантируешь один?",
       likelihood: "high",
+      tags: ["concurrency", "postgres"],
       asks: "Где живёт проверка лимита.",
       answer: ["Называю окно источником бага.", "Проверка уезжает в условие записи."],
       traps: ["Блокировка в Redis поверх строки в базе."],
@@ -142,6 +145,11 @@ describe("parseBundle", () => {
     expect(() => parseBundle(null)).toThrow(BundleError);
     expect(() => parseBundle("nope")).toThrow(BundleError);
     expect(() => parseBundle({ questions: "not an array" })).toThrow(BundleError);
+  });
+
+  it("ships the tag registry with the titles the panel draws", () => {
+    expect(parseBundle(shipped).interviewTags).toEqual([{ id: "concurrency", title: "конкурентность" }]);
+    expect(parseBundle({ questions: [] }).interviewTags).toEqual([]);
   });
 
   it("defaults what the panel can live without", () => {

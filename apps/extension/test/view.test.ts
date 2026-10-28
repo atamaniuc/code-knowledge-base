@@ -19,7 +19,7 @@ import {
   type BankInput,
   type Spec,
 } from "../src/view.js";
-import { article, brief, DOMAINS, plan, question, WIKI_TITLES } from "./fixture.js";
+import { article, brief, DOMAINS, plan, question, TAGS, WIKI_TITLES } from "./fixture.js";
 
 const rag = question();
 const cache = question({
@@ -237,6 +237,8 @@ describe("interview brief", () => {
     briefs: [brief()],
     domains: DOMAINS,
     expanded: null,
+    tag: "",
+    tags: TAGS,
     wikiTitles: WIKI_TITLES,
     ...overrides,
   });
@@ -302,6 +304,38 @@ describe("interview brief", () => {
     const spec = interviewView(input());
     expect(byAction(spec, "wiki").map((node) => attr(node, "data-slug"))).toEqual(["evaluating-rag"]);
     expect(text(spec)).toContain("Evaluating a RAG system");
+  });
+
+  it("offers every theme the brief actually uses, with counts", () => {
+    const rendered = text(interviewView(input()));
+    expect(rendered).toContain("Темы");
+    expect(rendered).toContain("все (2)");
+    expect(rendered).toContain("конкурентность (1)");
+    expect(rendered).toContain("PostgreSQL (1)");
+    // A registry tag nothing carries stays out of the bar: it would filter to an empty page.
+    expect(rendered).not.toContain("деньги (0)");
+  });
+
+  it("filters to one theme across groups and drops the groups left empty", () => {
+    const spec = interviewView(input({ tag: "postgres" }));
+    const rendered = text(spec);
+    expect(rendered).toContain("1 вопрос по теме «PostgreSQL»");
+    expect(rendered).toContain("Защита ядра решения");
+    // The money group knows nothing about PostgreSQL, so it is gone rather than empty.
+    expect(rendered).not.toContain("Деньги и валюты");
+    expect(byAction(spec, "toggle").map((node) => attr(node, "data-id"))).toEqual(["limit-race-atomic-update"]);
+    expect(attr(byAction(spec, "tag").find((node) => attr(node, "data-tag") === "postgres") as Spec, "aria-pressed")).toBe("true");
+  });
+
+  it("says so when a theme matches nothing", () => {
+    const rendered = text(interviewView(input({ tag: "tenancy" })));
+    expect(rendered).toContain("По этой теме ничего нет");
+  });
+
+  it("turns a question's own tags into the way to its neighbours", () => {
+    const spec = interviewView(input({ expanded: "limit-race-atomic-update" }));
+    const chips = byAction(spec, "tag").filter((node) => String(node.attrs?.["data-focus-key"] ?? "").startsWith("qtag-"));
+    expect(chips.map((node) => attr(node, "data-tag"))).toEqual(["concurrency", "postgres"]);
   });
 
   it("falls back to the id when a group names a domain the registry does not carry", () => {

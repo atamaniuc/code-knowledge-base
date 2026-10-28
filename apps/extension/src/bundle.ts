@@ -101,6 +101,8 @@ export interface BriefQuestion {
   id: string;
   question: string;
   likelihood: string;
+  /** Cross-cutting themes, for filtering and for jumping to what is related. */
+  tags: string[];
   /** What the interviewer is checking by asking this. */
   asks: string;
   answer: string[];
@@ -136,6 +138,12 @@ export interface Brief {
   groups: BriefGroup[];
 }
 
+/** A tag id and the title to draw. Shipped, so the panel never invents a label. */
+export interface TagInfo {
+  id: string;
+  title: string;
+}
+
 export interface Bundle {
   schema: number;
   generatedAt: string;
@@ -145,6 +153,7 @@ export interface Bundle {
   levels: string[];
   plan: Plan | null;
   interview: Brief[];
+  interviewTags: TagInfo[];
 }
 
 /** Raised when `content.json` is not a bundle at all. */
@@ -294,6 +303,7 @@ function readBriefQuestion(raw: Record<string, unknown>, index: number): BriefQu
     id,
     question: str(raw.question),
     likelihood: str(raw.likelihood, "medium"),
+    tags: strings(raw.tags),
     asks: str(raw.asks),
     answer: strings(raw.answer),
     traps: strings(raw.traps),
@@ -360,6 +370,7 @@ export function parseBundle(raw: unknown): Bundle {
     levels: strings(raw.levels).length > 0 ? strings(raw.levels) : deriveLevels(questions),
     plan: readPlan(raw.plan, questions),
     interview: records(raw.interview).map(readBrief),
+    interviewTags: records(raw.interviewTags).map((tag) => ({ id: str(tag.id), title: str(tag.title, humanize(str(tag.id))) })),
   };
 }
 

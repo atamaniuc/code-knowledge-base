@@ -22,6 +22,8 @@ export interface Session {
   revealed: boolean;
   filters: Filters;
   expanded: string | null;
+  /** The interview tag the reader was filtering by, or "". */
+  tag: string;
   wiki: { slug: string; anchor: string } | null;
   scrollTop: number;
 }
@@ -84,6 +86,7 @@ function readSession(raw: unknown): Session | null {
     revealed: source.revealed === true,
     filters: readFilters(source.filters),
     expanded: typeof source.expanded === "string" ? source.expanded : null,
+    tag: typeof source.tag === "string" ? source.tag.slice(0, 40) : "",
     wiki: slug ? { slug, anchor: typeof wikiRaw?.anchor === "string" ? wikiRaw.anchor : "" } : null,
     scrollTop: typeof source.scrollTop === "number" && Number.isFinite(source.scrollTop) ? Math.max(0, source.scrollTop) : 0,
   };

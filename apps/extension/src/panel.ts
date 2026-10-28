@@ -83,6 +83,8 @@ async function main(): Promise<void> {
   let shownId: string | null = null;
   let pinned: Question | null = null;
   let expanded: string | null = null;
+  /** "" means every tag: the brief's own filter axis, separate from the bank's filters. */
+  let tagFilter = prefs.session?.tag ?? "";
   let wiki: { slug: string; anchor: string; from: ViewId } | null = null;
   let sheet = false;
   let pending: "g" | null = null;
@@ -128,6 +130,7 @@ async function main(): Promise<void> {
       revealed,
       filters,
       expanded,
+      tag: tagFilter,
       wiki: wiki ? { slug: wiki.slug, anchor: wiki.anchor } : null,
       scrollTop: scroller()?.scrollTop ?? 0,
     };
@@ -259,7 +262,16 @@ async function main(): Promise<void> {
       return [view.postingView({ plan: bundle.plan, questions: bundle.questions, domains: bundle.domains })];
     }
     if (viewId === "interview") {
-      return [view.interviewView({ briefs: bundle.interview, domains: bundle.domains, expanded, wikiTitles: wikiTitles() })];
+      return [
+        view.interviewView({
+          briefs: bundle.interview,
+          domains: bundle.domains,
+          expanded,
+          tag: tagFilter,
+          tags: bundle.interviewTags,
+          wikiTitles: wikiTitles(),
+        }),
+      ];
     }
     const question = currentQuestion(snap);
     if (!question) {
@@ -436,6 +448,13 @@ async function main(): Promise<void> {
         if (target === "drill" || target === "bank" || target === "posting" || target === "interview") {
           apply({ type: "view", view: target });
         }
+        return;
+      }
+      case "tag": {
+        const tag = element.getAttribute("data-tag") ?? "";
+        tagFilter = tagFilter === tag ? "" : tag;
+        expanded = null;
+        rerender();
         return;
       }
       case "toggle": {

@@ -18,7 +18,7 @@ import { build } from "esbuild";
 import { parse as parseYaml } from "yaml";
 import { readMarkdown, readYaml, walk } from "@schema/load.js";
 import { Question } from "@schema/question.js";
-import { InterviewBrief } from "@schema/interview.js";
+import { INTERVIEW_TAG_IDS, INTERVIEW_TAG_TITLES, InterviewBrief } from "@schema/interview.js";
 import { DomainsFile } from "@schema/registry.js";
 import { SHIPPABLE_STATUSES } from "@schema/common.js";
 import { WikiFrontmatter } from "@schema/wiki.js";
@@ -70,6 +70,7 @@ interface ShippedBrief {
       id: string;
       question: string;
       likelihood: string;
+      tags: string[];
       asks: string;
       answer: string[];
       traps: string[];
@@ -206,6 +207,7 @@ for (const file of walk(join(ROOT, "content/interview"), [".yaml", ".yml"])) {
         id: q.id,
         question: q.question.trim(),
         likelihood: q.likelihood,
+        tags: [...q.tags],
         asks: q.asks.trim(),
         answer: q.answer.map((a) => a.trim()),
         traps: q.traps.map((t) => t.trim()),
@@ -263,8 +265,17 @@ await build({
   },
 });
 
+/**
+ * The tag registry travels with the bundle.
+ *
+ * The vocabulary is closed in the schema, and the panel needs the title to draw a chip; the
+ * bundler is where the authoring vocabulary and the rendered one meet, exactly as it is for
+ * snake_case → camelCase everywhere else.
+ */
+const interviewTags = INTERVIEW_TAG_IDS.map((id) => ({ id, title: INTERVIEW_TAG_TITLES[id] }));
+
 const bundle = {
-  schema: 3,
+  schema: 4,
   generatedAt: new Date().toISOString(),
   questions,
   wiki,
@@ -272,6 +283,7 @@ const bundle = {
   levels,
   plan,
   interview,
+  interviewTags,
 };
 
 mkdirSync(OUT, { recursive: true });
