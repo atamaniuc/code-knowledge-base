@@ -26,6 +26,7 @@ import {
 } from "./history.js";
 import { resolveKey, type Action, type ViewId } from "./keys.js";
 import {
+  adoptedFont,
   canGrow,
   canShrink,
   chromeStore,
@@ -109,6 +110,19 @@ async function main(): Promise<void> {
   }
   applyFont(fontStep);
 
+  // Fullscreen is a second document rather than a bigger version of this one, so the two
+  // windows share the size through storage and not through memory. Writing on every change
+  // (rather than on the debounce) is what makes the size survive a press of the fullscreen
+  // button right after it, and this listener is the other direction.
+  store.watch?.((raw) => {
+    const next = adoptedFont(raw, fontStep);
+    if (next === null) return;
+    fontStep = next;
+    applyFont(fontStep);
+    announce("Text size " + String(fontPercent(fontStep)) + "%");
+    rerender();
+  });
+
   /**
    * The element that actually scrolls.
    *
@@ -136,9 +150,11 @@ async function main(): Promise<void> {
     };
   }
 
-  const persist = debounce(() => {
+  function writePrefs(): void {
     void savePrefs(store, { fontStep, session: currentSession() });
-  }, 250);
+  }
+
+  const persist = debounce(writePrefs, 250);
 
   function place(): Place {
     return { view: viewId, questionId: pinned?.id ?? shownId, wiki: wiki ? { slug: wiki.slug, anchor: wiki.anchor } : null, expanded };
@@ -421,6 +437,7 @@ async function main(): Promise<void> {
         }
         fontStep = next;
         applyFont(fontStep);
+        writePrefs();
         announce("Text size " + String(fontPercent(fontStep)) + "%");
         rerender();
         return;

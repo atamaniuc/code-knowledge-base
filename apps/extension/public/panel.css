@@ -985,7 +985,8 @@ button.tag-chip[aria-pressed="true"] {
 }
 
 .font-label {
-  min-width: 36px;
+  /* Wide enough for the three digits the ladder now ends on, at the largest step. */
+  min-width: 2.9rem;
   color: var(--muted);
   font-size: 0.78rem;
   font-variant-numeric: tabular-nums;
@@ -993,10 +994,11 @@ button.tag-chip[aria-pressed="true"] {
 }
 
 /* Fullscreen is not a side panel: it runs in a window as wide as the screen, and a 1920px
-   line is unreadable, so the column keeps a measure and centres itself. */
+   line is unreadable, so the column keeps a measure and centres itself — in rem, so the
+   measure grows with the text size instead of holding a 60-character line at 200%. */
 @media (min-width: 900px) {
   .shell {
-    max-width: 860px;
+    max-width: 62rem;
     margin: 0 auto;
   }
 }

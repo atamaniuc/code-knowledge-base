@@ -93,6 +93,18 @@ describe("buildPrepPlan", () => {
   it("caps the core plan so a session stays a session", () => {
     expect(buildPrepPlan(questions, profile, { limit: 1 }).core).toHaveLength(1);
   });
+
+  it("stops one domain from filling the plan", () => {
+    // Four requirements from one domain, one from another: without the cap the plan is a
+    // Kubernetes drill and the posting's other half never appears.
+    const many = [
+      ...[1, 2, 3, 4, 5].map((n) => q({ id: "k" + String(n), slug: "kube-" + String(n), domain: "backend-node" })),
+      q({ id: "m1", slug: "kafka-outbox", domain: "messaging" }),
+    ];
+    const plan = buildPrepPlan(many, profile, { perDomain: 2 });
+    expect(plan.core.filter((r) => r.question.domain === "backend-node")).toHaveLength(2);
+    expect(plan.core.map((r) => r.question.slug)).toContain("kafka-outbox");
+  });
 });
 
 describe("toBundlePlan", () => {

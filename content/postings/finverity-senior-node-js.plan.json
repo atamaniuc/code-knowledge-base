@@ -1,0 +1,392 @@
+{
+  "source": {
+    "title": "Senior Node.js Engineer | UK FinTech Startup",
+    "url": "",
+    "level": "senior",
+    "capturedAt": "2026-10-28T22:50:42.777Z"
+  },
+  "levels": [
+    "senior",
+    "staff",
+    "head"
+  ],
+  "emphasis": [
+    {
+      "domain": "network",
+      "required": [
+        "gRPC",
+        "GraphQL",
+        "REST"
+      ],
+      "optional": []
+    },
+    {
+      "domain": "backend-node",
+      "required": [
+        "Node.js",
+        "NestJS"
+      ],
+      "optional": []
+    },
+    {
+      "domain": "frontend",
+      "required": [
+        "TypeScript",
+        "JavaScript"
+      ],
+      "optional": []
+    },
+    {
+      "domain": "infra",
+      "required": [
+        "CI/CD",
+        "Docker"
+      ],
+      "optional": [
+        "AWS",
+        "Serverless",
+        "Kubernetes"
+      ]
+    },
+    {
+      "domain": "architecture",
+      "required": [
+        "Microservices"
+      ],
+      "optional": []
+    },
+    {
+      "domain": "data",
+      "required": [
+        "PostgreSQL"
+      ],
+      "optional": []
+    },
+    {
+      "domain": "caching",
+      "required": [],
+      "optional": [
+        "Redis"
+      ]
+    },
+    {
+      "domain": "messaging",
+      "required": [],
+      "optional": [
+        "Apache Kafka"
+      ]
+    },
+    {
+      "domain": "observability",
+      "required": [],
+      "optional": [
+        "Grafana",
+        "Prometheus"
+      ]
+    }
+  ],
+  "core": [
+    {
+      "id": "9801d408-f7fc-4888-bb3f-a5075a766f12",
+      "slug": "nestjs-microservice-transport-choice",
+      "domain": "backend-node",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "backend-node is a stated requirement; names NestJS, gRPC; asks at senior, the level the posting states"
+    },
+    {
+      "id": "bc030338-a6f0-4756-8219-78cbd2ba0575",
+      "slug": "nodejs-esm-cjs-and-type-stripping-migration",
+      "domain": "backend-node",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "backend-node is a stated requirement; names Node.js, TypeScript; asks at senior, the level the posting states"
+    },
+    {
+      "id": "58ada66d-aed2-43d4-8068-0fb18344447f",
+      "slug": "nodejs-memory-leak-hunt",
+      "domain": "backend-node",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "backend-node is a stated requirement; names Node.js, REST; asks at senior, the level the posting states"
+    },
+    {
+      "id": "118dda5d-ccaa-4847-81bc-4a971448a72d",
+      "slug": "nodejs-worker-threads-vs-cluster",
+      "domain": "backend-node",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "backend-node is a stated requirement; names Node.js, JavaScript; asks at senior, the level the posting states"
+    },
+    {
+      "id": "8fb83b60-45e4-4b0f-b682-cabda394d504",
+      "slug": "aws-aurora-failover-drill",
+      "domain": "infra",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "infra is a stated requirement; names AWS; asks at senior, the level the posting states"
+    },
+    {
+      "id": "a0fb72e3-9307-40b0-b8e5-4bb6e5f366f7",
+      "slug": "aws-compute-choice-for-workload",
+      "domain": "infra",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "infra is a stated requirement; names AWS; asks at senior, the level the posting states"
+    },
+    {
+      "id": "f6ce367d-09bc-4234-bf6b-7bbe9689df73",
+      "slug": "aws-cost-right-sizing",
+      "domain": "infra",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "infra is a stated requirement; names AWS; asks at senior, the level the posting states"
+    },
+    {
+      "id": "dc1105f4-e14f-4efa-928b-1c1b53e93332",
+      "slug": "aws-irsa-and-least-privilege",
+      "domain": "infra",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "infra is a stated requirement; names AWS; asks at senior, the level the posting states"
+    },
+    {
+      "id": "0f5487c3-927d-43a5-ba23-c26e75a5b1fd",
+      "slug": "graphql-cost-limits-and-persisted-queries",
+      "domain": "network",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "network is a stated requirement; names GraphQL; asks at senior, the level the posting states"
+    },
+    {
+      "id": "ff89f9b3-5114-4468-84a0-7c0b7db3c92e",
+      "slug": "graphql-n-plus-one-and-dataloader",
+      "domain": "network",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "network is a stated requirement; names GraphQL; asks at senior, the level the posting states"
+    },
+    {
+      "id": "f355e684-7e06-4a0d-912a-1a22b4b900da",
+      "slug": "grpc-contract-evolution",
+      "domain": "network",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "network is a stated requirement; names gRPC; asks at senior, the level the posting states"
+    },
+    {
+      "id": "1f725ca7-df60-45af-a2cb-0cca42658800",
+      "slug": "grpc-protobuf-rollout-window",
+      "domain": "network",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "network is a stated requirement; names gRPC; asks at senior, the level the posting states"
+    },
+    {
+      "id": "3884fa45-1c5f-4231-8523-7ec6d0c93f23",
+      "slug": "postgres-deadlock-in-production",
+      "domain": "data",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "data is a stated requirement; names PostgreSQL; asks at senior, the level the posting states"
+    },
+    {
+      "id": "63a3fdfb-5d35-4095-9f03-0c63d64fa7cc",
+      "slug": "postgres-explain-analyze-buffers",
+      "domain": "data",
+      "levels": [
+        "middle",
+        "senior",
+        "staff"
+      ],
+      "reason": "data is a stated requirement; names PostgreSQL; asks at senior, the level the posting states"
+    },
+    {
+      "id": "4bfc0a16-72b6-4441-9d95-a02f560ae166",
+      "slug": "postgres-ledger-read-model",
+      "domain": "data",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "data is a stated requirement; names PostgreSQL; asks at senior, the level the posting states"
+    },
+    {
+      "id": "0c4f79a7-0a4b-4579-b565-97a9be958eda",
+      "slug": "postgres-logical-replication-read-model",
+      "domain": "data",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "data is a stated requirement; names PostgreSQL; asks at senior, the level the posting states"
+    },
+    {
+      "id": "be92e416-117d-46b4-bb49-c0d2eb715821",
+      "slug": "cache-penetration-and-avalanche",
+      "domain": "caching",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "caching is a nice-to-have; names REST, Redis; asks at senior, the level the posting states"
+    },
+    {
+      "id": "79a36ca9-35a3-432d-844a-4f4eae6acc7f",
+      "slug": "ddd-aggregate-design",
+      "domain": "architecture",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "architecture is a stated requirement; asks at senior, the level the posting states"
+    },
+    {
+      "id": "3351cb16-0e65-4a02-af80-7a488e63e1e0",
+      "slug": "hexagonal-testability-and-failure-modes",
+      "domain": "architecture",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "architecture is a stated requirement; asks at senior, the level the posting states"
+    },
+    {
+      "id": "25649f52-ddce-462a-8001-30ed3d3fa6f4",
+      "slug": "kafka-producer-durability",
+      "domain": "messaging",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "messaging is a nice-to-have; names REST, Apache Kafka; asks at senior, the level the posting states"
+    },
+    {
+      "id": "e84efb20-dd65-4672-9b47-68a9ffe98bb1",
+      "slug": "modular-monolith-vs-services-decision",
+      "domain": "architecture",
+      "levels": [
+        "staff"
+      ],
+      "reason": "architecture is a stated requirement; names Microservices"
+    },
+    {
+      "id": "de862e61-69f6-4237-a552-7f4ee95d216a",
+      "slug": "resiliency-timeouts-retries-jitter",
+      "domain": "architecture",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "architecture is a stated requirement; asks at senior, the level the posting states"
+    },
+    {
+      "id": "eac3ee09-d05d-4e3b-b0d0-bf06bbf8c73b",
+      "slug": "alert-noise-reduction",
+      "domain": "observability",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "observability is a nice-to-have; names Prometheus; asks at senior, the level the posting states"
+    },
+    {
+      "id": "27f93fee-de07-4926-b34d-df073c21f2ec",
+      "slug": "cache-stampede-mitigation",
+      "domain": "caching",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "caching is a nice-to-have; names Redis; asks at senior, the level the posting states"
+    }
+  ],
+  "stretch": [
+    {
+      "id": "5bc66bcc-0286-43c6-8de5-4ce99532947f",
+      "slug": "code-review-standard-setting",
+      "domain": "softskills",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "asks at senior, the level the posting states"
+    },
+    {
+      "id": "b4e4088c-6c8f-4412-8783-811c608c94a6",
+      "slug": "decision-that-failed",
+      "domain": "softskills",
+      "levels": [
+        "senior",
+        "staff",
+        "head"
+      ],
+      "reason": "asks at senior, the level the posting states"
+    },
+    {
+      "id": "dc2666b9-b26b-4b75-9b2b-822d74954adc",
+      "slug": "agent-loop-stop-conditions",
+      "domain": "agentic",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "asks at senior, the level the posting states"
+    },
+    {
+      "id": "100412e7-bac9-4ba8-be23-e4e495b4171a",
+      "slug": "agent-trajectory-evaluation",
+      "domain": "agentic",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "asks at senior, the level the posting states"
+    },
+    {
+      "id": "5fcf6333-d4b7-47a8-ad27-bf958bf7cb14",
+      "slug": "cross-border-funding-flow-design",
+      "domain": "system-design",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "asks at senior, the level the posting states"
+    }
+  ],
+  "gaps": [
+    {
+      "domain": "frontend",
+      "technologies": [
+        "JavaScript",
+        "TypeScript"
+      ]
+    }
+  ]
+}

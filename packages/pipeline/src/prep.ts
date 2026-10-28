@@ -160,15 +160,36 @@ export function rank(questions: Question[], profile: JobProfile, levels: string[
     .sort((a, b) => b.score - a.score || a.question.slug.localeCompare(b.question.slug));
 }
 
+/**
+ * One domain cannot fill the plan.
+ *
+ * A posting that names Kubernetes once makes every Kubernetes question its own requirement,
+ * and ranking alone then hands back a cluster drill with the role's own core pushed under
+ * the limit. Capping each domain keeps the list spanning the posting instead of sorting
+ * itself by whichever domain the bank happens to have most questions in.
+ */
+export function spreadByDomain(ranked: RankedQuestion[], perDomain: number): RankedQuestion[] {
+  const used = new Map<string, number>();
+  return ranked.filter((entry) => {
+    const count = used.get(entry.question.domain) ?? 0;
+    if (count >= perDomain) return false;
+    used.set(entry.question.domain, count + 1);
+    return true;
+  });
+}
+
 export function buildPrepPlan(
   questions: Question[],
   profile: JobProfile,
-  options: { levels?: string[]; stretchDomains?: string[]; limit?: number } = {},
+  options: { levels?: string[]; stretchDomains?: string[]; limit?: number; perDomain?: number } = {},
 ): PrepPlan {
   const levels = options.levels ?? targetLevels(profile.level);
   const named = new Set(profile.mentions.map((m) => m.domain));
 
-  const core = rank(questions, profile, levels).filter((r) => r.score > 0);
+  const core = spreadByDomain(
+    rank(questions, profile, levels).filter((r) => r.score > 0),
+    options.perDomain ?? 4,
+  );
   // Two per stretch domain rather than the top four overall: one domain's whole backlog
   // crowding out the others turns a widening exercise into a second core plan.
   const stretch = options.stretchDomains?.length

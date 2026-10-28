@@ -475,3 +475,33 @@ second press focuses the window already open rather than opening another.
 **Why it matters beyond the two bugs:** "verified in Chrome" was true and useless — the
 difference between a side panel and a tab is the whole feature. Reproduce in the surface the
 user has, and assert the invariant rather than the intent.
+
+---
+
+## 2026-10-29 — A saved posting ships its plan, and one domain cannot fill the plan
+
+**The Posting tab was empty by default.** A plan only existed when somebody happened to run
+`make prep` against a URL, so the tab explained itself rather than the vacancy — the one
+surface whose whole purpose is "this is the job you are preparing for" needed a command run
+first. A posting saved to `content/postings/<slug>.md` now carries its plan beside it and the
+bundler bakes that plan with no flag. Two plans is an ambiguity it refuses rather than
+resolves by date: a Posting tab describing the wrong vacancy is worse than a build that stops.
+
+**Why a file and not a stored URL.** A URL expires, changes behind you, and puts the network in
+the middle of a rebuild — the repository's promise everywhere else is that content rebuilds
+offline. The saved posting is the same bytes the plan was derived from, and `make prep` reads
+it directly. A plan built from a URL still ships that URL; a saved posting records none, and the
+panel renders the field as text rather than a link.
+
+**Why the core plan has a per-domain cap.** Ranking alone made a posting that names Kubernetes
+once hand back a cluster drill: every Kubernetes question inherited "infra is a stated
+requirement", and the role's own core fell under the limit. Four per domain keeps the plan
+spanning the posting. The cap is a ceiling, not a quota — three of 24 slots went unused in the
+generated plan before review, which is the honest shape of a small bank.
+
+**Known limit, left alone deliberately.** The gazetteer maps TypeScript and JavaScript to
+`frontend` (`content/tech-aliases.yaml`), a domain the bank has not written yet, so this
+posting's Gaps card names them as uncovered although `backend-node` has 13 questions in the
+same language. Moving a language into a domain is a vocabulary decision that changes what every
+posting reports; it belongs to a human, not to this session.
+

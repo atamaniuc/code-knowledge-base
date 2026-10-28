@@ -10,7 +10,7 @@ help:
 	@echo "validate          validate content/ against schemas and cross-file rules"
 	@echo "check             lint + test + validate; the gate for every feature list item"
 	@echo "drill             run a practice session; ARGS=\"--help\" for options"
-	@echo "prep              ARGS=<job-url>  parse a posting and build a rehearsal plan for it"
+	@echo "prep              ARGS=<job-url|posting-file>  parse a posting and build a rehearsal plan"
 	@echo "ingest            rebuild the topic frequency map from live job postings"
 	@echo "extension         build the unpacked Chrome extension into apps/extension/dist"
 	@echo "verify-content    run the grounding gate over wiki articles and promote what passes"
@@ -41,7 +41,8 @@ check: lint test validate harness-check
 drill:
 	@pnpm exec tsx apps/drill/src/cli.ts $(ARGS)
 
-# The only target that reads the network: a posting URL in, a rehearsal plan out.
+# A posting in, a rehearsal plan out. A URL is the only input that reads the network; a
+# posting saved under content/postings/ rebuilds its plan offline, byte for byte.
 prep:
 	@pnpm exec tsx scripts/prep-from-job.ts $(ARGS)
 

@@ -10,8 +10,14 @@ import type { ViewId } from "./keys.js";
  * so the panel can call it on every change without worrying about what it costs.
  */
 
-/** Font sizes as multipliers of the base. Five steps, because a slider is worse than a button. */
-export const FONT_STEPS = [0.9, 1, 1.1, 1.25, 1.4] as const;
+/**
+ * Font sizes as multipliers of the base. Steps, because a slider is worse than a button.
+ *
+ * The ladder climbs to double size: a side panel is read at arm's length in a narrow column,
+ * and the two sizes that helped most in practice were the ones past 140% that did not exist
+ * yet. Steps are irregular on purpose — equal ratios make the last ones feel like nothing.
+ */
+export const FONT_STEPS = [0.9, 1, 1.1, 1.25, 1.4, 1.6, 1.8, 2] as const;
 export const DEFAULT_FONT_STEP = 1;
 
 export interface Session {
@@ -60,6 +66,20 @@ export function canShrink(step: number): boolean {
   return nearestStep(step) !== FONT_STEPS[0];
 }
 
+/**
+ * The size another window chose, or null when nothing changed.
+ *
+ * Fullscreen is not the same document: a side panel cannot fill the screen, so fullscreen
+ * opens panel.html again in a window of its own, and the two instances then hold a copy of
+ * the same pref. Without this, pressing A+ before going fullscreen resizes one window and
+ * leaves the other at the old size — which reads as "the button stopped working" exactly
+ * when the screen is biggest.
+ */
+export function adoptedFont(raw: unknown, current: number): number | null {
+  const next = parsePrefs(raw).fontStep;
+  return next === nearestStep(current) ? null : next;
+}
+
 const VIEWS: ViewId[] = ["drill", "bank", "posting", "interview"];
 const FIELDS: (keyof Filters)[] = ["domain", "level", "tech", "query"];
 
@@ -103,25 +123,51 @@ export function parsePrefs(raw: unknown): Prefs {
 export interface PrefStore {
   get(key: string): Promise<unknown>;
   set(key: string, value: unknown): Promise<void>;
+  /**
+   * Called with the raw stored value whenever another context writes it. Absent outside
+   * Chrome and in tests that do not care; the panel treats a missing watcher as "no other
+   * window exists", which is true for both.
+   */
+  watch?(fn: (raw: unknown) => void): void;
 }
 
 const KEY = "ui";
 
+interface StorageChange {
+  newValue?: unknown;
+}
+
+type ChangeListener = (changes: Record<string, StorageChange | undefined>, areaName: string) => void;
+
 /** chrome.storage.local, or an in-memory stand-in when the page is opened outside Chrome. */
 export function chromeStore(): PrefStore {
-  const area = (
+  const storage = (
     globalThis as {
       chrome?: {
         storage?: {
           local?: { get(keys: string): Promise<Record<string, unknown>>; set(items: Record<string, unknown>): Promise<void> };
+          onChanged?: { addListener(listener: ChangeListener): void };
         };
       };
     }
-  ).chrome?.storage?.local;
+  ).chrome?.storage;
+  const area = storage?.local;
   if (area) {
+    const read = async (key: string): Promise<unknown> => (await area.get(key))[key];
+    const write = async (key: string, value: unknown): Promise<void> => area.set({ [key]: value });
+    const changes = storage?.onChanged;
+    if (!changes) return { get: read, set: write };
     return {
-      get: async (key) => (await area.get(key))[key],
-      set: async (key, value) => area.set({ [key]: value }),
+      get: read,
+      set: write,
+      watch: (fn) => {
+        changes.addListener((listenerChanges, areaName) => {
+          if (areaName !== "local") return;
+          const change = listenerChanges[KEY];
+          if (change === undefined) return;
+          fn(change.newValue);
+        });
+      },
     };
   }
   const memory = new Map<string, unknown>();

@@ -27,7 +27,7 @@ make check                  # lint + test + validate — the gate for every unit
 make validate               # content only, fastest feedback while authoring
 make drill ARGS="--help"    # practice session in the terminal
 make extension ARGS="--include-drafts"   # build the unpacked extension into apps/extension/dist
-make prep ARGS="<job-url>"  # parse a posting into a rehearsal plan (the only networked command)
+make prep ARGS="<job-url|file>"  # parse a posting into a rehearsal plan (a URL is the only networked input)
 make ingest                 # rebuild the topic frequency map from live job postings
 ```
 
@@ -36,7 +36,12 @@ make ingest                 # rebuild the topic frequency map from live job post
 
 `make prep ARGS="<job-url> --out=<file>"` writes a rehearsal plan for one posting;
 `make extension ARGS="--include-drafts --plan=<file>"` bakes that plan into the side panel
-alongside the whole bank. The posting URL is always an argument, never stored here.
+alongside the whole bank.
+
+A posting saved under `content/postings/` keeps its plan next to it, and `make extension`
+bakes that one with no flag: the Posting tab then describes the vacancy the repository is
+preparing for, and `make prep ARGS="content/postings/<slug>.md --out=content/postings/<slug>.plan.json"`
+rebuilds it offline. A plan built from a URL is an argument, not a repository value.
 
 There is no server and no database to provision. Everything runs locally.
 
@@ -62,6 +67,7 @@ content/          source of truth, independent of any application
   questions/      YAML, derived from wiki sections via wiki_refs
   dsa/            concepts (complexity), patterns, tasks
   interview/      one rehearsal brief per target: posting, take-home, the interview after it
+  postings/       a posting saved as text, with the rehearsal plan built from it beside it
   domains.yaml    domain tree and market weights
   sources.yaml    external sources and licenses — human-edited only
   tech-aliases.yaml  gazetteer for vacancy parsing

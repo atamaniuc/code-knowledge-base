@@ -6,10 +6,10 @@
  * offline with nothing sent anywhere. So content ships inside the package and updates arrive
  * as extension updates, which the store distributes.
  *
- * The bundle carries the whole bank — questions and the wiki they cite — plus, when a
- * posting was parsed with `make prep`, the rehearsal plan for that posting. The posting is
- * always an argument to a command: no job URL is written into the repository, only into the
- * generated bundle.
+ * The bundle carries the whole bank — questions and the wiki they cite — plus the rehearsal
+ * plan for one posting: the one the repository carries at `content/postings/<slug>.plan.json`,
+ * or the file passed as `--plan=`. A posting that was fetched from a URL is not stored here;
+ * only the plan built from it is, so the Posting tab is reproducible without the network.
  */
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -93,7 +93,27 @@ interface ShippedArticle {
 const includeDrafts = process.argv.includes("--include-drafts");
 if (includeDrafts) console.warn("including drafts: these answers have not been fact-checked by a human");
 
-const planPath = process.argv.find((a) => a.startsWith("--plan="))?.split("=").slice(1).join("=");
+const planFlag = process.argv.find((a) => a.startsWith("--plan="))?.split("=").slice(1).join("=");
+
+/**
+ * The plan that ships when nobody named one.
+ *
+ * One target, one posting: the repository carries at most one, and two is an ambiguity the
+ * build refuses rather than resolves by date. A Posting tab that quietly describes a
+ * different vacancy is worse than a build that stops and says which files it found.
+ */
+function bakedPlan(): string | null {
+  const found = walk(join(ROOT, "content/postings"), [".plan.json"]);
+  if (found.length === 0) return null;
+  if (found.length > 1) {
+    console.error("several posting plans in content/postings; pass --plan=<file> to choose one:");
+    for (const one of found) console.error("  " + one.replace(ROOT + "/", ""));
+    process.exit(1);
+  }
+  return found[0] ?? null;
+}
+
+const planPath = planFlag ?? bakedPlan() ?? undefined;
 
 /** Files that could not even be read. Collected so the warning names them instead of hiding them. */
 const unreadable: string[] = [];

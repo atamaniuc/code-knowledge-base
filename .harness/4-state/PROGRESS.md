@@ -20,19 +20,26 @@ times across 173 stack-scoped postings, and structured preparation for it barely
   than scripts kept here; `.harness/` holds this project's own rules, state and feedback map,
   and `harnessimo.config.json` says which checks are enforced (`make harness-doctor` prints
   it).
-- `make check`: passing (29 files, 295 tests, 4 skipped without a plan; content valid; every
-  harness gate). The validator now reports an unparseable file instead of dying on it, with
+- `make check`: passing (30 files, 319 tests; content valid; every harness gate). Nothing is
+  skipped any more: the committed posting plan means the bundle's plan assertions run. The validator now reports an unparseable file instead of dying on it, with
   the line and the fix — one bad file used to hide the state of the whole tree.
 - `make prep ARGS="<job-url> [--out=<file>]"` turns a posting into a rehearsal plan:
   requirement emphasis from the closed gazetteer, the band to rehearse, a ranked core plan,
-  stretch domains the posting omits, and the gaps that are the authoring backlog. The posting
-  is always an argument; no URL is stored in the repository.
+  stretch domains the posting omits, and the gaps that are the authoring backlog. The input is
+  a URL or a posting saved under `content/postings/`; a URL is the only networked input, and
+  no URL is stored in the repository. One domain cannot fill the core plan (the cap is what
+  keeps a posting that mentions Kubernetes in passing from becoming a cluster drill).
+- **Posting is pre-filled for the vacancy being prepared.** `content/postings/finverity-senior-node-js.md`
+  is the saved posting and `.plan.json` beside it is the plan built from it; the bundler picks
+  that plan up with no flag and refuses to guess if there are two.
 - Extension: `make extension ARGS="--include-drafts --plan=<file>"`, then load
   `apps/extension/dist` unpacked. Bundle **schema 4** (`docs/extension-bundle.md`) ships the
   whole bank — questions, the wiki they cite, the domain registry, the interview briefs and their
   tag registry — plus the plan for one posting. The panel is a keyboard-first tool: Drill (two-stage, graded, stats
   and streak), Bank (filters, search, show answer, drill this), Posting (emphasis, ordered
-  plan, gaps), Interview and a wiki reader, light and dark.
+  plan, gaps), Interview and a wiki reader, light and dark. Text size steps to 200% and is
+  written to `chrome.storage.local` on every change, so the window fullscreen opens lands on
+  the same size and the two windows follow each other.
 - **Interview is a new entity, not a filter over the bank.** `content/interview/{slug}.yaml`
   holds one rehearsal brief per target — the posting, its take-home, the interview after it:
   `target`, `stages`, then groups split by `side` (technical / domain) with per-question

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { canGrow, canShrink, debounce, FONT_STEPS, fontPercent, loadPrefs, type PrefStore, parsePrefs, savePrefs, stepFont } from "../src/prefs.js";
+import { adoptedFont, canGrow, canShrink, debounce, FONT_STEPS, fontPercent, loadPrefs, type PrefStore, parsePrefs, savePrefs, stepFont } from "../src/prefs.js";
+
+const LARGEST = FONT_STEPS[FONT_STEPS.length - 1] ?? 1;
 
 function memoryStore(): PrefStore & { raw: Map<string, unknown> } {
   const raw = new Map<string, unknown>();
@@ -16,8 +18,14 @@ describe("font size", () => {
   it("steps through the scale and clamps at both ends", () => {
     expect(stepFont(1, 1)).toBe(1.1);
     expect(stepFont(1, -1)).toBe(0.9);
-    expect(stepFont(1.4, 1)).toBe(1.4);
+    expect(stepFont(1.4, 1)).toBe(1.6);
+    expect(stepFont(LARGEST, 1)).toBe(LARGEST);
     expect(stepFont(0.9, -1)).toBe(0.9);
+  });
+
+  it("reaches double size, which is the point of the top of the ladder", () => {
+    expect(LARGEST).toBe(2);
+    expect(fontPercent(LARGEST)).toBe(200);
   });
 
   it("snaps a value from an older build onto the nearest step", () => {
@@ -33,10 +41,17 @@ describe("font size", () => {
 
   it("keeps the default inside the scale and stops at both ends", () => {
     expect(FONT_STEPS).toContain(1);
-    expect(canGrow(1.4)).toBe(false);
+    expect(canGrow(LARGEST)).toBe(false);
     expect(canShrink(0.9)).toBe(false);
     expect(canGrow(0.9)).toBe(true);
-    expect(canShrink(1.4)).toBe(true);
+    expect(canShrink(LARGEST)).toBe(true);
+  });
+
+  it("adopts a size another window wrote, and stays quiet when nothing changed", () => {
+    expect(adoptedFont({ fontStep: LARGEST }, 1)).toBe(LARGEST);
+    expect(adoptedFont({ fontStep: 1.02 }, 1)).toBeNull();
+    expect(adoptedFont({ fontStep: LARGEST }, LARGEST)).toBeNull();
+    expect(adoptedFont(null, LARGEST)).toBe(1);
   });
 });
 

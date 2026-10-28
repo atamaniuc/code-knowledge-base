@@ -14,16 +14,25 @@ translate it, and only that click sends the selected phrase to Google Translate.
 implemented in `apps/extension/src/translate.ts`, the manifest grants the two translate
 origins and nothing else, and no other module may reach the network.
 
-**The posting URL is an argument, never a repository value.** A job posting is a thing a
-person runs a command against; a repository that stores one has quietly become about that
-posting. The URL reaches the bundle only through the command that generated it.
+**A posting is either an argument or a saved file, never a stored URL.** A job posting is a
+thing a person runs a command against `make prep` with. When the posting is fetched from a
+URL, only the plan built from it is kept and the URL reaches the bundle through that file.
+When the posting is saved under `content/postings/`, the plan sits next to it and ships by
+default: the Posting tab then describes the vacancy the repository is preparing for, and
+rebuilding it needs no network.
+
+Two plans in `content/postings/` is an ambiguity the bundler refuses rather than resolves
+by date, because a Posting tab that silently describes a different vacancy is worse than a
+build that stops and names the files.
 
 ## Building it
 
 ```bash
-make extension ARGS="--include-drafts"                             # bank only
-make prep ARGS="<job-url> --out=.pipeline/prep/role.json"          # parse a posting
-make extension ARGS="--include-drafts --plan=.pipeline/prep/role.json"   # bank + plan
+make extension ARGS="--include-drafts"                             # bank + the saved posting, if any
+make prep ARGS="<job-url|posting-file> --out=<file>.plan.json"     # parse a posting
+make extension ARGS="--include-drafts --plan=<file>.plan.json"      # bank + that plan instead
+make prep ARGS="content/postings/finverity-senior-node-js.md --out=content/postings/finverity-senior-node-js.plan.json --limit=24"
+                                                                   # rebuild the saved plan, offline
 ```
 
 `--include-drafts` maps `review_status: draft` to `auto_verified` on the way out — the same
