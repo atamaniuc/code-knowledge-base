@@ -42,6 +42,14 @@ times across 173 stack-scoped postings, and structured preparation for it barely
   the Program Capacity assignment and the SCF explainer, and citing the wiki groups it leans on.
   Question ids are global keys — the panel expands by id and the history stack records it — so a
   duplicate anywhere under `content/interview/` is a validation error, not a cosmetic repeat.
+- **The brief names every term twice.** The interview is in English, so each Russian term
+  carries its English equivalent — `резерв (reservation)`, `частичное погашение (partial
+  repayment)`, `уровень изоляции (isolation level)`; 287 glosses over 62 terms, at most three
+  per answer, never inside a parenthetical or a quoted reason code the author wrote. Knowing the
+  mechanism in Russian and being unable to name it in English is the same as not knowing it, and
+  the wording is what has to come out of your mouth under pressure. `освобождение` glosses as
+  **release**, the assignment's own word, not `cancellation` — cancellation is the separate
+  concept (`отмена`) that releases a reservation before any money moved.
 - **Space and enter no longer get swallowed outside the drill.** They used to be
   `preventDefault`-ed in every view, so a focused row in the bank or a brief question could not
   be activated from the keyboard at all. Now the panel returns before `preventDefault` unless

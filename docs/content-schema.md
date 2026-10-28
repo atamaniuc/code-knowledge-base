@@ -65,6 +65,12 @@ interview that follows.
 - `groups[].wiki_refs` points at the articles to reread when an answer will not come out.
   They resolve against the wiki like any other reference, so the brief is never the only
   place a fact lives.
+- Every Russian term travels with its English equivalent in parentheses — `резерв
+  (reservation)`, `частичное погашение (partial repayment)`, `уровень изоляции (isolation
+  level)`. The interview is in English, so the wording is part of what is being rehearsed:
+  knowing the mechanism in Russian and not being able to name it in English is the same as
+  not knowing it. A gloss is introduced once per answer and never inside a parenthetical or a
+  quoted reason code, because those are the author's text talking to itself.
 - Question ids are **global keys**, not labels: the panel expands a question by id and the
   history stack remembers it, so a duplicate anywhere in `content/interview/` is a
   validation error rather than a cosmetic repeat.
