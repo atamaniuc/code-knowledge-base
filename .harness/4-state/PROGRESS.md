@@ -21,7 +21,12 @@ times across 173 stack-scoped postings, and structured preparation for it barely
   and `harnessimo.config.json` says which checks are enforced (`make harness-doctor` prints
   it).
 - `make check`: passing (30 files, 319 tests; content valid; every harness gate). Nothing is
-  skipped any more: the committed posting plan means the bundle's plan assertions run. The validator now reports an unparseable file instead of dying on it, with
+  skipped any more: the committed posting plan means the bundle's plan assertions run.
+- Toolchain: pnpm 12 and **vitest 5**. The runner's own types stopped dragging `@types/node`
+  into the extension, which exposed that its tests were typechecked by a project whose whole
+  point was to have no node types; the extension is now two projects —
+  `apps/extension/tsconfig.json` for `src` (no node globals) and `tsconfig.test.json` for
+  `test` (node types), and `pnpm run lint` runs both. The validator now reports an unparseable file instead of dying on it, with
   the line and the fix — one bad file used to hide the state of the whole tree.
 - `make prep ARGS="<job-url> [--out=<file>]"` turns a posting into a rehearsal plan:
   requirement emphasis from the closed gazetteer, the band to rehearse, a ranked core plan,

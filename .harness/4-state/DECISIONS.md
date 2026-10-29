@@ -505,3 +505,32 @@ posting's Gaps card names them as uncovered although `backend-node` has 13 quest
 same language. Moving a language into a domain is a vocabulary decision that changes what every
 posting reports; it belongs to a human, not to this session.
 
+
+---
+
+## 2026-10-29 — vitest 5, and the extension's tests become their own TypeScript project
+
+**What the bump exposed.** Dependabot opened #1 as `@vitest/mocker 3.2.7 → 5.0.3` but the diff
+is `vitest ^3.2.4 → ^5.0.3` — two majors of the runner — and both CI jobs died at
+`tsc --noEmit` before a single test ran. The cause is not the runner's API: vitest 3's own
+`dist/index.d.ts` carried a reference to `@types/node`, so the extension's test files got node
+types for free. vitest 5 does not, and `apps/extension/tsconfig.json` had `types: []` on
+purpose — it exists so `src` cannot reach `process`, `Buffer` or `node:fs` in a document that
+runs in a side panel. The tests, which read the built `dist/` from disk, were only ever
+typechecked by accident.
+
+**The shape now.** `apps/extension/tsconfig.json` covers `src` only and keeps `types: []`;
+`apps/extension/tsconfig.test.json` extends it, includes `test`, and adds `node`. `pnpm run lint`
+runs both, so the two invariants are checked separately: a bogus type error in a test file and
+a `process` reference in `src` were each shown failing before the split was trusted.
+
+**Why the bump landed on main instead of merging #1.** The branch is 19 commits behind and its
+lockfile is three weeks old; merging it would put a major upgrade of the test runner in as an
+automated diff with no commit message that says why the config moved. The upgrade and the
+reason it needed code changes are one commit on main, and #1 is closed as superseded with a
+pointer to it. The dependabot config stays honest either way: it will not reopen a range that
+is already satisfied.
+
+**Numbers.** 319 tests pass on vitest 5.0.5, and the suite got faster rather than slower —
+6.5 s to 3.8 s locally, because the runner spawns one worker per file with less startup.
+
