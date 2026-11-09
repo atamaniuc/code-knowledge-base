@@ -150,3 +150,11 @@ Hard constraints: `.harness/1-instructions/CONSTRAINTS.md`. Read it before writi
 - `docs/content-schema.md` — the entities, their fields, and why the shapes are what they are
 - `docs/review-protocol.md` — what a human review checks, and how repeat findings become checks
 - `docs/plan.md` — the full plan: phases, gates, what was cut and why
+
+## Vacancy structure (learned 2026-11-09)
+- content/vacancies/<slug>/ holds posting.md, plan.json, interview.yaml; content/active.yaml
+  names the active vacancy whose plan the bundler bakes. Previous vacancies stay as history.
+- walk(dir, ["plan.json"]) matches both "plan.json" and "<slug>.plan.json": use the bare
+  suffix so both layouts resolve. A file named plan.json does NOT end with ".plan.json".
+- Interview brief tags are a CLOSED vocabulary (INTERVIEW_TAG_IDS): there is no "caching"
+  tag — use ops/nfr/tradeoff instead. Adding a tag requires schema + titles in interview.ts.
