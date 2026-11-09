@@ -1,0 +1,68 @@
+id: "5def4448-098e-44e1-b61a-a142ce2701d8"
+slug: postgres-concurrency-isolation-locks
+lang: en
+domain: backend-php
+topic: concurrency
+tracks: [backend]
+levels: [senior]
+tech:
+  name: PostgreSQL
+  version_range: ">=14"
+question: "Two webhook workers receive the same InvoicePaid event for invoice 123 at the same time. Each reads status='pending', so both try to mark it paid and push the invoice to the billing system. Walk me through preventing the double effect at the PostgreSQL level, and where optimistic locking, pessimistic locking, SKIP LOCKED, deadlocks and a Redis lock each fit."
+probes: "Whether the candidate names PostgreSQL's default isolation level and its failure mode, then picks row locks, a version check or a distributed lock by scenario, and treats deadlocks and idempotency as normal operating conditions rather than surprises."
+answer_strategy: "Open with the isolation default and the lost update it allows. Then give the concrete double-pay fix: a short FOR UPDATE transaction that re-reads the status. Add optimistic locking for rare conflicts and SKIP LOCKED for queue drains. Close with deadlock handling and the one case where a Redis lock is actually needed."
+expected_answer:
+  - text: "Names READ COMMITTED as PostgreSQL's default and the lost update between two read-modify-write transactions as the anomaly it still allows."
+    weight: 5
+    min_level: senior
+  - text: "Fixes the double-pay with SELECT ... FOR UPDATE (lockForUpdate) inside a short transaction that re-reads the status, so the second worker waits and sees the committed change."
+    weight: 5
+    min_level: senior
+  - text: "Describes optimistic locking with a version column: UPDATE ... SET version = version + 1 WHERE version = seen, and treats zero updated rows as a conflict to re-read and retry."
+    weight: 4
+    min_level: senior
+  - text: "Uses FOR UPDATE SKIP LOCKED for a database-backed queue so concurrent workers claim distinct rows instead of fighting over one."
+    weight: 3
+    min_level: senior
+  - text: "Explains a deadlock as two transactions locking rows in opposite order, PostgreSQL aborting one with SQLSTATE 40P01 after deadlock_timeout, and the fix: consistent lock ordering plus DB::transaction with attempts."
+    weight: 4
+    min_level: senior
+  - text: "Reaches for a Redis distributed lock (Cache::lock with TTL and owner-token release) only when the invariant spans workers rather than the database, and still backs money with an idempotency key."
+    weight: 3
+    min_level: senior
+  - text: "Maps it to the vacancy: inbox dedup of the Stripe webhook, FOR UPDATE plus a status re-check, outbox relay with SKIP LOCKED, idempotent Nue sync by external_id."
+    weight: 3
+    min_level: senior
+follow_ups:
+  - "Why does a plain SELECT not wait for FOR UPDATE in PostgreSQL?"
+  - "Your Redis lock TTL expires mid-work. What is the second line of defense?"
+  - "How would you prove with a test that two workers cannot both mark the invoice paid?"
+common_mistakes:
+  - "Assuming READ COMMITTED prevents lost updates and stopping there."
+  - "Holding a FOR UPDATE transaction across an HTTP call to the billing system."
+  - "Using a Redis lock with a TTL shorter than the work and no idempotency key."
+  - "Retrying a deadlocked transaction without re-running the whole transaction."
+related_questions: [laravel-transactional-outbox-inbox, laravel-queue-visibility-timeout-vs-job-timeout]
+wiki_refs:
+  - slug: postgres-concurrency-isolation-locks
+    anchor: isolation-levels-and-anomalies
+    wiki_reviewed_at: "2026-11-09"
+  - slug: postgres-concurrency-isolation-locks
+    anchor: pessimistic-locking
+    wiki_reviewed_at: "2026-11-09"
+  - slug: postgres-concurrency-isolation-locks
+    anchor: distributed-redis-locks
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "PostgreSQL — Transaction Isolation"
+    url: https://www.postgresql.org/docs/current/transaction-iso.html
+    kind: official-docs
+  - title: "PostgreSQL — Explicit Locking"
+    url: https://www.postgresql.org/docs/current/explicit-locking.html
+    kind: official-docs
+  - title: "Laravel — Atomic Locks"
+    url: https://laravel.com/docs/11.x/cache#atomic-locks
+    kind: official-docs
+difficulty: 4
+estimated_minutes: 9
+review_status: draft

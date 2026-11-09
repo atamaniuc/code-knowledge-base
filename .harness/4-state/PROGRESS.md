@@ -184,4 +184,26 @@ is exercised by `make check`:
 
 None are reviewed. Nothing here has been fact-checked by a human yet (CONSTRAINTS #1).
 
-_Last updated: 2026-10-13_
+
+## PrimeHire: concurrency content (2026-11-09)
+
+Guide Part 8D shipped in interview-preps (PostgreSQL isolation levels/anomalies, pessimistic
+and optimistic locks, race conditions, deadlocks, Redis distributed locks). KB mirrors it
+for the active vacancy:
+
+- wiki: content/wiki/backend-php/postgres-concurrency-isolation-locks.md (draft)
+- bank: content/bank/backend-php/postgres-concurrency-isolation-locks.yaml (draft)
+- interview brief: new group "concurrency" in content/vacancies/primehire-laravel/interview.yaml
+  with 3 questions: prime-race-double-pay, prime-isolation-levels, prime-locks-and-deadlock.
+- extension bundle rebuilt with --include-drafts: 135 questions, 114 wiki articles,
+  2 briefs; new group present in primehire-laravel brief.
+
+## Lessons
+
+- The concurrency group sits right after outbox-idempotency: same money and same duplicate
+  webhooks, but at the row/lock level. wiki_prereq links the article to
+  laravel-transactional-outbox-inbox so the learning order reflects that.
+- glown renders mermaid as inline images, not box-drawing text; error greps are the signal,
+  not box lines.
+
+_Last updated: 2026-11-09_
