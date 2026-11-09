@@ -1,0 +1,59 @@
+id: "89323f18-06dc-4035-9b7e-3f8d29fce45d"
+slug: laravel-transactional-outbox-inbox
+lang: en
+domain: backend-php
+topic: messaging
+tracks: [backend]
+levels: [senior]
+tech:
+  name: Laravel
+  version_range: ">=11"
+question: "A webhook handler must mark an invoice paid in PostgreSQL and publish an InvoicePaid event to SQS. If the process dies between the two steps, either the status or the event is lost. How do you make the two steps atomic, and where does idempotency fit?"
+probes: "Whether the candidate reaches for the transactional outbox instead of a publish call after save, and treats the inbox plus idempotent processing as the receiving half of the same problem."
+answer_strategy: "Name the dual-write problem first, then the outbox: persist the event in the same database transaction and let a relay publish. Then the inbox: deduplicate incoming webhooks by external id before business logic. Close with SQS at-least-once making idempotency mandatory at every hop."
+expected_answer:
+  - text: "Names the dual-write problem: a database commit and a queue publish cannot be one atomic operation."
+    weight: 5
+    min_level: senior
+  - text: "Writes the event to an outbox table in the same database transaction as the business change."
+    weight: 5
+    min_level: senior
+  - text: "Describes a relay that polls unsent rows, publishes, then marks sent — with FOR UPDATE SKIP LOCKED for concurrent workers."
+    weight: 4
+    min_level: senior
+  - text: "Persists incoming webhooks to an inbox with a unique (provider, external_id) key so duplicates become no-ops."
+    weight: 4
+    min_level: senior
+  - text: "States SQS is at-least-once, so every job and consumer must be idempotent on its own key."
+    weight: 5
+    min_level: senior
+  - text: "Maps it to the vacancy: Stripe webhook to inbox, business change plus outbox in one transaction, relay to SQS, idempotent Nue sync by external_id."
+    weight: 3
+    min_level: senior
+follow_ups:
+  - "The relay crashes after publishing but before marking the row sent. What happens?"
+  - "Where would you put the unique key for a QuickBooks entity sync?"
+common_mistakes:
+  - "Publishing to SQS right after save() and calling the handler done."
+  - "Relying on retries without an idempotency key, so a redelivery doubles the effect."
+related_questions: [laravel-queue-visibility-timeout-vs-job-timeout, stripe-nue-migration-boundaries]
+wiki_refs:
+  - slug: laravel-transactional-outbox-inbox
+    anchor: transactional-outbox
+    wiki_reviewed_at: "2026-11-09"
+  - slug: laravel-transactional-outbox-inbox
+    anchor: transactional-inbox-and-idempotency
+    wiki_reviewed_at: "2026-11-09"
+  - slug: laravel-transactional-outbox-inbox
+    anchor: outbox-plus-inbox-in-one-flow
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "Laravel — Database transactions"
+    url: https://laravel.com/docs/11.x/database
+    kind: official-docs
+  - title: "Pattern: Transactional outbox"
+    url: https://microservices.io/patterns/data/transactional-outbox.html
+    kind: article
+difficulty: 4
+estimated_minutes: 9
+review_status: draft

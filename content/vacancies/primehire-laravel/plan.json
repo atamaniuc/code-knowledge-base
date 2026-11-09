@@ -3,7 +3,7 @@
     "title": "Backend Developer: PHP + Laravel",
     "url": "",
     "level": "senior",
-    "capturedAt": "2026-11-09T14:12:00.471Z"
+    "capturedAt": "2026-11-09T14:53:50.058Z"
   },
   "levels": [
     "senior",
@@ -114,6 +114,15 @@
       "reason": "infra is a stated requirement; names Angular, S3, AWS; asks at senior, the level the posting states"
     },
     {
+      "id": "89323f18-06dc-4035-9b7e-3f8d29fce45d",
+      "slug": "laravel-transactional-outbox-inbox",
+      "domain": "backend-php",
+      "levels": [
+        "senior"
+      ],
+      "reason": "backend-php is a stated requirement; names Laravel, PostgreSQL, SQS; asks at senior, the level the posting states"
+    },
+    {
       "id": "a612dc93-fcb5-4d3a-b433-e3f9d81453e8",
       "slug": "stripe-nue-migration-boundaries",
       "domain": "backend-php",
@@ -170,15 +179,6 @@
         "senior"
       ],
       "reason": "backend-php is a stated requirement; names PHP, Laravel; asks at senior, the level the posting states"
-    },
-    {
-      "id": "99570011-c406-4bae-a662-410bbcd91618",
-      "slug": "laravel-multitenancy-global-scope",
-      "domain": "backend-php",
-      "levels": [
-        "senior"
-      ],
-      "reason": "backend-php is a stated requirement; names Laravel, PostgreSQL; asks at senior, the level the posting states"
     },
     {
       "id": "27f93fee-de07-4926-b34d-df073c21f2ec",
