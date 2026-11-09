@@ -7,8 +7,9 @@
  * comes out is what the posting emphasises, which of it the bank already covers, and the
  * part that drives authoring: the requirements nothing covers yet.
  *
- * A file argument keeps the whole thing offline: a posting that was pasted into the repo
- * (content/postings/) is a plan that can be rebuilt by anyone, byte for byte, with no URL
+ * A file argument keeps the whole thing offline: a posting saved under
+ * content/vacancies/<slug>/posting.md is a plan that can be rebuilt by anyone, byte for
+ * byte, with no URL
  * that may expire under it. Only the URL form needs the network.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -76,7 +77,7 @@ const mentions = extract(body, gazetteer);
 const level = detectLevel(title, body);
 const profile: JobProfile = { title, url: posting.url, level, mentions };
 
-const questions = walk(join(ROOT, "content/questions"), [".yaml", ".yml"])
+const questions = walk(join(ROOT, "content/bank"), [".yaml", ".yml"])
   .map((file) => Question.safeParse(readYaml(ROOT, file).data))
   .flatMap((parsed) => (parsed.success ? [parsed.data] : []));
 

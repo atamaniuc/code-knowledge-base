@@ -1,0 +1,49 @@
+id: "70a96c1b-3b57-45d9-9bed-561aed90d7c0"
+slug: postgres-safe-migration-big-table
+lang: en
+domain: data
+topic: migrations
+tracks: [backend]
+levels: [senior]
+tech:
+  name: PostgreSQL
+  version_range: ">=16"
+question: "You must add a column with a default to a table with millions of rows. The naive migration would lock writes. What is the safe sequence?"
+probes: "Whether the candidate knows which operations take long locks and applies expand-migrate-contract with batched backfills."
+answer_strategy: "Name the lock first: adding a column with a volatile default rewrites the table. Then the sequence: add the column nullable or with a constant default, backfill in batches, set the final default, and only then drop the old shape. Use CONCURRENTLY for indexes."
+expected_answer:
+  - text: "Identifies which DDL takes an ACCESS EXCLUSIVE lock and blocks writes."
+    weight: 5
+    min_level: senior
+  - text: "Applies expand-migrate-contract: add the new shape without blocking, backfill, then drop the old."
+    weight: 5
+    min_level: senior
+  - text: "Backfills in small batches with pauses to avoid long transactions."
+    weight: 4
+    min_level: senior
+  - text: "Creates indexes with CREATE INDEX CONCURRENTLY."
+    weight: 4
+    min_level: senior
+  - text: "Checks lock contention with lock_timeout and monitoring before touching production."
+    weight: 3
+    min_level: senior
+follow_ups:
+  - "How do you verify no writes were blocked during the backfill?"
+  - "When is a rewrite unavoidable and how do you schedule it?"
+common_mistakes:
+  - "Adding a column with a volatile default on a hot table during the day."
+  - "Running one giant UPDATE that holds a transaction open for hours."
+wiki_refs:
+  - slug: postgres-zero-downtime-migrations
+    anchor: expand-migrate-contract
+    wiki_reviewed_at: "2026-11-09"
+  - slug: postgres-zero-downtime-migrations
+    anchor: backfills-without-a-lock
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "PostgreSQL — CREATE INDEX"
+    url: https://www.postgresql.org/docs/current/sql-createindex.html
+    kind: official-docs
+difficulty: 4
+estimated_minutes: 9
+review_status: draft

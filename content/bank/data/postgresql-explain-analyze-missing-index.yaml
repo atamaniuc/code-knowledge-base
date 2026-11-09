@@ -1,0 +1,49 @@
+id: "53214ea7-361c-42b1-bbd0-a9ea0e20386c"
+slug: postgresql-explain-analyze-missing-index
+lang: en
+domain: data
+topic: query-tuning
+tracks: [backend]
+levels: [senior]
+tech:
+  name: PostgreSQL
+  version_range: ">=16"
+question: "A customer list endpoint got slow. You have the query. What do you read in EXPLAIN ANALYZE, and what tells you an index is missing rather than the query being badly written?"
+probes: "Whether the candidate reads the plan's actual time and row estimates against reality and recognises a sequential scan on a filtered column."
+answer_strategy: "Run EXPLAIN ANALYZE BUFFERS, compare estimated rows with actual rows, find the node that dominates the time, and check whether it is a sequential scan on a filtered column. Then propose the index and verify the plan changes, rather than indexing blindly."
+expected_answer:
+  - text: "Runs EXPLAIN ANALYZE BUFFERS and reads actual time and rows, not only estimated cost."
+    weight: 5
+    min_level: senior
+  - text: "Locates the dominating node and whether it is a sequential scan or a nested loop."
+    weight: 5
+    min_level: senior
+  - text: "Compares estimated rows to actual rows; a large gap means stale statistics."
+    weight: 4
+    min_level: senior
+  - text: "Proposes an index matching the filter and sort columns, then re-runs the plan to confirm it is used."
+    weight: 4
+    min_level: senior
+  - text: "Knows an index is not free: it costs writes and may still be ignored."
+    weight: 3
+    min_level: senior
+follow_ups:
+  - "The plan uses the index but is still slow. What next?"
+  - "What does a bitmap heap scan tell you?"
+common_mistakes:
+  - "Adding an index without reading the plan."
+  - "Trusting estimated cost when actual time disagrees."
+wiki_refs:
+  - slug: postgres-query-plans-and-indexing
+    anchor: what-to-read-in-the-plan
+    wiki_reviewed_at: "2026-11-09"
+  - slug: postgres-query-plans-and-indexing
+    anchor: indexes-that-are-not-used
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "PostgreSQL — EXPLAIN"
+    url: https://www.postgresql.org/docs/current/sql-explain.html
+    kind: official-docs
+difficulty: 4
+estimated_minutes: 9
+review_status: draft

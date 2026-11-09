@@ -1,0 +1,46 @@
+id: "0e4df9d2-fa65-4c30-945f-4f523faadd9d"
+slug: laravel-money-integer-cents
+lang: en
+domain: backend-php
+topic: billing
+tracks: [backend]
+levels: [middle, senior]
+tech:
+  name: Laravel
+  version_range: ">=11"
+question: "An invoice total is stored as a float and discount calculations drift by a cent on some accounts. What is the correct model for money and proration?"
+probes: "Whether the candidate models money in the smallest integer unit and applies explicit rounding rules instead of floating point."
+answer_strategy: "Name the root cause — binary float cannot represent decimal money exactly — then the fix: integer cents with an explicit currency, a value object for the arithmetic, and explicit rounding for proration and discounts. Close with where the conversion happens: at the input/output boundary only."
+expected_answer:
+  - text: "Explains why float arithmetic corrupts decimal money (0.1 + 0.2 is not 0.3 in binary)."
+    weight: 5
+    min_level: middle
+  - text: "Stores amounts as integer cents, the smallest currency unit, with currency alongside."
+    weight: 5
+    min_level: senior
+  - text: "Computes proration and discounts in cents with an explicit rounding rule."
+    weight: 4
+    min_level: senior
+  - text: "Wraps money in an immutable value object so the rule lives in one place."
+    weight: 4
+    min_level: senior
+  - text: "Converts to display format only at the presentation boundary."
+    weight: 3
+    min_level: middle
+follow_ups:
+  - "A plan is $10 per seat per month and a customer adds a seat mid-cycle. How do you prorate?"
+  - "How do you handle currencies with zero decimal places?"
+common_mistakes:
+  - "Rounding floats to two decimals at display time and calling it correct."
+  - "Storing the amount and currency in two places that can disagree."
+wiki_refs:
+  - slug: stripe-nue-billing-in-laravel
+    anchor: money-as-integer-cents
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "Stripe — API reference"
+    url: https://docs.stripe.com/api
+    kind: official-docs
+difficulty: 3
+estimated_minutes: 7
+review_status: draft

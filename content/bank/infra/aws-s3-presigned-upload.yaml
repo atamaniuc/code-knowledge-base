@@ -1,0 +1,46 @@
+id: "09f6fcce-25c8-42c0-a57f-967eacf80010"
+slug: aws-s3-presigned-upload
+lang: en
+domain: infra
+topic: storage
+tracks: [backend]
+levels: [middle, senior]
+tech:
+  name: AWS
+  version_range: ">=2024"
+question: "Customers upload large job photos from the Angular app. The API should not proxy the bytes. How do you let the browser upload directly to S3 without making the bucket public?"
+probes: "Whether the candidate uses presigned URLs to delegate one bounded upload with the least privilege, and knows their expiry and tamper limits."
+answer_strategy: "The client asks the Laravel API for a presigned PUT URL; the API checks permissions and signs a short-lived URL scoped to one key and content type; the browser uploads straight to S3. Close with the constraints: expiry, key scoping and no server-side validation of content by the URL alone."
+expected_answer:
+  - text: "Generates a presigned PUT URL on the server for one object key."
+    weight: 5
+    min_level: middle
+  - text: "Checks permissions and tenant ownership before signing."
+    weight: 5
+    min_level: senior
+  - text: "Scopes the URL by key, content type and short expiry."
+    weight: 4
+    min_level: senior
+  - text: "Keeps the bucket private; the presigned URL is the only delegated access."
+    weight: 4
+    min_level: middle
+  - text: "Knows the URL cannot validate file content or size beyond what it signs."
+    weight: 3
+    min_level: senior
+follow_ups:
+  - "The upload is 2 GB and the URL expires mid-transfer. What do you do?"
+  - "How do you make the object public-read later if needed?"
+common_mistakes:
+  - "Making the bucket public instead of presigning."
+  - "Signing a URL for any key the client asks for."
+wiki_refs:
+  - slug: aws-s3-access-patterns
+    anchor: access-control
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "AWS — Presigned URL upload"
+    url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/PresignedUrlUploadObject.html
+    kind: official-docs
+difficulty: 3
+estimated_minutes: 7
+review_status: draft

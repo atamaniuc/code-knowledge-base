@@ -1,0 +1,47 @@
+id: "27f60554-1efb-4f8d-8679-0b33cb4f6d78"
+slug: laravel-n-plus-one-and-eager-loading
+lang: en
+domain: backend-php
+topic: eloquent
+tracks: [backend]
+levels: [middle, senior]
+tech:
+  name: Laravel
+  version_range: ">=11"
+question: "An invoice list page runs 201 queries for 200 rows. What happened, and what is the fix that stays fast as the list grows?"
+probes: "Whether the candidate recognises lazy loading as the cause and eager loading as the fix, and whether they know how to keep it from regressing."
+answer_strategy: "Name the N+1 pattern in one sentence, show the with('company') fix and why it stays at two queries, then add preventLazyLoading as the guard that turns the next regression into a development error."
+expected_answer:
+  - text: "Identifies the extra query per row as lazy loading of a relation in the view or loop."
+    weight: 5
+    min_level: middle
+  - text: "Fixes it with eager loading (with) so the query count stops depending on row count."
+    weight: 5
+    min_level: middle
+  - text: "Mentions nested relations and loadMissing for conditionally loaded relations."
+    weight: 4
+    min_level: senior
+  - text: "Adds Model::preventLazyLoading() in development to fail the next occurrence."
+    weight: 4
+    min_level: senior
+follow_ups:
+  - "How do you constrain which companies are loaded with the invoices?"
+  - "What does the query log look like after the fix?"
+common_mistakes:
+  - "Fixing it by adding an index while the real cost is 200 round trips."
+  - "Calling with() after the models are already loaded."
+related_questions: [laravel-multitenancy-global-scope]
+wiki_refs:
+  - slug: laravel-eloquent-relations-and-eager-loading
+    anchor: the-n-plus-one-problem
+    wiki_reviewed_at: "2026-11-09"
+  - slug: laravel-eloquent-relations-and-eager-loading
+    anchor: eager-loading-and-lazy-loading
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "Laravel — Eloquent Relationships"
+    url: https://laravel.com/docs/11.x/eloquent-relationships
+    kind: official-docs
+difficulty: 3
+estimated_minutes: 8
+review_status: draft

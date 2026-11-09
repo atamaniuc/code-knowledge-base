@@ -4,10 +4,20 @@ State carried between sessions. Read this first; update it before you stop.
 
 ## Now
 
+**Active vacancy: PrimeHire Backend Developer PHP + Laravel.** The repo now prepares for the
+current primehire/laravel-legacy vacancy: content/vacancies/primehire-laravel/ carries the
+posting, the generated plan (24 core / 5 stretch) and a 41-question Russian rehearsal brief
+in 14 groups. content/questions/ was renamed to content/bank/; the Finverity brief moved
+to content/vacancies/finverity-senior-node-js/ as history. New bank content: 12 backend-php
+wiki articles + 12 questions, plus 1 data, 2 infra, 1 architecture, 1 frontend question
+(18 questions, 12 wiki articles new); the gazetteer now knows the vacancy's integration names
+(Stripe, Nue, Payrix, Square, QuickBooks, Xero, Salesforce, Pusher, SendGrid, Zapier,
+Wisetack, Passport, JWT, SQS, S3, EKS, Aurora).
+
 **Phase 0, writing the wedge domain.** `agentic` is the differentiator: LLM appears 41
 times across 173 stack-scoped postings, and structured preparation for it barely exists.
 
-- Content: **100 articles, 115 questions, 1 interview brief of 129 questions**, 3 DSA entities,
+- Content: **112 articles, 133 questions, 2 interview briefs (129 + 41 questions)**, 3 DSA entities,
   all `review_status: draft`
   (the gates promote; nobody writes a promoted status by hand). The bank now covers the
   posting's whole stack rather than one wedge: Node runtime and NestJS 12 and Hono,
@@ -31,12 +41,13 @@ times across 173 stack-scoped postings, and structured preparation for it barely
 - `make prep ARGS="<job-url> [--out=<file>]"` turns a posting into a rehearsal plan:
   requirement emphasis from the closed gazetteer, the band to rehearse, a ranked core plan,
   stretch domains the posting omits, and the gaps that are the authoring backlog. The input is
-  a URL or a posting saved under `content/postings/`; a URL is the only networked input, and
+  a URL or a posting saved under `content/vacancies/<slug>/posting.md`; a URL is the only networked input, and
   no URL is stored in the repository. One domain cannot fill the core plan (the cap is what
   keeps a posting that mentions Kubernetes in passing from becoming a cluster drill).
-- **Posting is pre-filled for the vacancy being prepared.** `content/postings/finverity-senior-node-js.md`
-  is the saved posting and `.plan.json` beside it is the plan built from it; the bundler picks
-  that plan up with no flag and refuses to guess if there are two.
+- **Vacancies are folders, the active one is a pointer.** `content/vacancies/<slug>/` holds
+  `posting.md`, `plan.json` and `interview.yaml`; `content/active.yaml` names the active
+  vacancy whose plan the bundler bakes by default. The previous vacancy (Finverity Senior
+  Node.js) stays as history, and switching context is one line plus `make extension`.
 - Extension: `make extension ARGS="--include-drafts --plan=<file>"`, then load
   `apps/extension/dist` unpacked. Bundle **schema 4** (`docs/extension-bundle.md`) ships the
   whole bank — questions, the wiki they cite, the domain registry, the interview briefs and their
@@ -45,7 +56,7 @@ times across 173 stack-scoped postings, and structured preparation for it barely
   plan, gaps), Interview and a wiki reader, light and dark. Text size steps to 200% and is
   written to `chrome.storage.local` on every change, so the window fullscreen opens lands on
   the same size and the two windows follow each other.
-- **Interview is a new entity, not a filter over the bank.** `content/interview/{slug}.yaml`
+- **Interview is a new entity, not a filter over the bank.** `content/vacancies/{slug}/interview.yaml`
   holds one rehearsal brief per target — the posting, its take-home, the interview after it:
   `target`, `stages`, then groups split by `side` (technical / domain) with per-question
   `asks`, an ordered spoken `answer`, `traps` and `follow_ups`. The bank answers "do you know
@@ -59,7 +70,7 @@ times across 173 stack-scoped postings, and structured preparation for it barely
   AC-12), nine hard questions, the AI questions, STAR stories, weak spots to name first, and
   the SCF vocabulary. Groups cite the wiki sections they lean on.
   Question ids are global keys — the panel expands by id and the history stack records it — so a
-  duplicate anywhere under `content/interview/` is a validation error, not a cosmetic repeat.
+  duplicate anywhere under `content/vacancies/*/interview.yaml` is a validation error, not a cosmetic repeat.
 - **The brief names every term twice.** The interview is in English, so each Russian term
   carries its English equivalent — `резерв (reservation)`, `частичное погашение (partial
   repayment)`, `уровень изоляции (isolation level)`; 287 glosses over 62 terms, at most three
@@ -160,7 +171,7 @@ One real item per entity type, all at `review_status: draft`, kept so every load
 is exercised by `make check`:
 
 - `content/wiki/caching/cache-stampede.md`
-- `content/questions/caching/cache-stampede-mitigation.yaml`
+- `content/bank/caching/cache-stampede-mitigation.yaml`
 - `content/dsa/concepts/big-o-basics.yaml`
 - `content/dsa/patterns/sliding-window.yaml`
 - `content/dsa/tasks/longest-substring-without-repeating-characters.yaml`

@@ -1,0 +1,52 @@
+id: "a61008a0-a3c7-4319-a490-3c5a9f097edd"
+slug: laravel-jwt-revocation-strategy
+lang: en
+domain: backend-php
+topic: auth
+tracks: [backend]
+levels: [senior]
+tech:
+  name: Laravel
+  version_range: ">=11"
+question: "Support must be able to cut off a compromised account immediately. The app uses JWT access tokens. What does that requirement force you to add?"
+probes: "Whether the candidate knows a stateless JWT cannot be revoked alone and designs the revocation mechanism explicitly."
+answer_strategy: "Say the honest thing first: a signed JWT is valid until expiry, so immediate revocation needs server-side state. Then pick a design — short-lived access tokens plus revocable refresh tokens, a jti blacklist, or a token_version on the user — and connect it to the frontend storage trade-off."
+expected_answer:
+  - text: "States that a stateless JWT cannot be revoked without adding server-side state."
+    weight: 5
+    min_level: senior
+  - text: "Chooses short-lived access tokens with revocable refresh tokens, or a jti blacklist, or a token_version increment."
+    weight: 5
+    min_level: senior
+  - text: "Explains refresh rotation with reuse detection as the theft detector."
+    weight: 4
+    min_level: senior
+  - text: "Connects storage to the threat model: localStorage vs memory vs httpOnly cookie."
+    weight: 4
+    min_level: senior
+  - text: "Keeps Passport in view: database-backed tokens are revocable by deletion."
+    weight: 3
+    min_level: senior
+follow_ups:
+  - "How fast does the cut-off take effect for an already-issued access token?"
+  - "Where do you store the blacklist and what is its TTL?"
+common_mistakes:
+  - "Claiming JWTs can be revoked because the server can 'invalidate the signature'."
+  - "Storing refresh tokens in localStorage and calling the design secure."
+wiki_refs:
+  - slug: laravel-passport-vs-jwt
+    anchor: plain-jwt-trade-offs
+    wiki_reviewed_at: "2026-11-09"
+  - slug: laravel-passport-vs-jwt
+    anchor: revocation-and-token-storage
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "Laravel — Passport"
+    url: https://laravel.com/docs/11.x/passport
+    kind: official-docs
+  - title: "JWT — Introduction"
+    url: https://jwt.io/introduction
+    kind: article
+difficulty: 4
+estimated_minutes: 9
+review_status: draft

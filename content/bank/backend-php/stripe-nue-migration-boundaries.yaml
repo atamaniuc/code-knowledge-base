@@ -1,0 +1,52 @@
+id: "a612dc93-fcb5-4d3a-b433-e3f9d81453e8"
+slug: stripe-nue-migration-boundaries
+lang: en
+domain: backend-php
+topic: billing
+tracks: [backend]
+levels: [senior]
+tech:
+  name: Laravel
+  version_range: ">=11"
+question: "The company is moving billing from Stripe Billing to Nue while keeping Stripe as the payment processor. What moves, what stays, and how do you draw the boundary?"
+probes: "Whether the candidate separates the payment processor from the quote-to-revenue layer and identifies the source-of-truth problem in the overlap window."
+answer_strategy: "Define the two Stripe roles first — payments versus billing — then place Nue as the quote-to-revenue layer replacing only the billing part. Finish with the migration mechanics: idempotent sync, webhook handlers on both sides, and one source of truth per entity."
+expected_answer:
+  - text: "Distinguishes Stripe Payments (processor) from Stripe Billing (subscriptions, proration, invoicing)."
+    weight: 5
+    min_level: senior
+  - text: "Positions Nue as the quote-to-revenue layer that replaces Stripe Billing, not the processor."
+    weight: 5
+    min_level: senior
+  - text: "Keeps payment intents, refunds and chargebacks on Stripe."
+    weight: 4
+    min_level: senior
+  - text: "Names the overlap risk: one source of truth per entity before migration starts."
+    weight: 4
+    min_level: senior
+  - text: "Plans idempotent sync jobs and webhook handlers for both systems."
+    weight: 4
+    min_level: senior
+follow_ups:
+  - "A subscription is created in Nue but the Stripe payment fails. Who owns the retry?"
+  - "How do you reconcile invoices during the cutover?"
+common_mistakes:
+  - "Describing Nue as a payment processor or a Stripe replacement for card processing."
+  - "Running both systems as source of truth for the same invoice."
+wiki_refs:
+  - slug: stripe-nue-billing-in-laravel
+    anchor: stripe-as-the-payment-processor
+    wiki_reviewed_at: "2026-11-09"
+  - slug: stripe-nue-billing-in-laravel
+    anchor: nue-as-the-quote-to-revenue-layer
+    wiki_reviewed_at: "2026-11-09"
+  - slug: stripe-nue-billing-in-laravel
+    anchor: migration-boundaries
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "Nue — How Nue works"
+    url: https://nue.io/how-nue-works
+    kind: article
+difficulty: 4
+estimated_minutes: 9
+review_status: draft

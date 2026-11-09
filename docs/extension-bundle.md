@@ -17,13 +17,15 @@ origins and nothing else, and no other module may reach the network.
 **A posting is either an argument or a saved file, never a stored URL.** A job posting is a
 thing a person runs a command against `make prep` with. When the posting is fetched from a
 URL, only the plan built from it is kept and the URL reaches the bundle through that file.
-When the posting is saved under `content/postings/`, the plan sits next to it and ships by
-default: the Posting tab then describes the vacancy the repository is preparing for, and
-rebuilding it needs no network.
+Each vacancy lives under `content/vacancies/<slug>/` with `posting.md`, `plan.json` and
+`interview.yaml`. `content/active.yaml` names the active vacancy, and its `plan.json`
+ships by default: the Posting tab then describes the vacancy the repository is preparing for,
+and rebuilding it needs no network. Previous vacancies stay as history, and switching the
+active one is a one-line change in `content/active.yaml` followed by `make extension`.
 
-Two plans in `content/postings/` is an ambiguity the bundler refuses rather than resolves
-by date, because a Posting tab that silently describes a different vacancy is worse than a
-build that stops and names the files.
+A dangling `active.yaml` — a missing folder or a missing `plan.json` — fails
+`make validate` and the build, because a Posting tab that silently describes a different
+vacancy is worse than a build that stops and names what is missing.
 
 ## Building it
 
@@ -31,7 +33,7 @@ build that stops and names the files.
 make extension ARGS="--include-drafts"                             # bank + the saved posting, if any
 make prep ARGS="<job-url|posting-file> --out=<file>.plan.json"     # parse a posting
 make extension ARGS="--include-drafts --plan=<file>.plan.json"      # bank + that plan instead
-make prep ARGS="content/postings/finverity-senior-node-js.md --out=content/postings/finverity-senior-node-js.plan.json --limit=24"
+make prep ARGS="content/vacancies/primehire-laravel/posting.md --out=content/vacancies/primehire-laravel/plan.json --limit=24"
                                                                    # rebuild the saved plan, offline
 ```
 

@@ -1,7 +1,8 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import type { ZodType } from "zod";
-import { SHIPPABLE_STATUSES } from "./common.js";
+import { z, type ZodType } from "zod";
+import { parse as parseYaml } from "yaml";
+import { SHIPPABLE_STATUSES, Slug } from "./common.js";
 import { DsaConcept, DsaPattern, DsaTask } from "./dsa.js";
 import { formatIssue } from "./explain.js";
 import { InterviewBrief } from "./interview.js";
@@ -77,7 +78,7 @@ export function validateContent(root: string): ValidationResult {
   const wiki = parseAll(WikiFrontmatter, readAll(walk(join(contentDir, "wiki"), [".md"]), (f) => readMarkdown(root, f)), errors);
   const questions = parseAll(
     Question,
-    readAll(walk(join(contentDir, "questions"), [".yaml", ".yml"]), (f) => readYaml(root, f)),
+    readAll(walk(join(contentDir, "bank"), [".yaml", ".yml"]), (f) => readYaml(root, f)),
     errors,
   );
   const concepts = parseAll(
@@ -97,9 +98,29 @@ export function validateContent(root: string): ValidationResult {
   );
   const briefs = parseAll(
     InterviewBrief,
-    readAll(walk(join(contentDir, "interview"), [".yaml", ".yml"]), (f) => readYaml(root, f)),
+    readAll(walk(join(contentDir, "vacancies"), [".yaml", ".yml"]), (f) => readYaml(root, f)),
     errors,
   );
+
+  // The active vacancy pointer decides which plan the bundler bakes. A dangling
+  // pointer would build a panel that describes nothing, so it fails validation
+  // rather than shipping quietly.
+  const activeFile = join(contentDir, "active.yaml");
+  if (existsSync(activeFile)) {
+    const activeParsed = z.strictObject({ active: Slug }).safeParse(parseYaml(readFileSync(activeFile, "utf8")));
+    if (!activeParsed.success) {
+      errors.push(
+        "content/active.yaml\n  what: unparseable active vacancy pointer\n  fix:  keep a single line \"active: <vacancy-slug>\"",
+      );
+    } else {
+      const vacancyPlan = join(contentDir, "vacancies", activeParsed.data.active, "plan.json");
+      if (!existsSync(vacancyPlan)) {
+        errors.push(
+          `content/active.yaml\n  what: active vacancy "${activeParsed.data.active}" has no plan.json\n  fix:  generate one with make prep ARGS="content/vacancies/${activeParsed.data.active}/posting.md --out=content/vacancies/${activeParsed.data.active}/plan.json"`,
+        );
+      }
+    }
+  }
 
   const wikiSlugs = new Set(wiki.map((w) => w.value.slug));
   const questionSlugs = new Set(questions.map((q) => q.value.slug));

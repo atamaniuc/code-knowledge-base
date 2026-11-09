@@ -1,0 +1,46 @@
+id: "a4f14076-9149-4834-8343-7b7e1c4f2aad"
+slug: laravel-formrequest-authorization
+lang: en
+domain: backend-php
+topic: validation
+tracks: [backend]
+levels: [middle]
+tech:
+  name: Laravel
+  version_range: ">=11"
+question: "Where do you put validation rules and the 'may this user do this' check for a new endpoint, and why not in the controller?"
+probes: "Whether the candidate separates validation and authorization from the action and knows they run before the controller body."
+answer_strategy: "Describe the FormRequest as the owner of rules(), messages() and authorize(), say the container validates before the action runs, and note authorize() runs before validation so unauthorized callers learn nothing about the data shape."
+expected_answer:
+  - text: "Creates a FormRequest whose rules() returns the validation contract for the endpoint."
+    weight: 5
+    min_level: middle
+  - text: "Puts the permission and tenant check in authorize()."
+    weight: 5
+    min_level: middle
+  - text: "Explains the ordering: authorization first, then validation, then the controller."
+    weight: 4
+    min_level: senior
+  - text: "Uses prepareForValidation() to normalise input before rules see it."
+    weight: 3
+    min_level: middle
+follow_ups:
+  - "How does a failed validation response look for an API consumer?"
+  - "Where would a cross-field rule live?"
+common_mistakes:
+  - "Validating inside the controller method so the action runs before rules."
+  - "Returning validation errors to a caller who is not authorised."
+wiki_refs:
+  - slug: laravel-form-request-validation
+    anchor: formrequest
+    wiki_reviewed_at: "2026-11-09"
+  - slug: laravel-form-request-validation
+    anchor: authorization
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "Laravel — Validation"
+    url: https://laravel.com/docs/11.x/validation
+    kind: official-docs
+difficulty: 2
+estimated_minutes: 6
+review_status: draft

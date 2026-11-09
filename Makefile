@@ -42,7 +42,7 @@ drill:
 	@pnpm exec tsx apps/drill/src/cli.ts $(ARGS)
 
 # A posting in, a rehearsal plan out. A URL is the only input that reads the network; a
-# posting saved under content/postings/ rebuilds its plan offline, byte for byte.
+# posting saved under content/vacancies/<slug>/posting.md rebuilds its plan offline, byte for byte.
 prep:
 	@pnpm exec tsx scripts/prep-from-job.ts $(ARGS)
 

@@ -21,8 +21,8 @@ describe("explainIssue", () => {
     const result = Question.safeParse({});
     if (result.success) return;
     const issue = result.error.issues.find((i) => i.path.join(".") === "sources")!;
-    const text = formatIssue("content/questions/x.yaml", issue);
-    expect(text).toContain("content/questions/x.yaml: sources");
+    const text = formatIssue("content/bank/x.yaml", issue);
+    expect(text).toContain("content/bank/x.yaml: sources");
     expect(text).toContain("what:");
     expect(text).toContain("why:");
     expect(text).toContain("fix:");

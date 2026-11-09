@@ -1,0 +1,389 @@
+{
+  "source": {
+    "title": "Backend Developer: PHP + Laravel",
+    "url": "",
+    "level": "senior",
+    "capturedAt": "2026-11-09T14:12:00.471Z"
+  },
+  "levels": [
+    "senior",
+    "staff",
+    "head"
+  ],
+  "emphasis": [
+    {
+      "domain": "backend-php",
+      "required": [
+        "PHP",
+        "Laravel",
+        "Passport",
+        "JWT",
+        "Stripe",
+        "Nue",
+        "Payrix",
+        "Square",
+        "Salesforce",
+        "QuickBooks",
+        "Xero",
+        "Zapier",
+        "Wisetack",
+        "Pusher",
+        "SendGrid"
+      ],
+      "optional": []
+    },
+    {
+      "domain": "infra",
+      "required": [
+        "SQS",
+        "EKS",
+        "Docker",
+        "Kubernetes",
+        "Helm",
+        "CI/CD"
+      ],
+      "optional": [
+        "S3",
+        "AWS"
+      ]
+    },
+    {
+      "domain": "data",
+      "required": [
+        "Aurora",
+        "PostgreSQL"
+      ],
+      "optional": []
+    },
+    {
+      "domain": "frontend",
+      "required": [
+        "TypeScript",
+        "Angular"
+      ],
+      "optional": []
+    },
+    {
+      "domain": "caching",
+      "required": [
+        "Redis"
+      ],
+      "optional": []
+    },
+    {
+      "domain": "network",
+      "required": [
+        "REST"
+      ],
+      "optional": []
+    },
+    {
+      "domain": "observability",
+      "required": [
+        "Datadog"
+      ],
+      "optional": []
+    },
+    {
+      "domain": "agentic",
+      "required": [],
+      "optional": [
+        "LLM"
+      ]
+    }
+  ],
+  "core": [
+    {
+      "id": "dc1105f4-e14f-4efa-928b-1c1b53e93332",
+      "slug": "aws-irsa-and-least-privilege",
+      "domain": "infra",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "infra is a stated requirement; names EKS, S3, AWS; asks at senior, the level the posting states"
+    },
+    {
+      "id": "09f6fcce-25c8-42c0-a57f-967eacf80010",
+      "slug": "aws-s3-presigned-upload",
+      "domain": "infra",
+      "levels": [
+        "middle",
+        "senior"
+      ],
+      "reason": "infra is a stated requirement; names Angular, S3, AWS; asks at senior, the level the posting states"
+    },
+    {
+      "id": "a612dc93-fcb5-4d3a-b433-e3f9d81453e8",
+      "slug": "stripe-nue-migration-boundaries",
+      "domain": "backend-php",
+      "levels": [
+        "senior"
+      ],
+      "reason": "backend-php is a stated requirement; names Laravel, Stripe, Nue; asks at senior, the level the posting states"
+    },
+    {
+      "id": "a0fb72e3-9307-40b0-b8e5-4bb6e5f366f7",
+      "slug": "aws-compute-choice-for-workload",
+      "domain": "infra",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "infra is a stated requirement; names EKS, AWS; asks at senior, the level the posting states"
+    },
+    {
+      "id": "6f9919fc-939a-4b10-a4f0-96c40047c67d",
+      "slug": "aws-s3-access-and-performance",
+      "domain": "infra",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "infra is a stated requirement; names S3, AWS; asks at senior, the level the posting states"
+    },
+    {
+      "id": "be92e416-117d-46b4-bb49-c0d2eb715821",
+      "slug": "cache-penetration-and-avalanche",
+      "domain": "caching",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "caching is a stated requirement; names Redis, REST; asks at senior, the level the posting states"
+    },
+    {
+      "id": "a61008a0-a3c7-4319-a490-3c5a9f097edd",
+      "slug": "laravel-jwt-revocation-strategy",
+      "domain": "backend-php",
+      "levels": [
+        "senior"
+      ],
+      "reason": "backend-php is a stated requirement; names Laravel, JWT; asks at senior, the level the posting states"
+    },
+    {
+      "id": "948d383e-cf3d-4827-8f41-16296576838d",
+      "slug": "laravel-middleware-ordering",
+      "domain": "backend-php",
+      "levels": [
+        "middle",
+        "senior"
+      ],
+      "reason": "backend-php is a stated requirement; names PHP, Laravel; asks at senior, the level the posting states"
+    },
+    {
+      "id": "99570011-c406-4bae-a662-410bbcd91618",
+      "slug": "laravel-multitenancy-global-scope",
+      "domain": "backend-php",
+      "levels": [
+        "senior"
+      ],
+      "reason": "backend-php is a stated requirement; names Laravel, PostgreSQL; asks at senior, the level the posting states"
+    },
+    {
+      "id": "27f93fee-de07-4926-b34d-df073c21f2ec",
+      "slug": "cache-stampede-mitigation",
+      "domain": "caching",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "caching is a stated requirement; names Redis; asks at senior, the level the posting states"
+    },
+    {
+      "id": "1049b64e-83ee-499d-8fd6-8a8ff3423418",
+      "slug": "cache-write-strategy-for-money",
+      "domain": "caching",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "caching is a stated requirement; names Redis; asks at senior, the level the posting states"
+    },
+    {
+      "id": "3884fa45-1c5f-4231-8523-7ec6d0c93f23",
+      "slug": "postgres-deadlock-in-production",
+      "domain": "data",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "data is a stated requirement; names PostgreSQL; asks at senior, the level the posting states"
+    },
+    {
+      "id": "63a3fdfb-5d35-4095-9f03-0c63d64fa7cc",
+      "slug": "postgres-explain-analyze-buffers",
+      "domain": "data",
+      "levels": [
+        "middle",
+        "senior",
+        "staff"
+      ],
+      "reason": "data is a stated requirement; names PostgreSQL; asks at senior, the level the posting states"
+    },
+    {
+      "id": "4bfc0a16-72b6-4441-9d95-a02f560ae166",
+      "slug": "postgres-ledger-read-model",
+      "domain": "data",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "data is a stated requirement; names PostgreSQL; asks at senior, the level the posting states"
+    },
+    {
+      "id": "0c4f79a7-0a4b-4579-b565-97a9be958eda",
+      "slug": "postgres-logical-replication-read-model",
+      "domain": "data",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "data is a stated requirement; names PostgreSQL; asks at senior, the level the posting states"
+    },
+    {
+      "id": "af457762-2e13-4252-8352-a37de3d6117b",
+      "slug": "redis-durability-choice",
+      "domain": "caching",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "caching is a stated requirement; names Redis; asks at senior, the level the posting states"
+    },
+    {
+      "id": "eac3ee09-d05d-4e3b-b0d0-bf06bbf8c73b",
+      "slug": "alert-noise-reduction",
+      "domain": "observability",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "observability is a stated requirement; asks at senior, the level the posting states"
+    },
+    {
+      "id": "42ae37f8-93be-4d48-98b3-d5f5045af57a",
+      "slug": "api-versioning-and-idempotency",
+      "domain": "network",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "network is a stated requirement; asks at senior, the level the posting states"
+    },
+    {
+      "id": "13874b37-e995-49fa-a13d-44ed1252c0d5",
+      "slug": "cursor-pagination-and-error-contract",
+      "domain": "network",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "network is a stated requirement; asks at senior, the level the posting states"
+    },
+    {
+      "id": "0f5487c3-927d-43a5-ba23-c26e75a5b1fd",
+      "slug": "graphql-cost-limits-and-persisted-queries",
+      "domain": "network",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "network is a stated requirement; asks at senior, the level the posting states"
+    },
+    {
+      "id": "ff89f9b3-5114-4468-84a0-7c0b7db3c92e",
+      "slug": "graphql-n-plus-one-and-dataloader",
+      "domain": "network",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "network is a stated requirement; asks at senior, the level the posting states"
+    },
+    {
+      "id": "6dd08cf1-f78f-43e8-aa5f-bcc2af14892e",
+      "slug": "incident-command-and-communication",
+      "domain": "observability",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "observability is a stated requirement; asks at senior, the level the posting states"
+    },
+    {
+      "id": "a3cc8bc7-f926-4196-bc79-fd43b0a6253b",
+      "slug": "opentelemetry-collector-topology",
+      "domain": "observability",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "observability is a stated requirement; asks at senior, the level the posting states"
+    },
+    {
+      "id": "d67eb45a-2208-4a97-b054-e52fe164bc79",
+      "slug": "promql-cardinality-blowup",
+      "domain": "observability",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "observability is a stated requirement; asks at senior, the level the posting states"
+    }
+  ],
+  "stretch": [
+    {
+      "id": "bc030338-a6f0-4756-8219-78cbd2ba0575",
+      "slug": "nodejs-esm-cjs-and-type-stripping-migration",
+      "domain": "backend-node",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "names TypeScript; asks at senior, the level the posting states"
+    },
+    {
+      "id": "58ada66d-aed2-43d4-8068-0fb18344447f",
+      "slug": "nodejs-memory-leak-hunt",
+      "domain": "backend-node",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "names REST; asks at senior, the level the posting states"
+    },
+    {
+      "id": "5bc66bcc-0286-43c6-8de5-4ce99532947f",
+      "slug": "code-review-standard-setting",
+      "domain": "softskills",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "asks at senior, the level the posting states"
+    },
+    {
+      "id": "b4e4088c-6c8f-4412-8783-811c608c94a6",
+      "slug": "decision-that-failed",
+      "domain": "softskills",
+      "levels": [
+        "senior",
+        "staff",
+        "head"
+      ],
+      "reason": "asks at senior, the level the posting states"
+    },
+    {
+      "id": "5fcf6333-d4b7-47a8-ad27-bf958bf7cb14",
+      "slug": "cross-border-funding-flow-design",
+      "domain": "system-design",
+      "levels": [
+        "senior",
+        "staff"
+      ],
+      "reason": "asks at senior, the level the posting states"
+    }
+  ],
+  "gaps": []
+}

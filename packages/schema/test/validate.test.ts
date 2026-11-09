@@ -81,7 +81,7 @@ describe("validateContent cross-file rules", () => {
   it("accepts a question whose wiki reference resolves", () => {
     const root = build({
       "content/wiki/caching/cache-basics.md": article,
-      "content/questions/caching/q-one.yaml": question(
+      "content/bank/caching/q-one.yaml": question(
         'wiki_refs:\n  - slug: cache-basics\n    anchor: body\n    wiki_reviewed_at: "2026-09-06"\nreview_status: draft\n',
       ),
     });
@@ -103,7 +103,7 @@ describe("validateContent cross-file rules", () => {
   it("rejects a question pointing at an article that does not exist", () => {
     const root = build({
       "content/wiki/caching/cache-basics.md": article,
-      "content/questions/caching/q-one.yaml": question(
+      "content/bank/caching/q-one.yaml": question(
         'wiki_refs:\n  - slug: no-such-article\n    anchor: body\n    wiki_reviewed_at: "2026-09-06"\nreview_status: draft\n',
       ),
     });
@@ -117,7 +117,7 @@ describe("validateContent cross-file rules", () => {
       "content/sources.yaml":
         "sources:\n  - id: nc-repo\n    name: Non-commercial repo\n    url: https://example.com/repo\n    kind: github\n    license: CC-BY-NC-4.0\n    license_verified_at: '2026-09-06'\n    commercial_ok: false\n    attribution_required: true\n",
       "content/wiki/caching/cache-basics.md": article,
-      "content/questions/caching/q-one.yaml": question(
+      "content/bank/caching/q-one.yaml": question(
         'wiki_refs:\n  - slug: cache-basics\n    anchor: body\n    wiki_reviewed_at: "2026-09-06"\nreview_status: draft\nprovenance:\n  source_id: nc-repo\n  path: README.md\n  commit: abc1234\n  imported_at: "2026-09-06"\n',
       ),
     });
@@ -135,7 +135,7 @@ describe("validateContent cross-file rules", () => {
   it("requires a technology and version in a technical domain", () => {
     const root = build({
       "content/wiki/caching/cache-basics.md": article,
-      "content/questions/caching/q-one.yaml": question(
+      "content/bank/caching/q-one.yaml": question(
         'wiki_refs:\n  - slug: cache-basics\n    anchor: body\n    wiki_reviewed_at: "2026-09-06"\nreview_status: draft\n',
       ).replace('tech:\n  name: Redis\n  version_range: ">=6"\n', ""),
     });
@@ -150,7 +150,7 @@ describe("validateContent cross-file rules", () => {
       "content/wiki/softskills/a.md": article
         .replace("domain: caching", "domain: softskills")
         .replace('tech:\n  name: Redis\n  version_range: ">=6"\n', ""),
-      "content/questions/softskills/q-one.yaml": question(
+      "content/bank/softskills/q-one.yaml": question(
         'wiki_refs:\n  - slug: cache-basics\n    anchor: body\n    wiki_reviewed_at: "2026-09-06"\nreview_status: draft\n',
       )
         .replace("domain: caching", "domain: softskills")
@@ -167,7 +167,7 @@ describe("validateContent cross-file rules", () => {
       "content/wiki/softskills/a.md": article
         .replace("domain: caching", "domain: softskills")
         .replace('tech:\n  name: Redis\n  version_range: ">=6"\n', ""),
-      "content/questions/softskills/q-one.yaml": question(
+      "content/bank/softskills/q-one.yaml": question(
         'wiki_refs:\n  - slug: cache-basics\n    anchor: body\n    wiki_reviewed_at: "2026-09-06"\nreview_status: draft\n',
       ).replace("domain: caching", "domain: softskills"),
     });
@@ -238,7 +238,7 @@ describe("validateContent interview briefs", () => {
   it("accepts a brief whose domain and wiki reference resolve", () => {
     const root = build({
       "content/wiki/caching/cache-basics.md": article,
-      "content/interview/example.yaml": brief(""),
+      "content/vacancies/example/interview.yaml": brief(""),
     });
     expect(validateContent(root).errors).toEqual([]);
     expect(validateContent(root).counts.interview_briefs).toBe(1);
@@ -248,7 +248,7 @@ describe("validateContent interview briefs", () => {
     // The link is what a reader follows when an answer will not come out.
     const root = build({
       "content/wiki/caching/cache-basics.md": article,
-      "content/interview/example.yaml": brief("").replace("wiki_refs: [cache-basics]", "wiki_refs: [no-such-article]"),
+      "content/vacancies/example/interview.yaml": brief("").replace("wiki_refs: [cache-basics]", "wiki_refs: [no-such-article]"),
     });
     expect(validateContent(root).errors.join("\n")).toContain('article "no-such-article" does not exist');
   });
@@ -258,8 +258,8 @@ describe("validateContent interview briefs", () => {
     // wrong answer rather than merely looking wrong.
     const root = build({
       "content/wiki/caching/cache-basics.md": article,
-      "content/interview/one.yaml": brief(""),
-      "content/interview/two.yaml": brief("").replace("slug: example-brief", "slug: second-brief"),
+      "content/vacancies/one/interview.yaml": brief(""),
+      "content/vacancies/two/interview.yaml": brief("").replace("slug: example-brief", "slug: second-brief"),
     });
     const errors = validateContent(root).errors.join("\n");
     expect(errors).toContain('question id "limit-race" is already used in');
@@ -268,8 +268,8 @@ describe("validateContent interview briefs", () => {
   it("rejects two briefs claiming the same slug", () => {
     const root = build({
       "content/wiki/caching/cache-basics.md": article,
-      "content/interview/one.yaml": brief(""),
-      "content/interview/two.yaml": brief("").replace("limit-race", "another-race"),
+      "content/vacancies/one/interview.yaml": brief(""),
+      "content/vacancies/two/interview.yaml": brief("").replace("limit-race", "another-race"),
     });
     expect(validateContent(root).errors.join("\n")).toContain('brief slug "example-brief" is used by more than one file');
   });
@@ -277,7 +277,7 @@ describe("validateContent interview briefs", () => {
   it("rejects a group rehearsing a domain the registry does not carry", () => {
     const root = build({
       "content/wiki/caching/cache-basics.md": article,
-      "content/interview/example.yaml": brief("").replace("    domain: caching", "    domain: quantum"),
+      "content/vacancies/example/interview.yaml": brief("").replace("    domain: caching", "    domain: quantum"),
     });
     expect(validateContent(root).errors.join("\n")).toContain('unknown domain "quantum"');
   });

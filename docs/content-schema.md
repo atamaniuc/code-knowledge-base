@@ -21,7 +21,7 @@ at it, so an article update propagates to everything built on it.
 
 ## Question
 
-`content/questions/{domain}/{slug}.yaml`.
+`content/bank/{domain}/{slug}.yaml`.
 
 - `probes` states what the interviewer is actually assessing, and it is required. This is
   frequently not the facts in the answer: an opening question may be probing whether the
@@ -47,8 +47,8 @@ at it, so an article update propagates to everything built on it.
 
 ## Interview brief
 
-`content/interview/{slug}.yaml` — one file per target: a posting, its take-home, the
-interview that follows.
+`content/vacancies/{slug}/interview.yaml` — one file per target: a posting, its take-home, the
+interview that follows, all in the vacancy's own folder next to `posting.md` and `plan.json`.
 
 - A brief is **not** a bank question. The bank answers "do you know this topic"; a brief
   answers "will they ask this, and what are they listening for". That is why it carries a
@@ -81,7 +81,7 @@ interview that follows.
   answers "nothing here" with confidence. Every question carries at least one tag, and the
   titles live next to the ids so a new tag cannot exist without the word to draw.
 - Question ids are **global keys**, not labels: the panel expands a question by id and the
-  history stack remembers it, so a duplicate anywhere in `content/interview/` is a
+  history stack remembers it, so a duplicate anywhere under `content/vacancies/*/interview.yaml` is a
   validation error rather than a cosmetic repeat.
 
 ## DSA

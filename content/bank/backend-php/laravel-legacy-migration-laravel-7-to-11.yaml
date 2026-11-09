@@ -1,0 +1,52 @@
+id: "da05cb91-37c4-485b-9bd1-4ea5cfda3dc1"
+slug: laravel-legacy-migration-laravel-7-to-11
+lang: en
+domain: backend-php
+topic: upgrades
+tracks: [backend]
+levels: [senior]
+tech:
+  name: Laravel
+  version_range: ">=11"
+question: "The app is mid-migration from Laravel 7 to 11 with 1000 migrations and 550 models. What upgrade path do you follow and what do you never do?"
+probes: "Whether the candidate upgrades one major version at a time, uses the guides and automation, and protects production with additive changes."
+answer_strategy: "Sequence the answer: one major hop at a time with the official guide, green tests and a deploy per hop; automate the mechanical parts with Laravel Shift; keep migrations additive and reversible; improve what you touch, do not rewrite."
+expected_answer:
+  - text: "Upgrades one major version at a time (7 to 8, 8 to 9, ...), never in one jump."
+    weight: 5
+    min_level: senior
+  - text: "Finishes each hop with the test suite green and a deployment before the next."
+    weight: 4
+    min_level: senior
+  - text: "Uses Laravel Shift for mechanical changes, leaving judgement calls for review."
+    weight: 4
+    min_level: senior
+  - text: "Keeps migrations additive and reversible, with dry runs before data changes."
+    weight: 4
+    min_level: senior
+  - text: "Improves the code touched without rewriting modules that work."
+    weight: 3
+    min_level: middle
+follow_ups:
+  - "Which Laravel 11 change would you flag first in this codebase?"
+  - "How do you keep QA unblocked during the migration?"
+common_mistakes:
+  - "Jumping straight to 11 and bisecting a huge diff."
+  - "Rewriting a legacy module 'while we are in there'."
+wiki_refs:
+  - slug: laravel-version-upgrades
+    anchor: upgrade-path
+    wiki_reviewed_at: "2026-11-09"
+  - slug: laravel-version-upgrades
+    anchor: automation-and-safety
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "Laravel — Upgrade Guide"
+    url: https://laravel.com/docs/11.x/upgrade
+    kind: official-docs
+  - title: "Laravel Shift"
+    url: https://laravelshift.com/
+    kind: article
+difficulty: 4
+estimated_minutes: 9
+review_status: draft

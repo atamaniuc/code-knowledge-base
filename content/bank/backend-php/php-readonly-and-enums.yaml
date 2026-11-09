@@ -1,0 +1,46 @@
+id: "e2223098-1104-41ac-bb08-bd71c7e4e5aa"
+slug: php-readonly-and-enums
+lang: en
+domain: backend-php
+topic: language
+tracks: [backend]
+levels: [middle]
+tech:
+  name: PHP
+  version_range: ">=8.2"
+question: "Invoice status is a string column and the code compares it to 'paid' in forty places. How do PHP enums and readonly classes improve that design?"
+probes: "Whether the candidate uses the type system to shrink the set of possible states instead of adding more string checks."
+answer_strategy: "Replace the open string set with a backed enum and switch over it with match; then use a readonly value object for money so amounts cannot drift after creation. Close with what stays: the database column remains a string, the enum maps at the boundary."
+expected_answer:
+  - text: "Models the status as a backed enum with a closed set of cases."
+    weight: 5
+    min_level: middle
+  - text: "Uses match for exhaustive handling so a new status forces every branch to be revisited."
+    weight: 4
+    min_level: middle
+  - text: "Uses readonly properties or a readonly class for immutable value objects such as money."
+    weight: 4
+    min_level: middle
+  - text: "Keeps the stored representation as the backed value and maps at the persistence boundary."
+    weight: 3
+    min_level: senior
+follow_ups:
+  - "What is the difference between a pure and a backed enum?"
+  - "When would you not use an enum for a status?"
+common_mistakes:
+  - "Keeping the string status and adding an isPaid() helper per place."
+  - "Forgetting that readonly is write-once, not deep-immutable for object properties."
+wiki_refs:
+  - slug: php-82-modern-features
+    anchor: readonly
+    wiki_reviewed_at: "2026-11-09"
+  - slug: php-82-modern-features
+    anchor: enums
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "PHP — Enumerations"
+    url: https://www.php.net/manual/en/language.enumerations.php
+    kind: official-docs
+difficulty: 2
+estimated_minutes: 6
+review_status: draft

@@ -1,0 +1,46 @@
+id: "1362079a-3ab9-4384-b131-619823b5c0e3"
+slug: laravel-testing-feature-vs-unit
+lang: en
+domain: backend-php
+topic: testing
+tracks: [backend]
+levels: [middle]
+tech:
+  name: Laravel
+  version_range: ">=11"
+question: "A support ticket shows a wrong invoice total. You fix the calculation. What test do you write first, and what do you mock?"
+probes: "Whether the candidate writes a failing regression test against real behaviour and mocks only the external boundary."
+answer_strategy: "Reproduce the bug, encode it as a failing test, then fix. Choose a feature test when the bug spans HTTP, database and calculation; mock only third-party HTTP with Http::fake. End with the database strategy trade-off."
+expected_answer:
+  - text: "Writes a failing test that reproduces the wrong total before changing the fix."
+    weight: 5
+    min_level: middle
+  - text: "Chooses a feature test when the bug spans request, persistence and calculation."
+    weight: 5
+    min_level: middle
+  - text: "Mocks the external boundary (Http::fake for the third party), not the class under test."
+    weight: 4
+    min_level: senior
+  - text: "Names RefreshDatabase vs DatabaseTransactions as a speed-versus-isolation choice."
+    weight: 3
+    min_level: middle
+follow_ups:
+  - "How do you prove the test fails for the right reason?"
+  - "When is a unit test enough?"
+common_mistakes:
+  - "Writing a test that passes both before and after the fix."
+  - "Mocking the invoice service so the real arithmetic never runs."
+wiki_refs:
+  - slug: laravel-testing-strategy
+    anchor: feature-tests
+    wiki_reviewed_at: "2026-11-09"
+  - slug: laravel-testing-strategy
+    anchor: refreshdatabase-versus-transactions
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "Laravel — Testing"
+    url: https://laravel.com/docs/11.x/testing
+    kind: official-docs
+difficulty: 3
+estimated_minutes: 7
+review_status: draft

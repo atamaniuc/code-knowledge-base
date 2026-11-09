@@ -22,6 +22,57 @@ technologies:
   - canonical: Laravel
     domain: backend-php
     aliases: [ларавель]
+  - canonical: Stripe
+    domain: backend-php
+    aliases: [stripe billing, stripe payments]
+  - canonical: Nue
+    domain: backend-php
+    aliases: [nue.io, nue for stripe]
+  - canonical: Payrix
+    domain: backend-php
+    aliases: [payrix api]
+  - canonical: Square
+    domain: backend-php
+    aliases: [square payments]
+  - canonical: QuickBooks
+    domain: backend-php
+    aliases: [quickbooks online, quickbooks desktop]
+  - canonical: Xero
+    domain: backend-php
+    aliases: [xero api]
+  - canonical: Salesforce
+    domain: backend-php
+    aliases: [salesforce api]
+  - canonical: Pusher
+    domain: backend-php
+    aliases: [pusher channels]
+  - canonical: SendGrid
+    domain: backend-php
+    aliases: [send grid]
+  - canonical: Zapier
+    domain: backend-php
+    aliases: [zapier webhooks]
+  - canonical: Wisetack
+    domain: backend-php
+    aliases: [wisetack financing]
+  - canonical: Passport
+    domain: backend-php
+    aliases: [laravel passport]
+  - canonical: JWT
+    domain: backend-php
+    aliases: [json web token, json web tokens, jwt tokens]
+  - canonical: SQS
+    domain: infra
+    aliases: [aws sqs, amazon sqs]
+  - canonical: S3
+    domain: infra
+    aliases: [amazon s3, aws s3]
+  - canonical: EKS
+    domain: infra
+    aliases: [aws eks, amazon eks]
+  - canonical: Aurora
+    domain: data
+    aliases: [aws aurora, amazon aurora]
   - canonical: Symfony
     domain: backend-php
     aliases: [симфони]

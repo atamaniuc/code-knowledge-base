@@ -1,0 +1,52 @@
+id: "97f84afc-4b57-4635-bf4d-e2850424124d"
+slug: laravel-queue-visibility-timeout-vs-job-timeout
+lang: en
+domain: backend-php
+topic: queues
+tracks: [backend]
+levels: [senior]
+tech:
+  name: Laravel
+  version_range: ">=11"
+question: "A queued job calls a slow third party and can take up to four minutes. How do you configure the SQS visibility timeout, the job timeout and retries so one job is never processed twice?"
+probes: "Whether the candidate coordinates the remote visibility timeout with the local job timeout and treats idempotency as the real guarantee."
+answer_strategy: "Lead with the double-delivery mechanism: SQS re-delivers a message that outlives its visibility timeout. Then set visibility above the worst case, keep the job timeout aligned, and finish with the point that retries and at-least-once delivery make idempotency mandatory."
+expected_answer:
+  - text: "Explains that SQS hides a message for the visibility timeout and re-delivers it when the worker has not deleted it."
+    weight: 5
+    min_level: senior
+  - text: "Sets the visibility timeout above the longest job duration, with the job timeout aligned to the same bound."
+    weight: 5
+    min_level: senior
+  - text: "States that at-least-once delivery plus retries means the job must be idempotent."
+    weight: 5
+    min_level: senior
+  - text: "Uses a dead-letter queue after the retry limit and a human or alert on it."
+    weight: 4
+    min_level: senior
+  - text: "Mentions Laravel tries, timeout and backoff properties on the job."
+    weight: 3
+    min_level: middle
+follow_ups:
+  - "The third party hangs for ten minutes. What exactly happens to the message?"
+  - "Where do you deduplicate — in the job or in the database?"
+common_mistakes:
+  - "Setting the visibility timeout shorter than the job because the retry count will 'fix it'."
+  - "Assuming exactly-once delivery from SQS."
+wiki_refs:
+  - slug: laravel-queues-and-workers
+    anchor: sqs-specifics
+    wiki_reviewed_at: "2026-11-09"
+  - slug: laravel-queues-and-workers
+    anchor: retries-timeouts-and-failed-jobs
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "Laravel — Queues"
+    url: https://laravel.com/docs/11.x/queues
+    kind: official-docs
+  - title: "AWS — Visibility timeout"
+    url: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html
+    kind: official-docs
+difficulty: 4
+estimated_minutes: 10
+review_status: draft

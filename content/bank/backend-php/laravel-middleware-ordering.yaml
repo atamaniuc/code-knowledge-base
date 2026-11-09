@@ -1,0 +1,46 @@
+id: "948d383e-cf3d-4827-8f41-16296576838d"
+slug: laravel-middleware-ordering
+lang: en
+domain: backend-php
+topic: middleware
+tracks: [backend]
+levels: [middle, senior]
+tech:
+  name: Laravel
+  version_range: ">=11"
+question: "In Laravel 11 you need the current company resolved before any auth or controller code runs. Where do you register that middleware and how do you guarantee the order?"
+probes: "Whether the candidate knows bootstrap/app.php is the Laravel 11 kernel and that middleware order is registration order."
+answer_strategy: "Locate the kernel in bootstrap/app.php, register the tenant resolver in the global stack with withMiddleware, and say order is explicit — append or prepend — so the resolver lands before auth. Then mention route middleware as the second layer."
+expected_answer:
+  - text: "Registers middleware through bootstrap/app.php in Laravel 11."
+    weight: 5
+    min_level: middle
+  - text: "States the global stack runs in registration order, so the tenant resolver is placed before auth."
+    weight: 5
+    min_level: senior
+  - text: "Uses append/prepend to fix ordering rather than relying on defaults."
+    weight: 4
+    min_level: middle
+  - text: "Separates global middleware from route middleware and explains which runs first."
+    weight: 3
+    min_level: middle
+follow_ups:
+  - "What happens if the tenant resolver reads the authenticated user but runs after auth?"
+  - "How do you test the ordering?"
+common_mistakes:
+  - "Looking for the old HTTP kernel class in Laravel 11."
+  - "Assuming alphabetical or automatic ordering of middleware."
+wiki_refs:
+  - slug: laravel-middleware-and-bootstrap
+    anchor: middleware-in-laravel-11
+    wiki_reviewed_at: "2026-11-09"
+  - slug: laravel-middleware-and-bootstrap
+    anchor: ordering-and-groups
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "Laravel — Middleware"
+    url: https://laravel.com/docs/11.x/middleware
+    kind: official-docs
+difficulty: 3
+estimated_minutes: 7
+review_status: draft

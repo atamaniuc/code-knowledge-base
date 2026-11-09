@@ -7,11 +7,12 @@
  * as extension updates, which the store distributes.
  *
  * The bundle carries the whole bank — questions and the wiki they cite — plus the rehearsal
- * plan for one posting: the one the repository carries at `content/postings/<slug>.plan.json`,
+ * plan for one posting: the one the active vacancy carries at `content/vacancies/<slug>/plan.json`
+ * (selected by `content/active.yaml`),
  * or the file passed as `--plan=`. A posting that was fetched from a URL is not stored here;
  * only the plan built from it is, so the Posting tab is reproducible without the network.
  */
-import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
@@ -96,18 +97,28 @@ if (includeDrafts) console.warn("including drafts: these answers have not been f
 const planFlag = process.argv.find((a) => a.startsWith("--plan="))?.split("=").slice(1).join("=");
 
 /**
- * The plan that ships when nobody named one.
- *
- * One target, one posting: the repository carries at most one, and two is an ambiguity the
- * build refuses rather than resolves by date. A Posting tab that quietly describes a
- * different vacancy is worse than a build that stops and says which files it found.
+ * The plan that ships when nobody named one: the active vacancy's plan.json, selected by
+ * content/active.yaml. Previous vacancies stay as history; switching context is editing
+ * that one line. A Posting tab that quietly describes a different vacancy is worse than a
+ * build that stops and says what is missing.
  */
 function bakedPlan(): string | null {
-  const found = walk(join(ROOT, "content/postings"), [".plan.json"]);
-  if (found.length === 0) return null;
-  if (found.length > 1) {
-    console.error("several posting plans in content/postings; pass --plan=<file> to choose one:");
-    for (const one of found) console.error("  " + one.replace(ROOT + "/", ""));
+  const activeFile = join(ROOT, "content/active.yaml");
+  if (!existsSync(activeFile)) return null;
+  const parsed = parseYaml(readFileSync(activeFile, "utf8")) as { active?: string };
+  const slug = parsed.active;
+  if (!slug) {
+    console.error("content/active.yaml has no active: <vacancy-slug> entry");
+    process.exit(1);
+  }
+  const dir = join(ROOT, "content/vacancies", slug);
+  if (!existsSync(dir)) {
+    console.error(`active vacancy "${slug}" has no folder at content/vacancies/${slug}`);
+    process.exit(1);
+  }
+  const found = walk(dir, ["plan.json"]);
+  if (found.length === 0) {
+    console.error(`active vacancy "${slug}" has no plan.json — run make prep with --out=content/vacancies/${slug}/plan.json`);
     process.exit(1);
   }
   return found[0] ?? null;
@@ -119,7 +130,7 @@ const planPath = planFlag ?? bakedPlan() ?? undefined;
 const unreadable: string[] = [];
 
 const questions: Shipped[] = [];
-for (const file of walk(join(ROOT, "content/questions"), [".yaml", ".yml"])) {
+for (const file of walk(join(ROOT, "content/bank"), [".yaml", ".yml"])) {
   let parsed;
   try {
     parsed = Question.safeParse(readYaml(ROOT, file).data);
@@ -191,7 +202,7 @@ for (const file of walk(join(ROOT, "content/wiki"), [".md"])) {
  * asked, so it ships only when a build asked for drafts.
  */
 const interview: ShippedBrief[] = [];
-for (const file of walk(join(ROOT, "content/interview"), [".yaml", ".yml"])) {
+for (const file of walk(join(ROOT, "content/vacancies"), [".yaml", ".yml"])) {
   let parsed;
   try {
     parsed = InterviewBrief.safeParse(readYaml(ROOT, file).data);

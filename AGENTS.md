@@ -38,10 +38,13 @@ make ingest                 # rebuild the topic frequency map from live job post
 `make extension ARGS="--include-drafts --plan=<file>"` bakes that plan into the side panel
 alongside the whole bank.
 
-A posting saved under `content/postings/` keeps its plan next to it, and `make extension`
-bakes that one with no flag: the Posting tab then describes the vacancy the repository is
-preparing for, and `make prep ARGS="content/postings/<slug>.md --out=content/postings/<slug>.plan.json"`
-rebuilds it offline. A plan built from a URL is an argument, not a repository value.
+Each vacancy lives under `content/vacancies/<slug>/` with `posting.md`, `plan.json` and
+`interview.yaml`; `content/active.yaml` names the active one. `make extension` bakes that
+vacancy's plan with no flag: the Posting tab then describes the vacancy the repository is
+preparing for, and `make prep ARGS="content/vacancies/<slug>/posting.md --out=content/vacancies/<slug>/plan.json"`
+rebuilds it offline. Previous vacancies stay in `content/vacancies/` as history, and
+switching context is one line in `content/active.yaml` plus `make extension`. A plan
+built from a URL is an argument, not a repository value.
 
 There is no server and no database to provision. Everything runs locally.
 
@@ -64,10 +67,10 @@ Not when the code looks right. <!-- proof: .harness/4-state/feature_list.json --
 ```
 content/          source of truth, independent of any application
   wiki/           Markdown + frontmatter; facts live here first
-  questions/      YAML, derived from wiki sections via wiki_refs
+  bank/           YAML questions, derived from wiki sections via wiki_refs
   dsa/            concepts (complexity), patterns, tasks
-  interview/      one rehearsal brief per target: posting, take-home, the interview after it
-  postings/       a posting saved as text, with the rehearsal plan built from it beside it
+  vacancies/      one folder per vacancy: posting.md, plan.json, interview.yaml
+  active.yaml     active vacancy slug — the plan the bundler bakes by default
   domains.yaml    domain tree and market weights
   sources.yaml    external sources and licenses — human-edited only
   tech-aliases.yaml  gazetteer for vacancy parsing

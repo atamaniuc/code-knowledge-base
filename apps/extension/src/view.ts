@@ -686,7 +686,7 @@ export function interviewView(input: InterviewInput): Spec {
   if (input.briefs.length === 0) {
     return emptyView(
       "No interview brief is baked into this build.",
-      "Author one under content/interview/, then rebuild with make extension --include-drafts. The bank works without one.",
+      "Author one under content/vacancies/<slug>/interview.yaml, then rebuild with make extension --include-drafts. The bank works without one.",
     );
   }
 

@@ -95,8 +95,10 @@ Everything runs locally. <!-- proof: make check -->
 ```
 content/          the source of truth, independent of any application
   wiki/           Markdown + frontmatter; facts live here first
-  questions/      YAML, derived from wiki sections through wiki_refs
+  bank/           YAML questions, derived from wiki sections through wiki_refs
   dsa/            concepts (complexity), patterns, tasks
+  vacancies/      one folder per vacancy: posting.md, plan.json, interview.yaml
+  active.yaml     the active vacancy slug — the plan the bundler bakes by default
   domains.yaml    the domain tree and its market weights
   sources.yaml    external sources and their licences — human-edited only
   tech-aliases.yaml  the closed gazetteer the posting pipeline reads
@@ -126,13 +128,14 @@ claim, so a state edited by hand is detected rather than trusted.
 
 ## Status
 
-Phase 0, and the bank now covers a whole role rather than a single wedge: **100 articles and
-115 questions** across seventeen domains, all `review_status: draft`, aimed at senior and
-staff interviews, plus the three DSA entity types. The depth follows a real senior Node.js +
-platform posting — Node, NestJS and Hono, Kubernetes, Kafka, AWS, PostgreSQL, Redis, gRPC —
-and keeps the `agentic` wedge (MCP 2026-07-28, agent skills, agent evaluation) and a fintech
-domain: ledgers, idempotency, reconciliation, payments. The target is 691 questions, ordered
-by market weight.
+Phase 0, and the bank now covers two whole roles: **112 articles and 133 questions** across
+seventeen domains, all `review_status: draft`, plus three DSA entity types and two interview
+briefs. The active vacancy is the PrimeHire Backend Developer PHP + Laravel role
+(`content/vacancies/primehire-laravel/`: posting, plan and a 41-question brief); the
+Finverity Senior Node.js brief stays as history. The Laravel wedge added backend-php
+articles and questions (container, Eloquent, queues, multitenancy, Passport/JWT, Stripe/Nue,
+testing, upgrades) plus PostgreSQL, SQS/S3, Hexagonal and Angular 16 coverage. The target is
+691 questions, ordered by market weight.
 
 Nothing in `content/` has been fact-checked by a human yet, which is why `--include-drafts`
 exists and warns. The verification gates are what will replace that review: source grounding

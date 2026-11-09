@@ -1,0 +1,49 @@
+id: "99570011-c406-4bae-a662-410bbcd91618"
+slug: laravel-multitenancy-global-scope
+lang: en
+domain: backend-php
+topic: multitenancy
+tracks: [backend]
+levels: [senior]
+tech:
+  name: Laravel
+  version_range: ">=11"
+question: "The app uses one shared PostgreSQL database where every row belongs to a company. How do you make sure a new developer's query can never forget the tenant filter?"
+probes: "Whether the candidate enforces tenancy in the model layer by default, resolves it per request, and knows the failure mode is a silent cross-tenant leak."
+answer_strategy: "Layer the answer: a global scope on tenant-owned models adds the company_id filter to every query; middleware resolves the current company per request; RLS is the database-level second fence; review is the last one. Name the leak as the risk, not a performance problem."
+expected_answer:
+  - text: "Adds a global scope to tenant-owned models so every query and relation is filtered by company_id."
+    weight: 5
+    min_level: senior
+  - text: "Resolves the current tenant per request in middleware before any scoped query runs."
+    weight: 5
+    min_level: senior
+  - text: "Treats withoutGlobalScope as a rare, reviewed exception."
+    weight: 4
+    min_level: senior
+  - text: "Adds PostgreSQL row-level security as a second fence that rejects unscoped access."
+    weight: 4
+    min_level: senior
+  - text: "Writes the review rule: every new model opts in, every endpoint is scoped."
+    weight: 3
+    min_level: middle
+follow_ups:
+  - "A support script must touch all tenants. How do you allow it safely?"
+  - "Where would RLS make the leak fail instead of succeed?"
+common_mistakes:
+  - "Filtering only in controllers and forgetting relation queries."
+  - "Trusting the frontend to pass the tenant id."
+wiki_refs:
+  - slug: laravel-multitenancy-patterns
+    anchor: global-scopes-and-middleware
+    wiki_reviewed_at: "2026-11-09"
+  - slug: laravel-multitenancy-patterns
+    anchor: row-level-security-as-a-second-fence
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "Laravel — Global Scopes"
+    url: https://laravel.com/docs/11.x/eloquent#global-scopes
+    kind: official-docs
+difficulty: 4
+estimated_minutes: 10
+review_status: draft

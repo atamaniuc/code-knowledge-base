@@ -1,0 +1,50 @@
+id: "570bae86-68f2-44e7-b315-f3e5262051dc"
+slug: laravel-container-binding-resolution
+lang: en
+domain: backend-php
+topic: container
+tracks: [backend]
+levels: [middle, senior]
+tech:
+  name: Laravel
+  version_range: ">=11"
+question: "A billing service is called from twelve places and must be replaceable with a fake in tests. How do you structure that in Laravel?"
+probes: "Whether the candidate reaches for constructor injection and a container binding instead of a static facade or a new call in every place."
+answer_strategy: "State the mechanism in three moves: type-hint an interface, bind it to the concrete class in a service provider, let the container resolve it. Then name the test payoff — a fake injected per test — and close with what not to do: resolving from the container inside business code."
+expected_answer:
+  - text: "Type-hints an interface in the constructor so the class declares its dependency."
+    weight: 5
+    min_level: middle
+  - text: "Registers the interface-to-implementation binding in a service provider, not in the consumer."
+    weight: 5
+    min_level: middle
+  - text: "Names the test payoff: the same class is instantiated with a fake in unit tests."
+    weight: 4
+    min_level: middle
+  - text: "Distinguishes bind from singleton and says contextual binding covers two implementations of one interface."
+    weight: 4
+    min_level: senior
+  - text: "Warns against using the container as a service locator inside domain code."
+    weight: 3
+    min_level: senior
+follow_ups:
+  - "Where would you put the binding so it survives config cache?"
+  - "When is a singleton wrong for this service?"
+common_mistakes:
+  - "Resolving app(BillingGateway::class) inside the service instead of injecting it."
+  - "Binding in the controller action so the swap only works for one route."
+related_questions: [laravel-testing-feature-vs-unit]
+wiki_refs:
+  - slug: laravel-service-container
+    anchor: binding-interfaces-to-implementations
+    wiki_reviewed_at: "2026-11-09"
+  - slug: laravel-service-container
+    anchor: when-to-reach-for-the-container
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "Laravel — Service Container"
+    url: https://laravel.com/docs/11.x/container
+    kind: official-docs
+difficulty: 3
+estimated_minutes: 8
+review_status: draft

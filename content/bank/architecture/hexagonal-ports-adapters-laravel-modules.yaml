@@ -1,0 +1,49 @@
+id: "531a5ce5-351e-451a-b13e-a91b1b19bdf2"
+slug: hexagonal-ports-adapters-laravel-modules
+lang: en
+domain: architecture
+topic: hexagonal
+tracks: [backend]
+levels: [senior]
+tech:
+  name: Laravel
+  version_range: ">=11"
+question: "The app has 90 self-contained modules under app/Modules and many third-party integrations. How do ports and adapters help, and where would you stop applying the pattern?"
+probes: "Whether the candidate applies hexagonal thinking where it pays — the integration boundaries — without forcing every module into the full ceremony."
+answer_strategy: "Define the port as the interface the module owns (for example a payment gateway), the adapters as the concrete Stripe/Nue/QuickBooks implementations, and the rule that dependencies point inward. Then say where it pays: at volatile third-party boundaries, not inside a module's own controllers."
+expected_answer:
+  - text: "Defines a port as an interface the module owns and adapters as its external implementations."
+    weight: 5
+    min_level: senior
+  - text: "Keeps dependencies pointing inward so Stripe, Nue or QuickBooks changes never touch domain code."
+    weight: 5
+    min_level: senior
+  - text: "Maps the pattern onto app/Modules: each module exposes its ports and hides its adapters."
+    weight: 4
+    min_level: senior
+  - text: "Applies it at volatile integration boundaries and skips the ceremony for stable internal code."
+    weight: 4
+    min_level: senior
+  - text: "Names the over-engineering failure: ports for everything, including code that never changes."
+    weight: 4
+    min_level: senior
+follow_ups:
+  - "Where would you enforce the dependency rule in CI?"
+  - "How does this interact with Laravel's service container?"
+common_mistakes:
+  - "Wrapping every class in an interface 'for the future'."
+  - "Letting the domain depend on the Stripe SDK."
+wiki_refs:
+  - slug: hexagonal-ports-and-adapters
+    anchor: the-shape
+    wiki_reviewed_at: "2026-11-09"
+  - slug: hexagonal-ports-and-adapters
+    anchor: when-it-pays
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "Cockburn — Hexagonal architecture"
+    url: https://alistair.cockburn.us/hexagonal-architecture/
+    kind: article
+difficulty: 4
+estimated_minutes: 9
+review_status: draft

@@ -1,0 +1,49 @@
+id: "259a1dd3-9060-4cd3-ad3f-76c80d220ad5"
+slug: angular-16-standalone-and-signals
+lang: en
+domain: frontend
+topic: angular
+tracks: [frontend]
+levels: [middle]
+tech:
+  name: Angular
+  version_range: ">=16"
+question: "You must add a field to an Angular 16 screen that reads from the Laravel API. What Angular concepts do you touch, and what changed in 16 that you should use in new code?"
+probes: "Whether the candidate knows the component-service-template flow and reaches for standalone components and signals in new code."
+answer_strategy: "Walk the change: the component template, the service using HttpClient with the auth interceptor, and the model type. Then name Angular 16's defaults — standalone components and signals — and say the change should follow them without rewriting the legacy module code around it."
+expected_answer:
+  - text: "Locates the component, its template binding and the service calling the API."
+    weight: 5
+    min_level: middle
+  - text: "Uses HttpClient with interceptors for the auth token rather than hand-rolled fetch."
+    weight: 4
+    min_level: middle
+  - text: "Uses standalone components for new code, importing only what the component needs."
+    weight: 4
+    min_level: middle
+  - text: "Uses signals for local state so change detection is dependency-tracked."
+    weight: 4
+    min_level: middle
+  - text: "Keeps the change small and does not migrate surrounding module-based code."
+    weight: 3
+    min_level: middle
+follow_ups:
+  - "How does a signal differ from a plain property for change detection?"
+  - "Where does the auth token get attached to the request?"
+common_mistakes:
+  - "Creating a new NgModule for one small component in Angular 16."
+  - "Calling the API from the component and skipping the service layer."
+wiki_refs:
+  - slug: angular-16-basics
+    anchor: standalone-components
+    wiki_reviewed_at: "2026-11-09"
+  - slug: angular-16-basics
+    anchor: signals-and-change-detection
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "Angular — Standalone components"
+    url: https://angular.dev/guide/standalone-components
+    kind: official-docs
+difficulty: 2
+estimated_minutes: 6
+review_status: draft

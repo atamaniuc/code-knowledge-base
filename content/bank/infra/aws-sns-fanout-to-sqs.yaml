@@ -1,0 +1,52 @@
+id: "0be05a22-ad6e-4363-9090-720386bd95a3"
+slug: aws-sns-fanout-to-sqs
+lang: en
+domain: infra
+topic: messaging
+tracks: [backend]
+levels: [senior]
+tech:
+  name: AWS
+  version_range: ">=2024"
+question: "An invoice-finalized event must reach billing, analytics and a customer-communication service, each with its own retry behaviour. What AWS topology do you choose and why?"
+probes: "Whether the candidate uses SNS fan-out to SQS queues for independent consumption and per-consumer retries instead of one shared queue."
+answer_strategy: "Publish once to an SNS topic, subscribe one SQS queue per consumer. That gives each consumer its own pace, its own retries and its own dead-letter queue, and adding a consumer does not touch the publisher or the others."
+expected_answer:
+  - text: "Publishes the event once to an SNS topic."
+    weight: 5
+    min_level: senior
+  - text: "Subscribes one SQS queue per consumer so each has independent retries and DLQs."
+    weight: 5
+    min_level: senior
+  - text: "Explains fan-out decouples the publisher from consumer count and failure modes."
+    weight: 4
+    min_level: senior
+  - text: "Uses message filtering on SNS when a consumer needs only some events."
+    weight: 3
+    min_level: senior
+  - text: "Notes the duplicate-delivery reality and the need for idempotent consumers."
+    weight: 4
+    min_level: senior
+follow_ups:
+  - "A consumer is down for an hour. What happens to its events?"
+  - "Why not have each consumer read the same SQS queue?"
+common_mistakes:
+  - "Pointing every consumer at one shared queue so one slow consumer blocks the rest."
+  - "Assuming SNS-to-SQS is exactly-once."
+wiki_refs:
+  - slug: aws-event-driven-messaging
+    anchor: queue-or-bus
+    wiki_reviewed_at: "2026-11-09"
+  - slug: aws-event-driven-messaging
+    anchor: sqs
+    wiki_reviewed_at: "2026-11-09"
+  - slug: aws-event-driven-messaging
+    anchor: sns
+    wiki_reviewed_at: "2026-11-09"
+sources:
+  - title: "AWS — SNS fanout to SQS"
+    url: https://docs.aws.amazon.com/sns/latest/dg/sns-sqs-as-subscriber.html
+    kind: official-docs
+difficulty: 4
+estimated_minutes: 9
+review_status: draft
