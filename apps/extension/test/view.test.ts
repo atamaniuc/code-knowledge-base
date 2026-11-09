@@ -87,6 +87,7 @@ function bankInput(overrides: Partial<BankInput> = {}): BankInput {
     seen: new Set<string>(),
     due: new Set<string>(),
     wikiTitles: WIKI_TITLES,
+    scope: null,
     ...overrides,
   };
 }
@@ -234,7 +235,7 @@ describe("posting", () => {
 
 describe("interview brief", () => {
   const input = (overrides: Partial<Parameters<typeof interviewView>[0]> = {}) => ({
-    briefs: [brief()],
+    brief: brief(),
     domains: DOMAINS,
     expanded: null,
     tag: "",
@@ -244,7 +245,7 @@ describe("interview brief", () => {
   });
 
   it("says so when a build baked no brief", () => {
-    expect(text(interviewView(input({ briefs: [] })))).toContain("No interview brief is baked into this build");
+    expect(text(interviewView(input({ brief: null })))).toContain("No interview brief for this vacancy");
   });
 
   it("introduces the target, the process and how many questions are almost certain", () => {
@@ -263,7 +264,7 @@ describe("interview brief", () => {
       const group = one.groups[0];
       if (!group) throw new Error("fixture lost its group");
       const groups = Array.from({ length: n }, (_, index) => ({ ...group, id: "group-" + String(index) }));
-      return text(interviewView(input({ briefs: [{ ...one, groups }] })));
+      return text(interviewView(input({ brief: { ...one, groups } })));
     };
     expect(withGroups(1)).toContain("1 вопрос ·");
     expect(withGroups(3)).toContain("3 вопроса ·");
@@ -340,7 +341,7 @@ describe("interview brief", () => {
 
   it("falls back to the id when a group names a domain the registry does not carry", () => {
     const orphan = brief({ target: { role: "r", company: "c", domain: "unknown-domain", stack: [] } });
-    expect(text(interviewView(input({ briefs: [orphan] })))).toContain("Unknown Domain");
+    expect(text(interviewView(input({ brief: orphan })))).toContain("Unknown Domain");
   });
 });
 describe("shortcut sheet", () => {
@@ -364,6 +365,8 @@ describe("shell", () => {
     canBack: false,
     canForward: false,
     fullscreen: false,
+    vacancies: [],
+    vacancy: "",
   };
 
   it("marks the open view and reports today, the streak and the queue", () => {

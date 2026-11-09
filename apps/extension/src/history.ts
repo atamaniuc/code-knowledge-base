@@ -17,6 +17,8 @@ export interface Place {
   questionId: string | null;
   wiki: { slug: string; anchor: string } | null;
   expanded: string | null;
+  /** The vacancy the panel was preparing for. */
+  vacancy: string;
 }
 
 export interface History {
@@ -35,6 +37,7 @@ export function samePlace(a: Place, b: Place): boolean {
     a.view === b.view &&
     a.questionId === b.questionId &&
     a.expanded === b.expanded &&
+    a.vacancy === b.vacancy &&
     (a.wiki?.slug ?? null) === (b.wiki?.slug ?? null) &&
     (a.wiki?.anchor ?? "") === (b.wiki?.anchor ?? "")
   );

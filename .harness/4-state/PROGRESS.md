@@ -4,6 +4,12 @@ State carried between sessions. Read this first; update it before you stop.
 
 ## Now
 
+**Extension is vacancy-first (schema 5).** The header carries a vacancy selector;
+switching it rebuilds the whole panel on the fly — Posting and Interview show only the
+selected vacancy, Drill queues its plan questions, and the bank has a one-tap scope toggle.
+Two vacancies ship (PrimeHire Laravel active, Finverity as history) and `content/active.yaml`
+still decides which one opens first.
+
 **Active vacancy: PrimeHire Backend Developer PHP + Laravel.** The repo now prepares for the
 current primehire/laravel-legacy vacancy: content/vacancies/primehire-laravel/ carries the
 posting, the generated plan (24 core / 5 stretch) and a 41-question Russian rehearsal brief

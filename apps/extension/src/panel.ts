@@ -10,7 +10,7 @@ import {
   withPinned,
   type Filters,
 } from "./bank.js";
-import { articleBySlug, parseBundle, toSelectorPool, type Bundle, type Question } from "./bundle.js";
+import { articleBySlug, parseBundle, toSelectorPool, type Bundle, type Question, type Vacancy } from "./bundle.js";
 import { mount, render } from "./dom.js";
 import { browserHost, fullscreenActive, toggleFullscreen } from "./fullscreen.js";
 import {
@@ -89,6 +89,8 @@ async function main(): Promise<void> {
   let wiki: { slug: string; anchor: string; from: ViewId } | null = null;
   let sheet = false;
   let pending: "g" | null = null;
+  let vacancySlug = "";
+  let bankScoped = true;
 
   if (prefs.session) {
     viewId = prefs.session.view;
@@ -98,6 +100,29 @@ async function main(): Promise<void> {
     pinned = prefs.session.questionId ? (bundle.questions.find((q) => q.id === prefs.session?.questionId) ?? null) : null;
     shownId = prefs.session.questionId;
     revealed = prefs.session.revealed;
+    vacancySlug = prefs.session.vacancy;
+    bankScoped = prefs.session.bankScoped;
+  }
+
+  /** The vacancy the panel is preparing for, falling back to the first one the bundle carries. */
+  function selectedVacancy(): Vacancy | null {
+    return bundle.vacancies.find((v) => v.slug === vacancySlug) ?? bundle.vacancies[0] ?? null;
+  }
+
+  /** The ids a vacancy's plan rehearses, or null when it has no plan to scope by. */
+  function scopedIds(): Set<string> | null {
+    const plan = selectedVacancy()?.plan;
+    if (!plan) return null;
+    const ids = [...plan.core, ...plan.stretch].map((entry) => entry.id).filter(Boolean);
+    return ids.length > 0 ? new Set(ids) : null;
+  }
+
+  /** The question pool for the selected vacancy: its plan, or the whole bank as fallback. */
+  function scopedBase(): Question[] {
+    const ids = scopedIds();
+    if (!ids) return bundle.questions;
+    const byId = new Map(bundle.questions.map((q) => [q.id, q]));
+    return [...ids].map((id) => byId.get(id)).filter((q): q is Question => q !== undefined);
   }
 
   function announce(message: string): void {
@@ -147,6 +172,8 @@ async function main(): Promise<void> {
       tag: tagFilter,
       wiki: wiki ? { slug: wiki.slug, anchor: wiki.anchor } : null,
       scrollTop: scroller()?.scrollTop ?? 0,
+      vacancy: selectedVacancy()?.slug ?? "",
+      bankScoped,
     };
   }
 
@@ -157,7 +184,7 @@ async function main(): Promise<void> {
   const persist = debounce(writePrefs, 250);
 
   function place(): Place {
-    return { view: viewId, questionId: pinned?.id ?? shownId, wiki: wiki ? { slug: wiki.slug, anchor: wiki.anchor } : null, expanded };
+    return { view: viewId, questionId: pinned?.id ?? shownId, wiki: wiki ? { slug: wiki.slug, anchor: wiki.anchor } : null, expanded, vacancy: selectedVacancy()?.slug ?? "" };
   }
 
   /** Put the panel back where a history entry was, without adding a new one. */
@@ -165,6 +192,7 @@ async function main(): Promise<void> {
     viewId = target.view;
     wiki = target.wiki ? { ...target.wiki, from: target.view } : null;
     expanded = target.expanded;
+    vacancySlug = target.vacancy;
     pinned = target.questionId ? (bundle.questions.find((q) => q.id === target.questionId) ?? null) : null;
     shownId = target.questionId;
     revealed = false;
@@ -210,8 +238,10 @@ async function main(): Promise<void> {
     streak: number;
     seen: ReadonlySet<string>;
     due: ReadonlySet<string>;
+    baseTotal: number;
   } {
-    const filtered = applyFilters(bundle.questions, filters);
+    const base = viewId === "bank" && !bankScoped ? bundle.questions : scopedBase();
+    const filtered = applyFilters(base, filters);
     const chosen = pinned;
     if (chosen && !filtered.some((q) => q.id === chosen.id)) pinned = null;
 
@@ -225,7 +255,7 @@ async function main(): Promise<void> {
     );
 
     const records = log.allRecords();
-    return { filtered, queue, progress: dayProgress(records), streak: streak(records), seen: log.seenIds(), due: new Set(log.dueIds(new Date())) };
+    return { filtered, queue, progress: dayProgress(records), streak: streak(records), seen: log.seenIds(), due: new Set(log.dueIds(new Date())), baseTotal: base.length };
   }
 
   type Snap = ReturnType<typeof snapshot>;
@@ -240,7 +270,7 @@ async function main(): Promise<void> {
   }
 
   function promptPool(): number {
-    return eligible(toSelectorPool(bundle.questions) as never, {}).length;
+    return eligible(toSelectorPool(scopedBase()) as never, {}).length;
   }
 
   function wikiTitles(): Record<string, string> {
@@ -250,9 +280,10 @@ async function main(): Promise<void> {
   }
 
   function bankInput(snap: Snap): view.BankInput {
+    const vacancy = selectedVacancy();
     return {
       questions: snap.filtered,
-      total: bundle.questions.length,
+      total: snap.baseTotal,
       filters,
       domains: bundle.domains,
       // Option lists come from the whole bank, not the filtered slice, so a filter cannot
@@ -264,6 +295,7 @@ async function main(): Promise<void> {
       seen: snap.seen,
       due: snap.due,
       wikiTitles: wikiTitles(),
+      scope: vacancy ? { active: bankScoped, label: vacancy.role || vacancy.title, total: scopedBase().length } : null,
     };
   }
 
@@ -275,12 +307,14 @@ async function main(): Promise<void> {
     }
     if (viewId === "bank") return [view.bankView(bankInput(snap))];
     if (viewId === "posting") {
-      return [view.postingView({ plan: bundle.plan, questions: bundle.questions, domains: bundle.domains })];
+      return [view.postingView({ plan: selectedVacancy()?.plan ?? null, questions: bundle.questions, domains: bundle.domains })];
     }
     if (viewId === "interview") {
+      const vacancy = selectedVacancy();
+      const brief = vacancy?.briefSlug ? (bundle.interview.find((b) => b.slug === vacancy.briefSlug) ?? null) : null;
       return [
         view.interviewView({
-          briefs: bundle.interview,
+          brief,
           domains: bundle.domains,
           expanded,
           tag: tagFilter,
@@ -292,7 +326,7 @@ async function main(): Promise<void> {
     const question = currentQuestion(snap);
     if (!question) {
       const empty = emptyState({
-        total: bundle.questions.length,
+        total: snap.baseTotal,
         promoted: promptPool(),
         shown: snap.filtered.length,
         filtered: hasActiveFilters(filters),
@@ -328,6 +362,8 @@ async function main(): Promise<void> {
       canBack: canGoBack(history),
       canForward: canGoForward(history),
       fullscreen,
+      vacancies: bundle.vacancies,
+      vacancy: selectedVacancy()?.slug ?? "",
     };
     mount(app, view.shell(chrome, specs, sheet ? view.shortcutSheetView() : undefined));
 
@@ -474,6 +510,10 @@ async function main(): Promise<void> {
         rerender();
         return;
       }
+      case "scope":
+        bankScoped = !bankScoped;
+        rerender();
+        return;
       case "toggle": {
         const id = element.getAttribute("data-id");
         expanded = expanded === id ? null : id;
@@ -549,7 +589,23 @@ async function main(): Promise<void> {
 
   app.addEventListener("change", (event) => {
     const target = event.target;
-    if (!(target instanceof HTMLSelectElement) || target.getAttribute("data-action") !== "filter") return;
+    if (!(target instanceof HTMLSelectElement)) return;
+    const action = target.getAttribute("data-action");
+    if (action === "vacancy") {
+      vacancySlug = target.value;
+      // A new target starts from a clean slate: the previous vacancy's filters and
+      // drill position would only hide the new one's questions.
+      filters = { ...NO_FILTERS };
+      expanded = null;
+      tagFilter = "";
+      pinned = null;
+      shownId = null;
+      revealed = false;
+      bankScoped = true;
+      rerender();
+      return;
+    }
+    if (action !== "filter") return;
     const name = target.getAttribute("data-filter");
     if (name === "domain") filters = { ...filters, domain: target.value };
     else if (name === "level") filters = { ...filters, level: target.value };

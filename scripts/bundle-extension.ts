@@ -13,7 +13,7 @@
  * only the plan built from it is, so the Posting tab is reproducible without the network.
  */
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
 import { parse as parseYaml } from "yaml";
@@ -256,27 +256,34 @@ const levels = [...new Set(questions.flatMap((q) => q.levels))].sort(
   (a, b) => LEVEL_ORDER.indexOf(a) - LEVEL_ORDER.indexOf(b),
 );
 
+type PlanFile = {
+  source?: { title?: string };
+  core?: { id: string }[];
+  stretch?: { id: string }[];
+};
+
 /**
- * The posting plan, when one was passed.
- *
- * It is read as data and trimmed against the questions that actually made it into the
- * bundle: a plan that names a question the bundle does not carry would render as an empty
- * session, which is exactly the bug this check exists to make impossible.
+ * A posting plan, trimmed against the questions that actually made it into the bundle:
+ * a plan that names a question the bundle does not carry would render as an empty session.
  */
-let plan: unknown = null;
-if (planPath) {
-  const file = resolve(ROOT, planPath);
-  const parsed = JSON.parse(readFileSync(file, "utf8")) as {
-    core?: { id: string }[];
-    stretch?: { id: string }[];
-  };
+function trimPlan(parsed: PlanFile): PlanFile {
   const ids = new Set(questions.map((q) => q.id));
   const core = (parsed.core ?? []).filter((r) => ids.has(r.id));
   const stretch = (parsed.stretch ?? []).filter((r) => ids.has(r.id));
   const dropped = (parsed.core?.length ?? 0) + (parsed.stretch?.length ?? 0) - core.length - stretch.length;
   if (dropped > 0) console.warn(`plan: dropped ${dropped} entr(ies) whose question is not in this bundle`);
-  plan = { ...parsed, core, stretch };
-  console.log(`plan: ${core.length} core, ${stretch.length} stretch from ${planPath}`);
+  return { ...parsed, core, stretch };
+}
+
+/**
+ * The posting plan, when one was passed explicitly with --plan=.
+ */
+let plan: PlanFile | null = null;
+if (planPath) {
+  const file = resolve(ROOT, planPath);
+  const parsed = JSON.parse(readFileSync(file, "utf8")) as PlanFile;
+  plan = trimPlan(parsed);
+  console.log(`plan: ${plan.core?.length ?? 0} core, ${plan.stretch?.length ?? 0} stretch from ${planPath}`);
 }
 
 rmSync(OUT, { recursive: true, force: true });
@@ -305,8 +312,57 @@ await build({
  */
 const interviewTags = INTERVIEW_TAG_IDS.map((id) => ({ id, title: INTERVIEW_TAG_TITLES[id] }));
 
+/**
+ * One vacancy = one selectable context in the panel.
+ *
+ * Every vacancy folder that carries a plan ships here, with its brief matched by slug, so
+ * the panel can rebuild itself around the chosen target instead of mixing plans and briefs
+ * from different vacancies. Previous vacancies are history that stays switchable on the fly.
+ */
+interface ShippedVacancy {
+  slug: string;
+  title: string;
+  role: string;
+  company: string;
+  stack: string[];
+  domain: string;
+  plan: PlanFile | null;
+  briefSlug: string | null;
+}
+
+const vacancies: ShippedVacancy[] = [];
+for (const file of walk(join(ROOT, "content/vacancies"), ["plan.json"])) {
+  const dir = dirname(file);
+  const slug = basename(dir);
+  let parsed: PlanFile;
+  try {
+    parsed = JSON.parse(readFileSync(file, "utf8")) as PlanFile;
+  } catch {
+    unreadable.push(file.replace(ROOT + "/", ""));
+    continue;
+  }
+  const brief = interview.find((b) => b.slug === slug) ?? null;
+  vacancies.push({
+    slug,
+    title: brief?.title ?? parsed.source?.title ?? slug,
+    role: brief?.target.role ?? parsed.source?.title ?? "",
+    company: brief?.target.company ?? "",
+    stack: brief?.target.stack ?? [],
+    domain: brief?.target.domain ?? "",
+    plan: trimPlan(parsed),
+    briefSlug: brief?.slug ?? null,
+  });
+}
+
+const activeFile = join(ROOT, "content/active.yaml");
+let active: string | null = null;
+if (existsSync(activeFile)) {
+  const parsedActive = parseYaml(readFileSync(activeFile, "utf8")) as { active?: string };
+  active = parsedActive.active ?? null;
+}
+
 const bundle = {
-  schema: 4,
+  schema: 5,
   generatedAt: new Date().toISOString(),
   questions,
   wiki,
@@ -315,6 +371,8 @@ const bundle = {
   plan,
   interview,
   interviewTags,
+  vacancies,
+  active,
 };
 
 mkdirSync(OUT, { recursive: true });

@@ -32,6 +32,10 @@ export interface Session {
   tag: string;
   wiki: { slug: string; anchor: string } | null;
   scrollTop: number;
+  /** The vacancy the panel is preparing for. */
+  vacancy: string;
+  /** Whether the bank is scoped to that vacancy or shows every question. */
+  bankScoped: boolean;
 }
 
 export interface Prefs {
@@ -109,6 +113,8 @@ function readSession(raw: unknown): Session | null {
     tag: typeof source.tag === "string" ? source.tag.slice(0, 40) : "",
     wiki: slug ? { slug, anchor: typeof wikiRaw?.anchor === "string" ? wikiRaw.anchor : "" } : null,
     scrollTop: typeof source.scrollTop === "number" && Number.isFinite(source.scrollTop) ? Math.max(0, source.scrollTop) : 0,
+    vacancy: typeof source.vacancy === "string" && source.vacancy.length > 0 ? source.vacancy.slice(0, 80) : "",
+    bankScoped: source.bankScoped !== false,
   };
 }
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { canGoBack, canGoForward, currentPlace, EMPTY_HISTORY, goBack, goForward, type History, MAX_ENTRIES, type Place, pushPlace } from "../src/history.js";
 
-const place = (over: Partial<Place> = {}): Place => ({ view: "drill", questionId: null, wiki: null, expanded: null, ...over });
+const place = (over: Partial<Place> = {}): Place => ({ view: "drill", questionId: null, wiki: null, expanded: null, vacancy: "", ...over });
 
 describe("panel history", () => {
   it("records places and walks back to the first", () => {

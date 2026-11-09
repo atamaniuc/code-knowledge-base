@@ -1084,3 +1084,56 @@ html:fullscreen .main {
   cursor: pointer;
 }
 
+
+/* ---------- vacancy-first context ---------- */
+
+.vacancy-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.vacancy-label {
+  font-size: 0.714286rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.vacancy-select {
+  font: inherit;
+  font-size: 0.928571rem;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--fg);
+  cursor: pointer;
+}
+.vacancy-select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.scope-toggle {
+  font: inherit;
+  font-size: 0.785714rem;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--fg);
+  cursor: pointer;
+  text-align: left;
+}
+.scope-toggle:hover {
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.scope-toggle[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  font-weight: 600;
+}

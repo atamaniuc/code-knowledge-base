@@ -43,19 +43,21 @@ promoted content, so a bundle that carried `draft` verbatim would render an empt
 however many questions it held. Without the flag only `auto_verified` and `verified` items
 ship, which is what a store build must do.
 
-## Shape: schema 4
+## Shape: schema 5
 
 ```ts
 {
-  schema: 4,
+  schema: 5,
   generatedAt: string,
   questions: Shipped[],
   wiki: ShippedArticle[],
   domains: { id, title, description }[],
   levels: string[],            // ordered junior → head
-  plan: BundlePlan | null,
-  interview: ShippedBrief[],   // empty when no brief was authored or promoted
+  plan: BundlePlan | null,     // the active vacancy's plan, kept for older readers
+  interview: ShippedBrief[],   // every brief, kept for older readers
   interviewTags: { id, title }[],  // the closed vocabulary, with the word to draw
+  vacancies: ShippedVacancy[], // one per vacancy: slug, title, role, company, stack, plan, briefSlug
+  active: string | null,       // the vacancy the panel opens on
 }
 ```
 
@@ -66,12 +68,12 @@ brief's headings are Russian inside the panel while its chrome stays English, be
 content it frames is Russian: an English frame around a Russian answer reads like a
 translation that stopped halfway down the page.
 
-Schema 4 adds the tag registry: the panel filters the brief by tag, and a tag it cannot name
-would render as a bare id. Schema 3 added the briefs themselves. Both are additive, and the
-reader still accepts schema 1 and 2 documents — a
-bundle without `interview` parses to `[]` and the Interview view explains how to build
-one. The bump is for the other direction: a consumer that pins the schema number should
-never meet a field it was not written to read.
+Schema 5 adds the vacancy registry (`vacancies` + `active`): the panel is vacancy-first.
+One select in the header switches the whole panel on the fly — Posting shows that vacancy's
+plan, Interview shows only that vacancy's brief (never a mix), Drill queues that vacancy's
+plan questions, and the bank can be scoped to the same set with one tap. Schema 4 added the
+tag registry and schema 3 added the briefs; the reader still accepts older bundles and
+synthesises one vacancy from the legacy single plan.
 
 `Shipped` is what the panel renders and nothing else: `id, slug, domain, topic, subtopic?,
 levels, tracks, tech (string | null), question, probes, answerStrategy?, expected[{text,

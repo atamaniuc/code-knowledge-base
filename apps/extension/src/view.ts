@@ -9,6 +9,7 @@ import {
   type Plan,
   type Question,
   type TagInfo,
+  type Vacancy,
   type WikiArticle,
 } from "./bundle.js";
 import { SHORTCUTS, type ViewId } from "./keys.js";
@@ -224,6 +225,8 @@ export interface BankInput {
   seen: ReadonlySet<string>;
   due: ReadonlySet<string>;
   wikiTitles: Record<string, string>;
+  /** When set, the bank is scoped to one vacancy and this describes the toggle. */
+  scope: { active: boolean; label: string; total: number } | null;
 }
 
 export function countText(shown: number, total: number, query: string): string {
@@ -317,7 +320,28 @@ export function bankResults(input: BankInput): Spec {
 }
 
 export function bankView(input: BankInput): Spec {
-  return h("div", { class: "bank" }, [filtersBar(input, true), bankResults(input)]);
+  const scope: Spec[] = [];
+  if (input.scope) {
+    scope.push(
+      h(
+        "button",
+        {
+          type: "button",
+          class: "scope-toggle",
+          "data-action": "scope",
+          "data-focus-key": "scope-toggle",
+          "aria-pressed": input.scope.active,
+          title: input.scope.active ? "Show every question in the bank" : "Show only questions for this vacancy",
+        },
+        [
+          input.scope.active
+            ? "Scoped to “" + input.scope.label + "” · " + String(input.scope.total) + " questions — show all"
+            : "All " + String(input.scope.total) + " questions — scope to vacancy",
+        ],
+      ),
+    );
+  }
+  return h("div", { class: "bank" }, [...scope, filtersBar(input, true), bankResults(input)]);
 }
 
 export interface WikiInput {
@@ -483,7 +507,8 @@ export function postingView(input: PostingInput): Spec {
 }
 
 export interface InterviewInput {
-  briefs: Brief[];
+  /** The selected vacancy's brief — one target, never a mix of vacancies. */
+  brief: Brief | null;
   domains: DomainInfo[];
   /** The one question whose answer is showing, or null. Keyed on the brief question id. */
   expanded: string | null;
@@ -683,22 +708,23 @@ function briefGroupCard(group: BriefGroup, questions: BriefQuestion[], input: In
 }
 
 export function interviewView(input: InterviewInput): Spec {
-  if (input.briefs.length === 0) {
+  const brief = input.brief;
+  if (!brief) {
     return emptyView(
-      "No interview brief is baked into this build.",
+      "No interview brief for this vacancy.",
       "Author one under content/vacancies/<slug>/interview.yaml, then rebuild with make extension --include-drafts. The bank works without one.",
     );
   }
 
-  const everything = input.briefs.flatMap((brief) => brief.groups.flatMap((group) => group.questions));
+  const everything = brief.groups.flatMap((group) => group.questions);
   const picked = (question: BriefQuestion): boolean => input.tag === "" || question.tags.includes(input.tag);
   const shown = everything.filter(picked);
 
-  const process = input.briefs.map((brief) =>
-    h("section", { class: "card brief-process" }, [
-      h("h2", {}, [BRIEF_LABELS.process]),
-      brief.stages.length > 0
-        ? h(
+  const process =
+    brief.stages.length > 0
+      ? h("section", { class: "card brief-process" }, [
+          h("h2", {}, [BRIEF_LABELS.process]),
+          h(
             "ol",
             { class: "stages" },
             brief.stages.map((stage) =>
@@ -708,37 +734,30 @@ export function interviewView(input: InterviewInput): Spec {
                 h("span", { class: "stage-note" }, [stage.note]),
               ]),
             ),
-          )
-        : h("p", { class: "hint" }, [BRIEF_LABELS.nothing]),
-    ]),
-  );
+          ),
+        ])
+      : null;
 
-  const groups = input.briefs.flatMap((brief) =>
-    brief.groups
-      .map((group) => ({ group, questions: group.questions.filter(picked) }))
-      .filter((entry) => entry.questions.length > 0)
-      .map((entry) => briefGroupCard(entry.group, entry.questions, input)),
-  );
+  const groups = brief.groups
+    .map((group) => ({ group, questions: group.questions.filter(picked) }))
+    .filter((entry) => entry.questions.length > 0)
+    .map((entry) => briefGroupCard(entry.group, entry.questions, input));
 
   return h("div", { class: "interview" }, [
-    ...input.briefs.map((brief) =>
-      h("article", { class: "card brief-head" }, [
-        h("h1", {}, [brief.title]),
-        h("div", { class: "meta" }, [
-          chip(brief.target.role),
-          chip(brief.target.company, "muted"),
-          chip(domainTitle(input.domains, brief.target.domain)),
-          ...brief.target.stack.map((tech) => chip(tech, "tech")),
-        ]),
-        h("p", { class: "summary" }, [brief.summary]),
-        h("p", { class: "count" }, [
-          input.tag === ""
-            ? briefCount(shown)
-            : questionCount(shown.length) + " по теме «" + tagTitle(input.tags, input.tag) + "»",
-        ]),
+    h("article", { class: "card brief-head" }, [
+      h("h1", {}, [brief.title]),
+      h("div", { class: "meta" }, [
+        chip(brief.target.role),
+        chip(brief.target.company, "muted"),
+        chip(domainTitle(input.domains, brief.target.domain)),
+        ...brief.target.stack.map((tech) => chip(tech, "tech")),
       ]),
-    ),
-    ...process,
+      h("p", { class: "summary" }, [brief.summary]),
+      h("p", { class: "count" }, [
+        input.tag === "" ? briefCount(shown) : questionCount(shown.length) + " по теме «" + tagTitle(input.tags, input.tag) + "»",
+      ]),
+    ]),
+    process,
     tagBar(input, everything),
     shown.length === 0
       ? (emptyView(BRIEF_LABELS.nothingTagged, "Снимите тему или выберите другую.") as Spec)
@@ -781,6 +800,10 @@ export interface Chrome {
   canBack: boolean;
   canForward: boolean;
   fullscreen: boolean;
+  /** Every vacancy the bundle carries, for the header selector. */
+  vacancies: Vacancy[];
+  /** The selected vacancy slug. */
+  vacancy: string;
 }
 
 /**
@@ -884,11 +907,21 @@ export function shell(chrome: Chrome, body: Spec[], overlay?: Spec): Spec {
     ),
   ]);
 
+  const vacancySelect = h("select", { id: "vacancy-select", class: "vacancy-select", "data-action": "vacancy", "aria-label": "Choose the vacancy to prepare for" }, [
+    ...chrome.vacancies.map((vacancy) =>
+      h("option", { value: vacancy.slug, selected: vacancy.slug === chrome.vacancy }, [vacancy.role || vacancy.title]),
+    ),
+  ]);
+
   const children: Spec[] = [
     h("header", { class: "top" }, [
       h("div", { class: "brand-row" }, [
         h("div", { class: "brand" }, [h("span", { class: "brand-mark" }, ["IP"]), h("span", { class: "brand-name" }, ["Interview Prep"])]),
         tools(chrome),
+      ]),
+      h("div", { class: "vacancy-row" }, [
+        h("label", { class: "vacancy-label", for: "vacancy-select" }, ["Preparing for"]),
+        vacancySelect,
       ]),
       nav,
       statusBar(chrome),

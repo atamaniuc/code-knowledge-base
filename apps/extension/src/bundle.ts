@@ -144,6 +144,23 @@ export interface TagInfo {
   title: string;
 }
 
+/**
+ * One vacancy the panel can prepare for.
+ *
+ * This is the vacancy-first axis: each entry carries its own plan and the slug of its
+ * rehearsal brief, so switching vacancy rebuilds the whole panel around that target.
+ */
+export interface Vacancy {
+  slug: string;
+  title: string;
+  role: string;
+  company: string;
+  stack: string[];
+  domain: string;
+  plan: Plan | null;
+  briefSlug: string | null;
+}
+
 export interface Bundle {
   schema: number;
   generatedAt: string;
@@ -154,6 +171,8 @@ export interface Bundle {
   plan: Plan | null;
   interview: Brief[];
   interviewTags: TagInfo[];
+  vacancies: Vacancy[];
+  active: string | null;
 }
 
 /** Raised when `content.json` is not a bundle at all. */
@@ -357,10 +376,49 @@ function deriveLevels(questions: Question[]): string[] {
   return LEVEL_ORDER.filter((level) => seen.has(level));
 }
 
+function readVacancies(raw: unknown, questions: Question[], interview: Brief[]): Vacancy[] {
+  return records(raw)
+    .map((item) => {
+      const slug = str(item.slug);
+      const briefSlug = str(item.briefSlug, slug) || null;
+      const brief = interview.find((b) => b.slug === briefSlug) ?? null;
+      const plan = readPlan(item.plan, questions);
+      return {
+        slug: slug || brief?.slug || "vacancy",
+        title: str(item.title, brief?.title ?? plan?.source.title ?? "A vacancy"),
+        role: str(item.role, brief?.target.role ?? plan?.source.title ?? ""),
+        company: str(item.company, brief?.target.company ?? ""),
+        stack: strings(item.stack).length > 0 ? strings(item.stack) : (brief?.target.stack ?? []),
+        domain: str(item.domain, brief?.target.domain ?? ""),
+        plan,
+        briefSlug: brief?.slug ?? null,
+      };
+    })
+    .filter((vacancy) => vacancy.plan !== null || vacancy.briefSlug !== null);
+}
+
 export function parseBundle(raw: unknown): Bundle {
   if (!isRecord(raw)) throw new BundleError("content.json is not a JSON object");
   if (!Array.isArray(raw.questions)) throw new BundleError("content.json has no questions[] — it is not a content bundle");
   const questions = raw.questions.filter(isRecord).map(readQuestion);
+  const plan = readPlan(raw.plan, questions);
+  const interview = records(raw.interview).map(readBrief);
+  const vacancies = readVacancies(raw.vacancies, questions, interview);
+  // An older bundle carried one plan and a list of briefs with no vacancy registry. Synthesise
+  // one vacancy so the panel always has a target to select, even from a legacy content.json.
+  if (vacancies.length === 0 && (plan !== null || interview.length > 0)) {
+    vacancies.push({
+      slug: "active",
+      title: plan?.source.title ?? interview[0]?.title ?? "A vacancy",
+      role: interview[0]?.target.role ?? "",
+      company: interview[0]?.target.company ?? "",
+      stack: interview[0]?.target.stack ?? [],
+      domain: interview[0]?.target.domain ?? "",
+      plan,
+      briefSlug: interview[0]?.slug ?? null,
+    });
+  }
+  const active = typeof raw.active === "string" && raw.active.length > 0 ? raw.active : (vacancies[0]?.slug ?? null);
   return {
     schema: num(raw.schema, 1),
     generatedAt: str(raw.generatedAt),
@@ -368,9 +426,11 @@ export function parseBundle(raw: unknown): Bundle {
     wiki: records(raw.wiki).map(readArticle),
     domains: readDomains(raw.domains),
     levels: strings(raw.levels).length > 0 ? strings(raw.levels) : deriveLevels(questions),
-    plan: readPlan(raw.plan, questions),
-    interview: records(raw.interview).map(readBrief),
+    plan,
+    interview,
     interviewTags: records(raw.interviewTags).map((tag) => ({ id: str(tag.id), title: str(tag.title, humanize(str(tag.id))) })),
+    vacancies,
+    active,
   };
 }
 

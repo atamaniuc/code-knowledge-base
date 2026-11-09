@@ -156,5 +156,8 @@ Hard constraints: `.harness/1-instructions/CONSTRAINTS.md`. Read it before writi
   names the active vacancy whose plan the bundler bakes. Previous vacancies stay as history.
 - walk(dir, ["plan.json"]) matches both "plan.json" and "<slug>.plan.json": use the bare
   suffix so both layouts resolve. A file named plan.json does NOT end with ".plan.json".
+- Extension is vacancy-first (bundle schema 5): the header selector switches the whole
+  panel on the fly — Interview/Posting show only the selected vacancy, Drill queues its plan
+  questions, the bank has a scope toggle. Older bundles without `vacancies` still parse.
 - Interview brief tags are a CLOSED vocabulary (INTERVIEW_TAG_IDS): there is no "caching"
   tag — use ops/nfr/tradeoff instead. Adding a tag requires schema + titles in interview.ts.

@@ -105,8 +105,8 @@ const emptyLog: ReviewLog = {
  * the selector — rather than discovered by loading the extension.
  */
 describe("bundled bank", () => {
-  it("is content bundle schema 4", () => {
-    expect(bundle.schema).toBe(4);
+  it("is content bundle schema 5", () => {
+    expect(bundle.schema).toBe(5);
     expect(typeof bundle.generatedAt).toBe("string");
     expect(bundle.generatedAt.length).toBeGreaterThan(0);
   });
